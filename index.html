@@ -1,0 +1,3005 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Second Brain</title>
+<script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+<style>
+  :root {
+    --bg: #0e0e12; --surface: #16161e; --surface2: #1e1e2a; --border: #2a2a3a;
+    --text: #e8e4dc; --muted: #8a8798; --accent: #7c6ef5; --accent2: #c8a96e;
+    --green: #4ecb71; --red: #e05c5c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif;
+    padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 60px;
+  }
+  h1 { font-size: 19px; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+
+  /* ===== Navigation ===== */
+  .nav {
+    display: flex; gap: 4px; background: var(--surface); padding: 4px;
+    border-radius: 10px; margin-bottom: 18px; overflow-x: auto;
+  }
+  .nav-btn {
+    flex-shrink: 0; padding: 9px 14px; border-radius: 7px; cursor: pointer;
+    font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap;
+    border: none; background: transparent;
+  }
+  .nav-btn.active { background: var(--accent); color: white; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== Shared UI ===== */
+  .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .btn {
+    background: var(--accent); color: white; border: none; padding: 9px 16px;
+    border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .btn:hover { opacity: .9; }
+  .btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: rgba(224,92,92,.15); color: var(--red); border: 1px solid var(--red); }
+  .input, select.input, textarea.input {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 11px; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none;
+  }
+  .input:focus { border-color: var(--accent); }
+  select.input { flex: none; }
+
+  .empty { color: var(--muted); font-size: 13px; padding: 30px 0; text-align: center; }
+
+  /* ===== Ref Library grid ===== */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .ref-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; position: relative; }
+  .ref-card img { width: 100%; height: 130px; object-fit: cover; display: block; background: #000; cursor: pointer; }
+  .ref-card .meta { padding: 7px; font-size: 10px; color: var(--muted); }
+  .ref-card .tags { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
+  .tag { background: rgba(200,169,110,.15); color: var(--accent2); padding: 1px 6px; border-radius: 10px; font-size: 9px; }
+
+  /* ===== List-based modules (Life Map / Goals / Finance / Wishlist) ===== */
+  .item-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 8px;
+  }
+  .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .item-title { font-size: 14px; font-weight: 600; }
+  .item-cat {
+    font-size: 9px; padding: 2px 8px; border-radius: 10px; background: rgba(124,110,245,.15);
+    color: var(--accent); white-space: nowrap; font-family: monospace;
+  }
+  .item-desc { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .item-date { font-size: 10px; color: var(--muted); font-family: monospace; }
+  .status-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .status-not_started { background: rgba(138,135,152,.15); color: var(--muted); }
+  .status-in_progress { background: rgba(200,169,110,.15); color: var(--accent2); }
+  .status-done { background: rgba(78,203,113,.15); color: var(--green); }
+  .del-x {
+    background: none; border: none; color: var(--red); cursor: pointer; font-size: 14px; padding: 2px 6px;
+  }
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; }
+  .progress-label { font-size: 10px; color: var(--muted); margin-top: 4px; font-family: monospace; }
+
+  /* ===== Modal (shared structure, content swapped per module) ===== */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); align-items: center; justify-content: center; z-index: 100; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; }
+  .modal h3 { font-size: 15px; margin-bottom: 14px; }
+  .modal-preview { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 14px; background: #000; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+  .field .input, .field select, .field textarea { width: 100%; }
+  .field textarea { resize: none; height: 60px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .modal-actions .btn { flex: 1; }
+
+  .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.9); align-items: center; justify-content: center; z-index: 200; cursor: zoom-out; }
+  .lightbox-overlay.show { display: flex; }
+  .lightbox-overlay img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+  /* ===== Responsive ===== */
+@media (max-width: 600px) {
+  body { padding: 10px; }
+  h1 { font-size: 16px; }
+  .nav { gap: 2px; }
+  .nav-btn { padding: 6px 10px; font-size: 11px; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar .btn { width: 100%; }
+  .toolbar .input { width: 100% !important; max-width: none !important; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+  .ref-card img { height: 100px; }
+  .modal { padding: 14px; width: 95%; }
+  .item-card { padding: 10px; }
+  .item-title { font-size: 13px; }
+  #ref-board-tabs .btn { font-size: 10px !important; padding: 3px 8px !important; }
+  .item-top { flex-wrap: wrap; }
+  .item-top .del-x { align-self: flex-start; }
+}
+
+@media (max-width: 400px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+  .ref-card img { height: 80px; }
+  .ref-card .meta { font-size: 8px; padding: 4px; }
+}
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Page transition */
+.page {
+  animation: fadeIn 0.25s ease;
+}
+
+/* Card hover */
+.item-card {
+  transition: all 0.2s ease;
+}
+.item-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(124,110,245,.1);
+}
+
+.ref-card {
+  transition: all 0.2s ease;
+}
+.ref-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(124,110,245,.3);
+}
+
+/* Modal animation */
+.modal-overlay.show .modal {
+  animation: slideIn 0.25s ease;
+}
+
+/* Progress bar animation */
+.progress-fill {
+  transition: width 0.8s ease;
+}
+
+/* Status badge hover */
+.status-badge {
+  transition: all 0.15s ease;
+}
+.status-badge:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+/* ===== Dashboard Cards ===== */
+.dash-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: center;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.dash-card::after {
+  content: '→';
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  font-size: 14px;
+  color: var(--muted);
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+.dash-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 24px rgba(124,110,245,.15);
+}
+.dash-card:hover::after {
+  opacity: 1;
+  transform: translateX(4px);
+}
+.dash-card:active {
+  transform: scale(0.97);
+}
+
+/* Dashboard recent items */
+.dash-recent-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.dash-recent-item:hover {
+  border-color: var(--accent);
+  transform: translateX(4px);
+  background: var(--surface2);
+}
+
+/* Goal status badges clickable */
+#dash-goal-status .status-badge {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#dash-goal-status .status-badge:hover {
+  transform: scale(1.06);
+  box-shadow: 0 2px 12px rgba(124,110,245,.2);
+}
+#dash-goal-status .status-badge:active {
+  transform: scale(0.95);
+}
+
+/* Quick action buttons animation */
+#page-dashboard .btn {
+  transition: all 0.2s ease;
+}
+#page-dashboard .btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 16px rgba(124,110,245,.25);
+}
+/* ===== Toast ===== */
+#toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+#toast.success { border-color: var(--green); }
+#toast.error { border-color: var(--red); }
+#toast.info { border-color: var(--accent); }
+/* Finance category colors */
+.finance-cat-emergency { border-color: #ff6b6b; }
+.finance-cat-saving { border-color: #4ecb71; }
+.finance-cat-investment { border-color: #7c6ef5; }
+.finance-cat-debt { border-color: #ff9f43; }
+.finance-cat-income { border-color: #00d2d3; }
+.finance-cat-big_purchase { border-color: #f368e0; }
+.finance-cat-other { border-color: var(--muted); }
+/* ===== Calendar Collapse ===== */
+#calendar-body {
+  overflow: hidden;
+  transition: all 0.3s ease;
+  max-height: 500px;
+  opacity: 1;
+}
+#calendar-body.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+  margin: 0;
+}
+#calendar-toggle-icon {
+  transition: transform 0.3s ease;
+}
+#calendar-toggle-icon.rotated {
+  transform: rotate(-90deg);
+}
+/* ===== Project Detail ===== */
+.project-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.project-detail-card {
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.project-detail-card:hover {
+  border-color: var(--accent);
+}
+.project-detail-card .label {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.project-detail-card .value {
+  font-size: 12px;
+  word-break: break-word;
+}
+.relation-tag {
+  display: inline-block;
+  background: rgba(124,110,245,.12);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  margin: 2px 4px 2px 0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.relation-tag:hover {
+  background: rgba(124,110,245,.25);
+}
+.relation-tag.wish { background: rgba(200,169,110,.15); color: var(--accent2); }
+.relation-tag.finance { background: rgba(78,203,113,.15); color: var(--green); }
+.relation-tag.study { background: rgba(124,110,245,.12); color: var(--accent); }
+.relation-tag.goal { background: rgba(200,169,110,.15); color: var(--accent2); }
+.relation-tag.vision { background: rgba(78,203,113,.12); color: var(--green); }
+.relation-tag.ref { background: rgba(200,169,110,.12); color: var(--accent2); }
+
+.relation-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 11px;
+}
+.relation-checkbox:hover {
+  background: var(--surface);
+}
+.relation-checkbox input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.ref-thumb-grid {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.ref-thumb-grid img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: transform 0.15s;
+}
+.ref-thumb-grid img:hover {
+  transform: scale(1.05);
+  border-color: var(--accent);
+}
+</style>
+</head>
+<body>
+
+  <h1>🧠 My Second Brain</h1>
+  <div class="sub">คลัง Ref + แผนที่ชีวิต + เป้าหมาย + การเงิน + Wishlist — ทุกอย่างที่เป็นตัวเรา</div>
+
+  <div class="nav" id="nav"></div>
+
+<!-- ============ PAGE: Dashboard ============ -->
+<div class="page" id="page-dashboard">
+  <!-- Search bar -->
+  <div style="margin-bottom:16px;">
+    <input class="input" id="global-search" placeholder="🔍 ค้นหาทุกโมดูล..." style="width:100%;" oninput="globalSearch()">
+    <div id="global-search-results" style="margin-top:8px;"></div>
+  </div>
+
+  <!-- Stats - คลิกได้ทุกการ์ด -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;">
+  <div class="dash-card" data-module="ref" onclick="switchPage('ref')">
+    <div style="font-size:24px;">📁</div>
+    <div style="font-size:22px;font-weight:700;" id="dash-ref-count">0</div>
+    <div style="color:var(--muted);font-size:11px;">รูปอ้างอิง</div>
+  </div>
+  <div class="dash-card" data-module="vision" onclick="switchPage('vision')">
+    <div style="font-size:24px;">🗺️</div>
+    <div style="font-size:22px;font-weight:700;" id="dash-vision-count">0</div>
+    <div style="color:var(--muted);font-size:11px;">วิสัยทัศน์</div>
+  </div>
+  <div class="dash-card" data-module="goals" onclick="switchPage('goals')">
+    <div style="font-size:24px;">🎯</div>
+    <div style="font-size:22px;font-weight:700;" id="dash-goal-count">0</div>
+    <div style="color:var(--muted);font-size:11px;">เป้าหมาย</div>
+  </div>
+  <div class="dash-card" data-module="study" onclick="switchPage('study')">
+    <div style="font-size:24px;">📚</div>
+    <div style="font-size:22px;font-weight:700;" id="dash-study-count">0</div>
+    <div style="color:var(--muted);font-size:11px;">แผนเรียน</div>
+  </div>
+  <div class="dash-card" data-module="projects" onclick="switchPage('projects')">
+    <div style="font-size:24px;">📋</div>
+    <div style="font-size:22px;font-weight:700;" id="dash-project-count">0</div>
+    <div style="color:var(--muted);font-size:11px;">โปรเจกต์</div>
+  </div>
+  <div class="dash-card" data-module="finance" onclick="switchPage('finance')">
+    <div style="font-size:24px;">💰</div>
+    <div style="font-size:22px;font-weight:700;" id="dash-finance-count">0</div>
+    <div style="color:var(--muted);font-size:11px;">เป้าหมายการเงิน</div>
+  </div>
+  <div class="dash-card" data-module="finance" onclick="switchPage('finance')">
+    <div style="font-size:24px;">🛍️</div>
+    <div style="font-size:22px;font-weight:700;" id="dash-wish-count">0</div>
+    <div style="color:var(--muted);font-size:11px;">Wishlist</div>
+  </div>
+</div>
+
+  <!-- Quick Actions -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openUploadWidget()">📁 + เพิ่มรูป</button>
+  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openVisionModal()">🗺️ + วิสัยทัศน์</button>
+  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openGoalModal()">🎯 + เป้าหมาย</button>
+  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openStudyModal()">📚 + แผนเรียน</button>
+  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openProjectModal()">📋 + โปรเจกต์</button>
+  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openFinanceModal()">💰 + การเงิน</button>
+  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openWishModal()">🛍️ + Wishlist</button>
+</div>
+
+  <!-- Goal Status - คลิกไปที่ Goals พร้อม filter -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📊 สถานะเป้าหมาย</h3>
+  <div id="dash-goal-status" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+  <!-- Priority Stats -->
+<h3 style="font-size:12px;color:var(--muted);margin:10px 0 6px;">⭐ สถิติความสำคัญ</h3>
+<div id="dash-priority-stats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
+
+  <!-- Recent Activity - คลิกไปที่โมดูลนั้นๆ -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📋 กิจกรรมล่าสุด</h3>
+  <div id="dash-recent"></div>
+</div>
+  <!-- ============ PAGE: Ref Library ============ -->
+<div class="page" id="page-ref">
+  <div class="toolbar">
+    <button class="btn" onclick="openUploadWidget()">+ เพิ่มรูปใหม่</button>
+    <input class="input" id="ref-search" placeholder="🔍 ค้นหา..." style="flex:1;min-width:120px;" oninput="renderRef()">
+    <select class="input" id="ref-cat-filter" onchange="renderRef()">
+      <option value="">📂 หมวดหมู่</option>
+      <option value="anatomy">Anatomy</option>
+      <option value="face">หน้า/สีหน้า</option>
+      <option value="hand">มือ</option>
+      <option value="pose">ท่าทาง</option>
+      <option value="artist">ผลงานศิลปิน</option>
+      <option value="other">อื่นๆ</option>
+    </select>
+    <select class="input" id="ref-board-filter" onchange="renderRef()">
+      <option value="">📁 ทุก Board</option>
+    </select>
+    <select class="input" id="ref-sort" onchange="renderRef()" style="max-width:120px;">
+      <option value="newest">ใหม่สุด</option>
+      <option value="oldest">เก่าสุด</option>
+      <option value="az">ชื่อ A-Z</option>
+      <option value="za">ชื่อ Z-A</option>
+    </select>
+  </div>
+  <div id="ref-board-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
+  <div class="grid" id="ref-grid"></div>
+  <div class="empty" id="ref-empty" style="display:none;">ยังไม่มีรูปในคลัง</div>
+</div>
+
+<!-- ============ PAGE: Life Map ============ -->
+<div class="page" id="page-vision">
+  <div class="toolbar">
+    <button class="btn" onclick="openVisionModal()">+ เพิ่มวิสัยทัศน์</button>
+    <select class="input" id="vision-cat-filter" onchange="renderVision()">
+      <option value="">ทุกด้าน</option>
+      <option value="career">อาชีพ/งาน</option>
+      <option value="health">สุขภาพ</option>
+      <option value="relationship">ความสัมพันธ์</option>
+      <option value="growth">พัฒนาตนเอง</option>
+      <option value="lifestyle">ไลฟ์สไตล์</option>
+    </select>
+    <select class="input" id="vision-priority-filter" onchange="renderVision()">
+      <option value="">⭐ ทุกระดับ</option>
+      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+      <option value="low">☆ ทิ้ง/เลื่อน</option>
+    </select>
+  </div>
+  <div id="vision-list"></div>
+  <div class="empty" id="vision-empty" style="display:none;">ยังไม่มีวิสัยทัศน์ที่บันทึกไว้</div>
+</div>
+
+<!-- ============ PAGE: Goals ============ -->
+<div class="page" id="page-goals">
+    <!-- Calendar -->
+<div style="margin-bottom:14px;">
+  <!-- Header with toggle button -->
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;cursor:pointer;" onclick="toggleCalendar()">
+    <span style="font-size:16px;" id="calendar-toggle-icon">📅</span>
+    <span style="font-weight:600;font-size:14px;" id="calendar-month">มกราคม 2026</span>
+    <span style="font-size:12px;color:var(--muted);margin-left:auto;">▼</span>
+  </div>
+  
+  <!-- Calendar body - can be collapsed -->
+  <div id="calendar-body">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(-1)">◀</button>
+      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(1)">▶</button>
+      <button class="btn secondary" style="font-size:10px;padding:3px 8px;" onclick="resetCalendar()">วันนี้</button>
+    </div>
+    <div id="calendar-grid" style="
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 2px; background: var(--surface); border-radius: 8px;
+      padding: 6px; border: 1px solid var(--border);
+    "></div>
+  </div>
+</div>
+  <div class="toolbar">
+    <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+    <select class="input" id="goal-cat-filter" onchange="renderGoals()">
+      <option value="">ทุกหมวดหมู่</option>
+      <option value="career">อาชีพ/งาน</option>
+      <option value="health">สุขภาพ</option>
+      <option value="finance">การเงิน</option>
+      <option value="skill">ทักษะ</option>
+      <option value="other">อื่นๆ</option>
+    </select>
+    <select class="input" id="goal-status-filter" onchange="renderGoals()">
+      <option value="">ทุกสถานะ</option>
+      <option value="not_started">ยังไม่เริ่ม</option>
+      <option value="in_progress">กำลังทำ</option>
+      <option value="done">สำเร็จแล้ว</option>
+    </select>
+    <select class="input" id="goal-priority-filter" onchange="renderGoals()">
+      <option value="">⭐ ทุกระดับ</option>
+      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+      <option value="low">☆ ทิ้ง/เลื่อน</option>
+    </select>
+  </div>
+  <div id="goals-list"></div>
+  <div class="empty" id="goals-empty" style="display:none;">ยังไม่มีเป้าหมายที่บันทึกไว้</div>
+</div>
+
+<!-- ============ PAGE: Finance & Wishlist ============ -->
+<div class="page" id="page-finance">
+  <!-- Finance Summary -->
+  <div id="finance-summary" style="
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px; margin-bottom: 14px;
+  ">
+    <div class="item-card" style="text-align:center;padding:10px;border-color:var(--green);">
+      <div style="font-size:18px;">💰</div>
+      <div style="font-size:16px;font-weight:700;color:var(--green);" id="finance-total-target">0</div>
+      <div style="color:var(--muted);font-size:10px;">เป้าหมายรวม</div>
+    </div>
+    <div class="item-card" style="text-align:center;padding:10px;border-color:var(--accent);">
+      <div style="font-size:18px;">📈</div>
+      <div style="font-size:16px;font-weight:700;color:var(--accent);" id="finance-total-saved">0</div>
+      <div style="color:var(--muted);font-size:10px;">เก็บได้แล้ว</div>
+    </div>
+    <div class="item-card" style="text-align:center;padding:10px;border-color:var(--accent2);">
+      <div style="font-size:18px;">🎯</div>
+      <div style="font-size:16px;font-weight:700;color:var(--accent2);" id="finance-avg-progress">0%</div>
+      <div style="color:var(--muted);font-size:10px;">ความคืบหน้าเฉลี่ย</div>
+    </div>
+    <div class="item-card" style="text-align:center;padding:10px;border-color:var(--green);">
+      <div style="font-size:18px;">🏆</div>
+      <div style="font-size:16px;font-weight:700;color:var(--green);" id="finance-completed">0</div>
+      <div style="color:var(--muted);font-size:10px;">สำเร็จแล้ว</div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">
+      <button class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
+      <button class="btn" onclick="openWishModal()">🛍️ + ของที่อยากได้</button>
+      <select class="input" id="finance-type-filter" onchange="renderFinanceAndWish()" style="flex:1;min-width:140px;">
+        <option value="all">ทั้งหมด (การเงิน + wishlist)</option>
+        <option value="finance">💰 การเงิน</option>
+        <option value="wishlist">🛍️ Wishlist</option>
+      </select>
+      <select class="input" id="finance-priority-filter" onchange="renderFinanceAndWish()">
+      <option value="">⭐ ทุกระดับ</option>
+      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+      <option value="low">☆ ทิ้ง/เลื่อน</option>
+    </select>
+    </div>
+  </div>
+  <div id="finance-list"></div>
+  <div class="empty" id="finance-empty" style="display:none;">ยังไม่มีรายการ</div>
+</div>
+
+<!-- ============ PAGE: Study Plan ============ -->
+<div class="page" id="page-study">
+  <div class="toolbar">
+    <button class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
+    <select class="input" id="study-status-filter" onchange="renderStudy()">
+      <option value="">ทุกสถานะ</option>
+      <option value="planning">📝 วางแผน</option>
+      <option value="studying">📖 กำลังเรียน</option>
+      <option value="completed">✅ เสร็จแล้ว</option>
+    </select>
+    <select class="input" id="study-priority-filter" onchange="renderStudy()">
+      <option value="">⭐ ทุกระดับ</option>
+      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+      <option value="low">☆ ทิ้ง/เลื่อน</option>
+    </select>
+  </div>
+  <div id="study-list"></div>
+  <div class="empty" id="study-empty" style="display:none;">ยังไม่มีแผนเรียน</div>
+</div>
+
+<!-- Study Modal -->
+<div class="modal-overlay" id="study-modal">
+  <div class="modal">
+    <h3>เพิ่มแผนเรียน</h3>
+    <div class="field"><label>หัวข้อ</label>
+      <input class="input" id="study-input-title" placeholder="เช่น วาดรูป Anatomy">
+    </div>
+    <div class="field"><label>หมวดหมู่</label>
+      <select class="input" id="study-input-category">
+        <option value="art">🎨 ศิลปะ</option>
+        <option value="coding">💻 โค้ดดิ้ง</option>
+        <option value="language">🌍 ภาษา</option>
+        <option value="music">🎵 ดนตรี</option>
+        <option value="fitness">💪 ฟิตเนส</option>
+        <option value="other">📦 อื่นๆ</option>
+      </select>
+    </div>
+    <div class="field"><label>เป้าหมาย</label>
+      <input class="input" id="study-input-goal" placeholder="เช่น 30 นาที/วัน">
+    </div>
+    <div class="field"><label>โน้ต</label>
+      <textarea class="input" id="study-input-note"></textarea>
+    </div>
+    <div class="field"><label>⭐ ความสำคัญ</label>
+  <select class="input" id="study-input-priority">
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important" selected>⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
+</div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('study-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveStudy()">บันทึก</button>
+    </div>
+  </div>
+</div>
+<!-- ============ PAGE: Project Board ============ -->
+<div class="page" id="page-projects">
+  <div class="toolbar">
+    <button class="btn" onclick="openProjectModal()">+ เพิ่มโปรเจกต์</button>
+    <select class="input" id="project-status-filter" onchange="renderProjects()">
+      <option value="">ทุกสถานะ</option>
+      <option value="planning">📝 วางแผน</option>
+      <option value="active">🚀 กำลังทำ</option>
+      <option value="review">🔍 ทบทวน</option>
+      <option value="done">✅ เสร็จแล้ว</option>
+    </select>
+    <select class="input" id="project-priority-filter" onchange="renderProjects()">
+      <option value="">⭐ ทุกระดับ</option>
+      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+      <option value="low">☆ ทิ้ง/เลื่อน</option>
+    </select>
+  </div>
+  <div id="projects-list"></div>
+  <div class="empty" id="projects-empty" style="display:none;">ยังไม่มีโปรเจกต์</div>
+</div>
+
+<!-- Project Modal -->
+<div class="modal-overlay" id="project-modal">
+  <div class="modal">
+    <h3>เพิ่มโปรเจกต์</h3>
+    <div class="field"><label>ชื่อโปรเจกต์</label>
+      <input class="input" id="project-input-title" placeholder="เช่น เว็บพอร์ตโฟลิโอ">
+    </div>
+    <div class="field"><label>รายละเอียด</label>
+      <textarea class="input" id="project-input-desc" placeholder="อธิบายโปรเจกต์..."></textarea>
+    </div>
+    <div class="field"><label>Deadline</label>
+      <input class="input" type="date" id="project-input-deadline">
+    </div>
+    <div class="field"><label>โน้ต</label>
+      <textarea class="input" id="project-input-note"></textarea>
+    </div>
+    <div class="field"><label>⭐ ความสำคัญ</label>
+      <select class="input" id="project-input-priority">
+        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+        <option value="important" selected>⭐⭐ สำคัญ (ไม่เร่ง)</option>
+        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+        <option value="low">☆ ทิ้ง/เลื่อน</option>
+      </select>
+    </div>
+  <div class="field"><label>📊 ความคืบหน้า (0-100%)</label>
+    <input class="input" type="range" id="project-input-progress" min="0" max="100" value="0" oninput="document.getElementById('project-progress-label').textContent=this.value+'%'">
+    <div style="text-align:center;font-size:12px;color:var(--muted);" id="project-progress-label">0%</div>
+  </div>
+  <div class="field"><label>📅 วันที่เริ่ม</label>
+    <input class="input" type="date" id="project-input-startdate">
+  </div>
+  <div class="field"><label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
+    <input class="input" id="project-input-tags" placeholder="design, web, freelance">
+  </div>
+
+  <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
+    <label style="font-weight:600;">🔗 เชื่อมโยงกับโมดูลอื่นๆ</label>
+    <div id="project-relations-container" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;font-size:12px;"></div>
+  </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('project-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveProject()">บันทึก</button>
+    </div>
+  </div>
+</div>
+<!-- Project Detail Modal (Sandbox) -->
+<div class="modal-overlay" id="project-detail-modal">
+  <div class="modal" style="max-width:750px;max-height:90vh;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <h3 id="project-detail-title" style="font-size:16px;">ชื่อโปรเจกต์</h3>
+      <div style="display:flex;gap:6px;">
+        <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editProjectFromDetail()">✎ แก้ไข</button>
+        <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="closeModal('project-detail-modal')">✕</button>
+      </div>
+    </div>
+    <div id="project-detail-content" style="max-height:70vh;overflow-y:auto;"></div>
+  </div>
+</div>
+  
+<!-- ============ PAGE: Settings ============ -->
+<div class="page" id="page-settings">
+  <div class="item-card">
+    <div class="item-title">📦 สำรองข้อมูล (Export)</div>
+    <div class="item-desc">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ JSON</div>
+    <div class="item-footer">
+      <span></span>
+      <button class="btn" onclick="exportAll()">Export JSON</button>
+    </div>
+  </div>
+  <div class="item-card">
+    <div class="item-title">📥 กู้คืนข้อมูล (Import)</div>
+    <div class="item-desc">อัพโหลดไฟล์ JSON เพื่อ restoring ข้อมูล <strong style="color:var(--red);">⚠️ ข้อมูลเดิมจะถูกลบหมด</strong></div>
+    <div class="item-footer">
+      <span></span>
+      <label class="btn secondary" style="cursor:pointer;">
+        Import JSON
+        <input type="file" accept=".json" style="display:none;" onchange="importAll(event)">
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODALS ============ -->
+
+  <!-- Ref metadata modal -->
+  <div class="modal-overlay" id="ref-modal">
+    <div class="modal">
+      <h3>เพิ่มรายละเอียดรูป</h3>
+      <img id="ref-modal-preview" class="modal-preview" src="">
+      <div class="field"><label>หมวดหมู่</label>
+  <select class="input" id="ref-input-category">
+    <option value="anatomy">Anatomy</option>
+    <option value="face">หน้า/สีหน้า</option>
+    <option value="hand">มือ</option>
+    <option value="pose">ท่าทาง</option>
+    <option value="artist">ผลงานศิลปิน</option>
+    <option value="other" selected>อื่นๆ</option>
+  </select>
+</div>
+      <div class="field"><label>Board (กลุ่มรูป)</label>
+        <input class="input" id="ref-input-board" placeholder="เช่น inspiration, study, commission-ref" list="board-suggestions">
+        <datalist id="board-suggestions"></datalist>
+      </div>
+      <div class="field"><label>Tags (คั่นด้วยจุลภาค)</label>
+        <input class="input" id="ref-input-tags" placeholder="เช่น มือ, ท่านั่ง">
+      </div>
+      <div class="field"><label>โน้ต</label>
+        <textarea class="input" id="ref-input-note"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeModal('ref-modal')">ยกเลิก</button>
+        <button class="btn" onclick="confirmSaveRef()">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Life Map modal -->
+  <div class="modal-overlay" id="vision-modal">
+    <div class="modal">
+      <h3>เพิ่มวิสัยทัศน์ชีวิต</h3>
+      <div class="field"><label>ด้าน</label>
+        <select class="input" id="vision-input-category">
+    <option value="career">💼 อาชีพ/งาน</option>
+    <option value="health">💪 สุขภาพ</option>
+    <option value="relationship">💕 ความสัมพันธ์</option>
+    <option value="growth">🌱 พัฒนาตนเอง</option>
+    <option value="lifestyle">🌟 ไลฟ์สไตล์</option>
+    <option value="other">📦 อื่นๆ</option>
+  </select>
+</div>
+      <div class="field"><label>หัวข้อ</label>
+        <input class="input" id="vision-input-title" placeholder="เช่น เป็นศิลปินที่เลี้ยงตัวเองได้จากงานศิลปะ">
+      </div>
+      <div class="field"><label>รายละเอียด</label>
+        <textarea class="input" id="vision-input-desc" placeholder="อธิบายภาพที่อยากเห็นในอนาคต..."></textarea>
+      </div>
+      <div class="field"><label>⭐ ความสำคัญ</label>
+  <select class="input" id="vision-input-priority">
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important" selected>⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
+</div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeModal('vision-modal')">ยกเลิก</button>
+        <button class="btn" onclick="confirmSaveVision()">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Goal modal -->
+  <div class="modal-overlay" id="goal-modal">
+    <div class="modal">
+      <h3>เพิ่มเป้าหมาย</h3>
+      <div class="field"><label>หัวข้อ</label>
+        <input class="input" id="goal-input-title" placeholder="เช่น ปิดคอมมิชชัน 6 ชิ้นในเดือนนี้">
+      </div>
+    <div class="field"><label>หมวดหมู่</label>
+  <select class="input" id="goal-input-category">
+    <option value="career">💼 อาชีพ/งาน</option>
+    <option value="health">💪 สุขภาพ</option>
+    <option value="finance">💰 การเงิน</option>
+    <option value="skill">🎯 ทักษะ</option>
+    <option value="other">📦 อื่นๆ</option>
+  </select>
+</div>
+      <div class="field"><label>กำหนดเสร็จ (ถ้ามี)</label>
+        <input class="input" type="date" id="goal-input-date">
+      </div>
+      <div class="field"><label>โน้ต</label>
+        <textarea class="input" id="goal-input-note"></textarea>
+      </div>
+      <div class="field"><label>⭐ ความสำคัญ</label>
+  <select class="input" id="goal-input-priority">
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important" selected>⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
+</div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeModal('goal-modal')">ยกเลิก</button>
+        <button class="btn" onclick="confirmSaveGoal()">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finance modal -->
+<div class="modal-overlay" id="finance-modal">
+  <div class="modal">
+    <h3>เพิ่มเป้าหมายการเงิน</h3>
+    <div class="field"><label>ชื่อเป้าหมาย</label>
+      <input class="input" id="finance-input-name" placeholder="เช่น กองทุนฉุกเฉิน 3 เดือน">
+    </div>
+    <div class="field"><label>หมวดหมู่</label>
+      <select class="input" id="finance-input-category">
+        <option value="emergency">🚨 กองทุนฉุกเฉิน</option>
+        <option value="saving">🏦 ออมทรัพย์</option>
+        <option value="investment">📈 ลงทุน</option>
+        <option value="debt">💳 หนี้สิน</option>
+        <option value="income">💵 รายได้</option>
+        <option value="big_purchase">🛒 ของใหญ่/ช้อปปิ้ง</option>
+        <option value="other" selected>📦 อื่นๆ</option>
+      </select>
+    </div>
+    <div class="field"><label>เป้าหมาย (บาท)</label>
+      <input class="input" type="number" id="finance-input-target" placeholder="50000">
+    </div>
+    <div class="field"><label>เก็บได้แล้ว (บาท)</label>
+      <input class="input" type="number" id="finance-input-saved" placeholder="0">
+    </div>
+    <div class="field"><label>⭐ ความสำคัญ</label>
+  <select class="input" id="finance-input-priority">
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important" selected>⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
+</div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('finance-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveFinance()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Wishlist modal -->
+<div class="modal-overlay" id="wish-modal">
+  <div class="modal">
+    <h3>เพิ่มของที่อยากได้</h3>
+    <div class="field"><label>ชื่อสิ่งของ</label>
+      <input class="input" id="wish-input-name" placeholder="เช่น Xiaomi Pad 8 Pro">
+    </div>
+    <div class="field"><label>หมวดหมู่</label>
+      <select class="input" id="wish-input-category">
+        <option value="tech">📱 เทคโนโลยี</option>
+        <option value="art">🎨 อุปกรณ์ศิลปะ</option>
+        <option value="book">📚 หนังสือ</option>
+        <option value="clothing">👕 เสื้อผ้า/แฟชั่น</option>
+        <option value="home">🏠 ของใช้ในบ้าน</option>
+        <option value="food">🍽️ อาหาร/ของกิน</option>
+        <option value="experience">🎫 ประสบการณ์/ทริป</option>
+        <option value="other" selected>📦 อื่นๆ</option>
+      </select>
+    </div>
+    <div class="field"><label>ราคา (บาท)</label>
+      <input class="input" type="number" id="wish-input-price" placeholder="25000">
+    </div>
+    <div class="field"><label>ความสำคัญ</label>
+      <select class="input" id="wish-input-priority">
+        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+        <option value="important" selected>⭐⭐ สำคัญ (ไม่เร่ง)</option>
+        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+        <option value="low">☆ ทิ้ง/เลื่อน</option>
+      </select>
+    </div>
+    <div class="field"><label>ลิงก์ (ถ้ามี)</label>
+      <input class="input" id="wish-input-link" placeholder="https://...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('wish-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveWish()">บันทึก</button>
+    </div>
+  </div>
+</div>
+    <!-- Finance update modal -->
+  <div class="modal-overlay" id="finance-update-modal">
+    <div class="modal">
+      <h3>อัพเดตยอดเงิน</h3>
+      <div class="field">
+        <label>ยอดที่เก็บได้แล้ว (บาท)</label>
+        <input class="input" type="number" id="finance-update-amount" placeholder="0">
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeModal('finance-update-modal')">ยกเลิก</button>
+        <button class="btn" onclick="confirmUpdateFinance()">บันทึก</button>
+      </div>
+    </div>
+  </div>
+  <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="">
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" style="
+  position: fixed; bottom: 20px; right: 20px; 
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 12px 20px; border-radius: 10px; 
+  font-size: 13px; color: var(--text);
+  box-shadow: 0 8px 30px rgba(0,0,0,.5);
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.4s ease; z-index: 999;
+  max-width: 90%;
+"></div>
+</div>
+<script>
+// ==========================================================
+// สถาปัตยกรรม: แต่ละโมดูลมี store ของตัวเอง แยกขาดจากกัน
+// ไม่มี object กลางที่ทุกอย่างยัดรวม (เรียนรู้จากปัญหา tracker เดิม)
+// ==========================================================
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  // รีเซ็ต modal กลับสู่โหมดเพิ่มใหม่
+  if (id === 'vision-modal') resetVisionModal();
+  if (id === 'goal-modal') resetGoalModal();
+  if (id === 'finance-modal') resetFinanceModal();
+  if (id === 'wish-modal') resetWishModal();
+  if (id === 'ref-modal') resetRefModal();
+  if (id === 'finance-update-modal') {
+    pendingFinanceId = null;
+    document.getElementById('finance-update-amount').value = '';
+  }
+  clearEditMode();
+}
+
+// ---------- Navigation ----------
+const PAGES = [
+  { id: 'dashboard', label: '📊 Dashboard' },
+  { id: 'ref', label: '📁 Ref' },
+  { id: 'vision', label: '🗺️ Life Map' },
+  { id: 'goals', label: '🎯 Goals' },
+  { id: 'study', label: '📚 Study' },  // ← เพิ่ม
+  { id: 'projects', label: '📋 Projects' },
+  { id: 'finance', label: '💰 Finance & Wishlist' },
+  { id: 'settings', label: '⚙️ ตั้งค่า' }  // ← เพิ่มบรรทัดนี้
+];
+
+function renderNav() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = PAGES.map(p =>
+    `<button class="nav-btn" id="nav-${p.id}" onclick="switchPage('${p.id}')">${p.label}</button>`
+  ).join('');
+}
+
+function switchPage(pageId) {
+  PAGES.forEach(p => {
+    const pageEl = document.getElementById(`page-${p.id}`);
+    const navEl = document.getElementById(`nav-${p.id}`);
+    if (pageEl) pageEl.classList.remove('active');
+    if (navEl) navEl.classList.remove('active');
+  });
+  const pageEl = document.getElementById(`page-${pageId}`);
+  const navEl = document.getElementById(`nav-${pageId}`);
+  if (pageEl) pageEl.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  localStorage.setItem('last_active_page', pageId);
+}
+// ===== เปลี่ยนหน้า + ตั้งค่า filter =====
+function switchPageWithFilter(pageId, filterValue) {
+  switchPage(pageId);
+  
+  // ถ้าเป็นหน้า Goals และมี filter
+  if (pageId === 'goals' && filterValue) {
+    // รอให้หน้าโหลดแล้วค่อยตั้งค่า filter
+    setTimeout(() => {
+      const filterEl = document.getElementById('goal-status-filter');
+      if (filterEl) {
+        filterEl.value = filterValue;
+        renderGoals();
+        // Highlight เพื่อให้รู้ว่ากำลังกรอง
+        filterEl.style.borderColor = 'var(--accent)';
+        setTimeout(() => {
+          filterEl.style.borderColor = '';
+        }, 1500);
+      }
+    }, 100);
+  }
+  // เพิ่มกรณี Finance
+  if (pageId === 'finance' && filterValue) {
+    setTimeout(() => {
+      const filterEl = document.getElementById('finance-type-filter');
+      if (filterEl) {
+        filterEl.value = filterValue;
+        renderFinanceAndWish();
+        filterEl.style.borderColor = 'var(--accent)';
+        setTimeout(() => { filterEl.style.borderColor = ''; }, 1500);
+      }
+    }, 100);
+  }
+}
+
+// ==========================================================
+// DASHBOARD
+// ==========================================================
+function renderDashboard() {
+  const refs = getRefs();
+  const visions = getVisions();
+  const goals = getGoals();
+  const finances = getFinances();
+  const wishes = getWishes();
+  const studies = getStudies();
+  const projects = getProjects();
+  
+  // ===== สถิติ =====
+  document.getElementById('dash-ref-count').textContent = refs.length;
+  document.getElementById('dash-vision-count').textContent = visions.length;
+  document.getElementById('dash-goal-count').textContent = goals.length;
+  document.getElementById('dash-study-count').textContent = studies.length;
+  document.getElementById('dash-project-count').textContent = projects.length;
+  document.getElementById('dash-finance-count').textContent = finances.length;
+  document.getElementById('dash-wish-count').textContent = wishes.length;
+
+  // ===== สถิติความสำคัญ (Priority) =====
+function countPriority(items) {
+  const counts = { critical: 0, important: 0, urgent: 0, low: 0 };
+  items.forEach(i => {
+    const p = i.priority || 'important';
+    if (counts.hasOwnProperty(p)) counts[p]++;
+  });
+  return counts;
+}
+
+const visionPriority = countPriority(getVisions());
+const goalPriority = countPriority(getGoals());
+const financePriority = countPriority(getFinances());
+const wishPriority = countPriority(getWishes());
+const studyPriority = countPriority(getStudies());
+const projectPriority = countPriority(getProjects());
+
+// รวมทั้งหมด
+const totalPriority = { critical: 0, important: 0, urgent: 0, low: 0 };
+[visionPriority, goalPriority, financePriority, wishPriority, studyPriority, projectPriority].forEach(p => {
+  totalPriority.critical += p.critical;
+  totalPriority.important += p.important;
+  totalPriority.urgent += p.urgent;
+  totalPriority.low += p.low;
+});
+
+const priorityDiv = document.getElementById('dash-priority-stats');
+if (totalPriority.critical + totalPriority.important + totalPriority.urgent + totalPriority.low === 0) {
+  priorityDiv.innerHTML = `<span style="color:var(--muted);font-size:12px;">ยังไม่มีข้อมูล priority</span>`;
+} else {
+  priorityDiv.innerHTML = `
+  <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
+    <span style="font-size:11px;">⭐⭐⭐</span>
+    <span style="font-size:13px;font-weight:700;color:var(--accent);">${totalPriority.critical}</span>
+    <span style="font-size:9px;color:var(--muted);">เร่ง</span>
+  </div>
+  <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
+    <span style="font-size:11px;">⭐⭐</span>
+    <span style="font-size:13px;font-weight:700;color:var(--accent2);">${totalPriority.important}</span>
+    <span style="font-size:9px;color:var(--muted);">สำคัญ</span>
+  </div>
+  <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
+    <span style="font-size:11px;">⭐</span>
+    <span style="font-size:13px;font-weight:700;color:var(--green);">${totalPriority.urgent}</span>
+    <span style="font-size:9px;color:var(--muted);">ด่วน</span>
+  </div>
+  <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);opacity:0.5;">
+    <span style="font-size:11px;">☆</span>
+    <span style="font-size:13px;font-weight:700;color:var(--muted);">${totalPriority.low}</span>
+    <span style="font-size:9px;color:var(--muted);">ทิ้ง</span>
+  </div>
+`;
+}
+  
+  // ===== สถานะเป้าหมาย - คลิกไปที่ Goals พร้อม filter =====
+  const statusCount = { not_started: 0, in_progress: 0, done: 0 };
+  goals.forEach(g => statusCount[g.status]++);
+  
+  const statusDiv = document.getElementById('dash-goal-status');
+  if (goals.length === 0) {
+    statusDiv.innerHTML = `
+      <span style="color:var(--muted);font-size:13px;">ยังไม่มีเป้าหมาย</span>
+      <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+    `;
+  } else {
+    const totalGoals = goals.length;
+    const donePercent = Math.round((statusCount.done / totalGoals) * 100);
+    
+    statusDiv.innerHTML = `
+      <span class="status-badge status-not_started" onclick="switchPageWithFilter('goals', 'not_started')" title="คลิกเพื่อดูเป้าหมายที่ยังไม่เริ่ม">
+        ⏳ ยังไม่เริ่ม ${statusCount.not_started}
+      </span>
+      <span class="status-badge status-in_progress" onclick="switchPageWithFilter('goals', 'in_progress')" title="คลิกเพื่อดูเป้าหมายที่กำลังทำ">
+        🔄 กำลังทำ ${statusCount.in_progress}
+      </span>
+      <span class="status-badge status-done" onclick="switchPageWithFilter('goals', 'done')" title="คลิกเพื่อดูเป้าหมายที่สำเร็จแล้ว">
+        ✅ สำเร็จแล้ว ${statusCount.done}
+      </span>
+      <span style="font-size:11px;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--surface2);" onclick="switchPage('goals')">
+        รวม ${totalGoals} เป้าหมาย (${donePercent}% สำเร็จ) →
+      </span>
+    `;
+  }
+  
+  // ===== กิจกรรมล่าสุด =====
+  const recent = [];
+  
+  refs.slice(0, 5).forEach(i => recent.push({ 
+    type: '📁', 
+    label: 'Ref', 
+    title: i.note || 'รูปอ้างอิง', 
+    detail: i.board || 'uncategorized',
+    time: i.createdAt, 
+    module: 'ref', 
+    id: i.id 
+  }));
+  
+  visions.slice(0, 5).forEach(i => recent.push({ 
+    type: '🗺️', 
+    label: 'Vision', 
+    title: i.title, 
+    detail: VISION_CAT_LABELS[i.category] || i.category,
+    time: i.createdAt, 
+    module: 'vision', 
+    id: i.id 
+  }));
+  
+  goals.slice(0, 5).forEach(i => recent.push({ 
+    type: '🎯', 
+    label: 'Goal', 
+    title: i.title, 
+    detail: STATUS_LABELS[i.status] || i.status,
+    time: i.createdAt, 
+    module: 'goals', 
+    id: i.id 
+  }));
+  
+  studies.slice(0, 5).forEach(i => recent.push({ 
+    type: '📚', 
+    label: 'Study', 
+    title: i.title, 
+    detail: STUDY_STATUS_LABELS[i.status] || i.status,
+    time: i.createdAt, 
+    module: 'study', 
+    id: i.id 
+  }));
+  
+  projects.slice(0, 5).forEach(i => recent.push({ 
+    type: '📋', 
+    label: 'Project', 
+    title: i.title, 
+    detail: PROJECT_STATUS_LABELS[i.status] || i.status,
+    time: i.createdAt, 
+    module: 'projects', 
+    id: i.id 
+  }));
+  
+  finances.slice(0, 5).forEach(i => recent.push({ 
+    type: '💰', 
+    label: 'Finance', 
+    title: i.name, 
+    detail: FINANCE_CAT_LABELS[i.category] || i.category || 'อื่นๆ',
+    time: i.createdAt, 
+    module: 'finance', 
+    filter: 'finance',
+    id: i.id 
+  }));
+  
+  wishes.slice(0, 5).forEach(i => recent.push({ 
+    type: '🛍️', 
+    label: 'Wish', 
+    title: i.name, 
+    detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ',
+    time: i.createdAt, 
+    module: 'finance', 
+    filter: 'wishlist',
+    id: i.id 
+  }));
+  
+  // เรียงตามเวลา
+  recent.sort((a, b) => b.time.localeCompare(a.time));
+  const topRecent = recent.slice(0, 10);
+  
+  const recentDiv = document.getElementById('dash-recent');
+  if (topRecent.length === 0) {
+    recentDiv.innerHTML = `
+      <div class="empty" style="padding:20px 0;">
+        ยังไม่มีกิจกรรม
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openUploadWidget()">📁 เพิ่มรูปแรก</button>
+          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openVisionModal()">🗺️ เพิ่มวิสัยทัศน์แรก</button>
+          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">🎯 เพิ่มเป้าหมายแรก</button>
+          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openStudyModal()">📚 เพิ่มแผนเรียนแรก</button>
+          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openProjectModal()">📋 เพิ่มโปรเจกต์แรก</button>
+        </div>
+      </div>
+    `;
+  } else {
+    recentDiv.innerHTML = topRecent.map(r => `
+      <div class="dash-recent-item" onclick="${r.filter ? `switchPageWithFilter('${r.module}', '${r.filter}')` : `switchPage('${r.module}')`}">
+        <span style="font-size:12px;font-weight:600;">${r.type}</span>
+        <span style="font-size:12px;margin-left:4px;">${r.title}</span>
+        <span style="font-size:10px;color:var(--muted);margin-left:6px;">· ${r.detail}</span>
+        <span style="font-size:10px;color:var(--muted);float:right;">${getTimeAgo(r.time)}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// ===== Helper: แสดงเวลาผ่านไป =====
+function getTimeAgo(dateString) {
+  const now = new Date();
+  const past = new Date(dateString);
+  const diffMs = now - past;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'เมื่อสักครู่';
+  if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`;
+  if (diffHours < 24) return `${diffHours} ชั่วโมงที่แล้ว`;
+  if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
+  return past.toLocaleDateString('th-TH');
+}
+// ==========================================================
+// GLOBAL SEARCH
+// ==========================================================
+function globalSearch() {
+  const query = document.getElementById('global-search').value.toLowerCase().trim();
+  const results = document.getElementById('global-search-results');
+  if (!query) { results.innerHTML = ''; return; }
+  
+  const all = [];
+  getRefs().forEach(i => all.push({ 
+    type: '📁 Ref', 
+    title: i.note || 'รูป', 
+    detail: i.board || '',
+    match: (i.tags || []).join(' ') + ' ' + (i.note || '') + ' ' + (i.board || ''), 
+    id: i.id, 
+    module: 'ref' 
+  }));
+  getVisions().forEach(i => all.push({ 
+    type: '🗺️ Vision', 
+    title: i.title, 
+    detail: VISION_CAT_LABELS[i.category] || i.category,
+    match: (i.title || '') + ' ' + (i.desc || ''), 
+    id: i.id, 
+    module: 'vision' 
+  }));
+  getGoals().forEach(i => all.push({ 
+    type: '🎯 Goal', 
+    title: i.title, 
+    detail: STATUS_LABELS[i.status] || i.status,
+    match: (i.title || '') + ' ' + (i.note || ''), 
+    id: i.id, 
+    module: 'goals' 
+  }));
+  getFinances().forEach(i => all.push({ 
+    type: '💰 Finance', 
+    title: i.name, 
+    detail: FINANCE_CAT_LABELS[i.category] || i.category || 'อื่นๆ',
+    match: (i.name || '') + ' ' + (i.category || ''), 
+    id: i.id, 
+    module: 'finance' 
+  }));
+  getWishes().forEach(i => all.push({ 
+    type: '🛍️ Wish', 
+    title: i.name, 
+    detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ',
+    match: (i.name || '') + ' ' + (i.category || ''), 
+    id: i.id, 
+    module: 'finance' 
+  }));
+  
+  const found = all.filter(i => i.match.toLowerCase().includes(query));
+  results.innerHTML = found.length === 0 ? 
+    '<div style="color:var(--muted);font-size:13px;padding:12px;text-align:center;">ไม่พบผลลัพธ์</div>' :
+    found.slice(0, 10).map(i => `
+      <div class="dash-recent-item" onclick="switchPage('${i.module}')" style="margin-bottom:4px;">
+        <span style="font-size:12px;font-weight:600;">${i.type}</span>
+        <span style="font-size:12px;margin-left:4px;">${i.title}</span>
+        ${i.detail ? `<span style="font-size:10px;color:var(--muted);margin-left:6px;">· ${i.detail}</span>` : ''}
+      </div>
+    `).join('');
+}
+// ==========================================================
+// MODULE 1: Ref Library
+// RefItem { id, url, category, tags[], note, createdAt }
+// ==========================================================
+const REF_KEY = 'ref_library_items';
+let pendingUploadUrl = null; let pendingFinanceId = null;
+let editingId = null;
+let editingModule = null;
+
+function getRefs() { return JSON.parse(localStorage.getItem(REF_KEY) || '[]'); }
+function saveRefs(items) { localStorage.setItem(REF_KEY, JSON.stringify(items)); }
+
+function openUploadWidget() {
+  const widget = cloudinary.createUploadWidget({
+    cloud_name: 'und7u8m5',
+    upload_preset: 'zafp2wv4',
+    sources: ['local', 'url', 'camera'],
+    multiple: false,
+    maxFileSize: 10000000,
+  }, (error, result) => {
+    if (!error && result.event === 'success') {
+      pendingUploadUrl = result.info.secure_url;
+      document.getElementById('ref-modal-preview').src = pendingUploadUrl;
+      document.getElementById('ref-input-category').value = 'other';
+      document.getElementById('ref-input-tags').value = '';
+      document.getElementById('ref-input-note').value = '';
+      document.getElementById('ref-input-board').value = '';
+      document.getElementById('ref-modal').classList.add('show');
+    }
+  });
+  widget.open();
+}
+
+function confirmSaveRef() {
+  if (!pendingUploadUrl) return;
+    const item = {
+    id: Date.now(),
+    url: pendingUploadUrl,
+    category: document.getElementById('ref-input-category').value,
+    board: document.getElementById('ref-input-board').value.trim() || 'uncategorized',
+    tags: document.getElementById('ref-input-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+    note: document.getElementById('ref-input-note').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  const items = getRefs();
+  items.unshift(item);
+  saveRefs(items);
+  closeModal('ref-modal');
+  pendingUploadUrl = null;
+  renderRef();
+  renderDashboard();
+  showToast('✅ เพิ่มรูปอ้างอิงสำเร็จ', 'success');
+}
+
+function deleteRef(id) {
+  if (!confirm('ลบรูปนี้ออกจากคลัง? (รูปจริงบน Cloudinary จะยังอยู่)')) return;
+  saveRefs(getRefs().filter(i => i.id !== id));
+  renderRef();
+  renderDashboard();
+  showToast('🗑️ ลบรูปอ้างอิงแล้ว', 'error');
+}
+
+function openLightbox(url) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
+
+function renderRef() {
+  const grid = document.getElementById('ref-grid');
+  const empty = document.getElementById('ref-empty');
+  const search = document.getElementById('ref-search').value.toLowerCase();
+  const catFilter = document.getElementById('ref-cat-filter').value;
+  const boardFilter = document.getElementById('ref-board-filter').value;
+  const sortBy = document.getElementById('ref-sort').value;
+
+  let items = getRefs();
+  
+  // กรองตามหมวดหมู่
+  if (catFilter) items = items.filter(i => i.category === catFilter);
+  
+  // กรองตาม board
+  if (boardFilter) items = items.filter(i => (i.board || 'uncategorized') === boardFilter);
+  
+  // ค้นหา
+  if (search) items = items.filter(i =>
+    i.tags.some(t => t.toLowerCase().includes(search)) || 
+    i.note.toLowerCase().includes(search) ||
+    (i.board || '').toLowerCase().includes(search)
+  );
+  
+  // เรียงลำดับ
+  if (sortBy === 'newest') items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  else if (sortBy === 'oldest') items.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  else if (sortBy === 'az') items.sort((a, b) => (a.board || '').localeCompare(b.board || ''));
+  else if (sortBy === 'za') items.sort((a, b) => (b.board || '').localeCompare(a.board || ''));
+
+  grid.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'ref-card';
+    card.style.animation = 'fadeIn 0.3s ease';
+    card.innerHTML = `
+      <button class="del-x" style="position:absolute;top:4px;right:30px;background:rgba(0,0,0,.6);border-radius:5px;color:var(--accent);" onclick="editRef(${item.id})">✎</button>
+      <button class="del-x" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);border-radius:5px;" onclick="deleteRef(${item.id})">✕</button>
+      <img src="${item.url}" loading="lazy" onclick="openLightbox('${item.url}')">
+      <div class="meta">
+        <div style="color:var(--accent2);font-weight:600;">📁 ${item.board || 'uncategorized'}</div>
+        <div>${item.note || '<i>ไม่มีโน้ต</i>'}</div>
+        <div class="tags"><span class="tag">${item.category}</span>${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  // อัพเดต board tabs และ filter
+  updateBoardTabs();
+  updateBoardFilter();
+}
+function updateBoardTabs() {
+  const tabs = document.getElementById('ref-board-tabs');
+  const items = getRefs();
+  const boards = [...new Set(items.map(i => i.board || 'uncategorized'))];
+  const currentBoard = document.getElementById('ref-board-filter').value;
+  
+  tabs.innerHTML = `
+    <button class="btn secondary" style="font-size:11px;padding:4px 10px;${!currentBoard ? 'background:var(--accent);color:white;' : ''}" onclick="document.getElementById('ref-board-filter').value='';renderRef();">📁 ทั้งหมด (${items.length})</button>
+    ${boards.map(b => `
+      <button class="btn secondary" style="font-size:11px;padding:4px 10px;${currentBoard === b ? 'background:var(--accent);color:white;' : ''}" onclick="document.getElementById('ref-board-filter').value='${b}';renderRef();">
+        📁 ${b} (${items.filter(i => (i.board || 'uncategorized') === b).length})
+      </button>
+    `).join('')}
+  `;
+}
+
+function updateBoardFilter() {
+  const select = document.getElementById('ref-board-filter');
+  const items = getRefs();
+  const boards = [...new Set(items.map(i => i.board || 'uncategorized'))];
+  const currentValue = select.value;
+  select.innerHTML = `<option value="">📁 ทุก Board</option>` + 
+    boards.map(b => `<option value="${b}" ${b === currentValue ? 'selected' : ''}>📁 ${b}</option>`).join('');
+}
+
+// ==========================================================
+// MODULE 2: Life Map (Vision)
+// VisionItem { id, category, title, desc, createdAt }
+// ==========================================================
+const VISION_KEY = 'life_vision_items';
+const VISION_CAT_LABELS = {
+  career: '💼 อาชีพ/งาน',
+  health: '💪 สุขภาพ',
+  relationship: '💕 ความสัมพันธ์',
+  growth: '🌱 พัฒนาตนเอง',
+  lifestyle: '🌟 ไลฟ์สไตล์',
+  other: '📦 อื่นๆ'
+};
+function getVisions() { return JSON.parse(localStorage.getItem(VISION_KEY) || '[]'); }
+function saveVisions(items) { localStorage.setItem(VISION_KEY, JSON.stringify(items)); }
+
+function openVisionModal() {
+  document.getElementById('vision-input-category').value = 'career';  // default
+  document.getElementById('vision-input-title').value = '';
+  document.getElementById('vision-input-desc').value = '';
+  document.getElementById('vision-modal').classList.add('show');
+  document.getElementById('vision-input-priority').value = 'important';
+}
+
+function confirmSaveVision() {
+  const title = document.getElementById('vision-input-title').value.trim();
+  if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
+  const item = {
+    id: Date.now(),
+    category: document.getElementById('vision-input-category').value,  // บันทึกหมวดหมู่
+    title,
+    desc: document.getElementById('vision-input-desc').value.trim(),
+    priority: document.getElementById('vision-input-priority').value,  // บันทึกความสำคัญ
+    createdAt: new Date().toISOString()
+  };
+  const items = getVisions();
+  items.unshift(item);
+  saveVisions(items);
+  closeModal('vision-modal');
+  renderVision();
+  renderDashboard();  // ← เพิ่ม
+  showToast('✅ เพิ่มวิสัยทัศน์สำเร็จ', 'success');
+}
+
+function deleteVision(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  saveVisions(getVisions().filter(i => i.id !== id));
+  renderVision();
+  renderDashboard();  // ← เพิ่ม
+  showToast('🗑️ ลบวิสัยทัศน์แล้ว', 'error');
+}
+
+function renderVision() {
+  const list = document.getElementById('vision-list');
+  const empty = document.getElementById('vision-empty');
+  const catFilter = document.getElementById('vision-cat-filter').value;
+
+  let items = getVisions();
+  const priorityFilter = document.getElementById('vision-priority-filter').value;
+  if (priorityFilter) items = items.filter(i => i.priority === priorityFilter);
+  if (catFilter) items = items.filter(i => i.category === catFilter);
+
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const categoryLabel = VISION_CAT_LABELS[item.category] || item.category; // ← ใช้ VISION_CAT_LABELS
+    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    card.innerHTML = `
+  <div class="item-top">
+    <div>
+      <span class="item-cat">${categoryLabel}</span>
+      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+      <div class="item-title" style="margin-top:6px;">${item.title}</div>
+    </div>
+    <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
+      <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 6px;" onclick="editVision(${item.id})">✎</button>
+      <button class="del-x" style="font-size:16px;padding:2px 6px;" onclick="deleteVision(${item.id})">✕</button>
+    </div>
+  </div>
+  ${item.desc ? `<div class="item-desc">${item.desc}</div>` : ''}
+`;
+    list.appendChild(card);
+  });
+}
+
+// ==========================================================
+// MODULE 3: Goals
+// GoalItem { id, title, category, deadline, status, note, createdAt }
+// ==========================================================
+const GOAL_KEY = 'goals_items';
+const GOAL_CAT_LABELS = {
+  career: '💼 อาชีพ/งาน',
+  health: '💪 สุขภาพ',
+  finance: '💰 การเงิน',
+  skill: '🎯 ทักษะ',
+  other: '📦 อื่นๆ'
+};
+function getGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '[]'); }
+function saveGoals(items) { localStorage.setItem(GOAL_KEY, JSON.stringify(items)); }
+
+const STATUS_LABELS = { not_started: 'ยังไม่เริ่ม', in_progress: 'กำลังทำ', done: 'สำเร็จแล้ว' };
+
+function openGoalModal() {
+  document.getElementById('goal-input-title').value = '';
+  document.getElementById('goal-input-category').value = 'career';  // default
+  document.getElementById('goal-input-date').value = '';
+  document.getElementById('goal-input-note').value = '';
+  document.getElementById('goal-modal').classList.add('show');
+  document.getElementById('goal-input-priority').value = 'important';
+}
+
+function confirmSaveGoal() {
+  const title = document.getElementById('goal-input-title').value.trim();
+  if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
+  const item = {
+    id: Date.now(),
+    title,
+    category: document.getElementById('goal-input-category').value,  // บันทึกหมวดหมู่
+    deadline: document.getElementById('goal-input-date').value || null,
+    status: 'not_started',
+    note: document.getElementById('goal-input-note').value.trim(),
+    priority: document.getElementById('goal-input-priority').value,  // บันทึกความสำคัญ
+    createdAt: new Date().toISOString()
+  };
+  const items = getGoals();
+  items.unshift(item);
+  saveGoals(items);
+  closeModal('goal-modal');
+  renderGoals();
+  renderDashboard();  // ← เพิ่ม
+  showToast('✅ เพิ่มเป้าหมายสำเร็จ', 'success');
+}
+
+function cycleGoalStatus(id) {
+  const items = getGoals();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  const order = ['not_started', 'in_progress', 'done'];
+  item.status = order[(order.indexOf(item.status) + 1) % order.length];
+  saveGoals(items);
+  renderGoals();
+  renderDashboard();  // ← เพิ่ม
+}
+
+function deleteGoal(id) {
+  if (!confirm('ลบเป้าหมายนี้?')) return;
+  saveGoals(getGoals().filter(i => i.id !== id));
+  renderGoals();
+  renderDashboard();  // ← เพิ่ม
+  showToast('🗑️ ลบเป้าหมายแล้ว', 'error');
+}
+
+function renderGoals() {
+  const list = document.getElementById('goals-list');
+  const empty = document.getElementById('goals-empty');
+  const catFilter = document.getElementById('goal-cat-filter').value;
+  const statusFilter = document.getElementById('goal-status-filter').value;
+
+  let items = getGoals();
+  const priorityFilter = document.getElementById('goal-priority-filter').value;
+  if (priorityFilter) items = items.filter(i => i.priority === priorityFilter);
+  if (catFilter) items = items.filter(i => i.category === catFilter);
+  if (statusFilter) items = items.filter(i => i.status === statusFilter);
+
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const categoryLabel = GOAL_CAT_LABELS[item.category] || item.category; // ← ใช้ GOAL_CAT_LABELS
+    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    card.innerHTML = `
+  <div class="item-top">
+    <div>
+      <span class="item-cat">${categoryLabel}</span>
+      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+      <div class="item-title" style="margin-top:6px;">${item.title}</div>
+    </div>
+    <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
+      <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 6px;" onclick="editGoal(${item.id})">✎</button>
+      <button class="del-x" style="font-size:16px;padding:2px 6px;" onclick="deleteGoal(${item.id})">✕</button>
+    </div>
+  </div>
+  ${item.note ? `<div class="item-desc">${item.note}</div>` : ''}
+  <div class="item-footer">
+    <span class="item-date">${item.deadline ? '📅 ' + item.deadline : 'ไม่มีกำหนด'}</span>
+    <span class="status-badge status-${item.status}" style="cursor:pointer;" onclick="cycleGoalStatus(${item.id})">${STATUS_LABELS[item.status]} (คลิกเปลี่ยน)</span>
+  </div>
+`;
+    list.appendChild(card);
+  });
+}
+
+// ==========================================================
+// MODULE 4: Finance
+// FinanceItem { id, name, target, saved, createdAt }
+// ==========================================================
+const FINANCE_KEY = 'finance_items';
+const FINANCE_CAT_LABELS = {
+  emergency: '🚨 กองทุนฉุกเฉิน',
+  saving: '🏦 ออมทรัพย์',
+  investment: '📈 ลงทุน',
+  debt: '💳 หนี้สิน',
+  income: '💵 รายได้',
+  big_purchase: '🛒 ของใหญ่/ช้อปปิ้ง',
+  other: '📦 อื่นๆ'
+};
+function getFinances() { return JSON.parse(localStorage.getItem(FINANCE_KEY) || '[]'); }
+function saveFinances(items) { localStorage.setItem(FINANCE_KEY, JSON.stringify(items)); }
+
+function openFinanceModal() {
+  document.getElementById('finance-input-name').value = '';
+  document.getElementById('finance-input-category').value = 'other';
+  document.getElementById('finance-input-target').value = '';
+  document.getElementById('finance-input-saved').value = '';
+  document.getElementById('finance-input-priority').value = 'important';
+  document.getElementById('finance-modal').classList.add('show');
+}
+
+function confirmSaveFinance() {
+  const name = document.getElementById('finance-input-name').value.trim();
+  const target = parseFloat(document.getElementById('finance-input-target').value);
+  if (!name || isNaN(target) || target <= 0) { alert('กรุณาใส่ชื่อและเป้าหมายที่ถูกต้อง'); return; }
+  const item = {
+    id: Date.now(),
+    name,
+    category: document.getElementById('finance-input-category').value,
+    target,
+    saved: parseFloat(document.getElementById('finance-input-saved').value) || 0,
+    createdAt: new Date().toISOString(),
+    priority: document.getElementById('finance-input-priority').value,
+  };
+  const items = getFinances();
+  items.unshift(item);
+  saveFinances(items);
+  closeModal('finance-modal');
+  renderFinanceAndWish();
+  renderDashboard();  // ← เพิ่ม
+  showToast('✅ เพิ่มเป้าหมายการเงินสำเร็จ', 'success');
+}
+
+function updateFinanceSaved(id) {
+  pendingFinanceId = id;
+  const items = getFinances();
+  const item = items.find(i => i.id === id);
+  document.getElementById('finance-update-amount').value = item ? item.saved : 0;
+  document.getElementById('finance-update-modal').classList.add('show');
+}
+
+function confirmUpdateFinance() {
+  if (pendingFinanceId === null) return;
+  const val = parseFloat(document.getElementById('finance-update-amount').value);
+  if (isNaN(val) || val < 0) { alert('กรุณาใส่ตัวเลขที่ถูกต้อง'); return; }
+  const items = getFinances();
+  const item = items.find(i => i.id === pendingFinanceId);
+  if (item) { item.saved = val; saveFinances(items); renderFinanceAndWish(); renderDashboard();
+    showToast('✅ อัพเดตยอดเงินเรียบร้อย', 'success');
+   }
+  closeModal('finance-update-modal');
+  pendingFinanceId = null;
+}
+
+function deleteFinance(id) {
+  if (!confirm('ลบเป้าหมายการเงินนี้?')) return;
+  saveFinances(getFinances().filter(i => i.id !== id));
+  renderFinanceAndWish();
+  renderDashboard();  // ← เพิ่ม
+}
+
+function renderFinance() {
+  const list = document.getElementById('finance-list');
+  const empty = document.getElementById('finance-empty');
+  const items = getFinances();
+
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+
+  items.forEach(item => {
+    const pct = Math.min(100, (item.saved / item.target) * 100);
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    card.innerHTML = `
+      <div class="item-top">
+        <div class="item-title">${item.name}</div>
+        <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+        <button class="del-x" style="color:var(--accent);" onclick="editFinance(${item.id})">✎</button>
+        <button class="del-x" onclick="deleteFinance(${item.id})">✕</button>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="progress-label">${item.saved.toLocaleString()} / ${item.target.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
+      <div class="item-footer">
+        <span></span>
+        <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateFinanceSaved(${item.id})">อัพเดตยอด</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+function renderFinanceSummary() {
+  const finances = getFinances();
+  
+  const totalTarget = finances.reduce((sum, f) => sum + f.target, 0);
+  const totalSaved = finances.reduce((sum, f) => sum + f.saved, 0);
+  const avgProgress = finances.length > 0 
+    ? Math.round(finances.reduce((sum, f) => sum + Math.min(100, (f.saved / f.target) * 100), 0) / finances.length)
+    : 0;
+  const completed = finances.filter(f => f.saved >= f.target).length;
+  
+  document.getElementById('finance-total-target').textContent = totalTarget.toLocaleString();
+  document.getElementById('finance-total-saved').textContent = totalSaved.toLocaleString();
+  document.getElementById('finance-avg-progress').textContent = avgProgress + '%';
+  document.getElementById('finance-completed').textContent = completed;
+}
+
+// ==========================================================
+// MODULE 5: Wishlist
+// WishItem { id, name, price, priority, link, bought, createdAt }
+// ==========================================================
+const WISH_KEY = 'wishlist_items';
+const WISH_CAT_LABELS = {
+  tech: '📱 เทคโนโลยี',
+  art: '🎨 อุปกรณ์ศิลปะ',
+  book: '📚 หนังสือ',
+  clothing: '👕 เสื้อผ้า/แฟชั่น',
+  home: '🏠 ของใช้ในบ้าน',
+  food: '🍽️ อาหาร/ของกิน',
+  experience: '🎫 ประสบการณ์/ทริป',
+  other: '📦 อื่นๆ'
+};
+function getWishes() {
+  const items = JSON.parse(localStorage.getItem(WISH_KEY) || '[]');
+  return items.map(i => {
+    if (i.priority && !PRIORITY_LABELS[i.priority]) {
+      const map = { high: 'critical', medium: 'important', low: 'low' };
+      i.priority = map[i.priority] || 'important';
+    }
+    if (!i.priority) i.priority = 'important';
+    return i;
+  });
+}
+function saveWishes(items) { localStorage.setItem(WISH_KEY, JSON.stringify(items)); }
+
+
+function openWishModal() {
+  document.getElementById('wish-input-name').value = '';
+  document.getElementById('wish-input-category').value = 'other';
+  document.getElementById('wish-input-price').value = '';
+  document.getElementById('wish-input-priority').value = 'medium';
+  document.getElementById('wish-input-link').value = '';
+  document.getElementById('wish-modal').classList.add('show');
+  document.getElementById('wish-input-priority').value = 'important';
+}
+
+function confirmSaveWish() {
+  const name = document.getElementById('wish-input-name').value.trim();
+  if (!name) { alert('กรุณาใส่ชื่อสิ่งของ'); return; }
+  const item = {
+    id: Date.now(),
+    name,
+    category: document.getElementById('wish-input-category').value,
+    price: parseFloat(document.getElementById('wish-input-price').value) || 0,
+    priority: document.getElementById('wish-input-priority').value,
+    link: document.getElementById('wish-input-link').value.trim(),
+    bought: false,
+    createdAt: new Date().toISOString()
+  };
+  const items = getWishes();
+  items.unshift(item);
+  saveWishes(items);
+  closeModal('wish-modal');
+  renderFinanceAndWish();
+  renderDashboard();  // ← เพิ่ม
+  showToast('✅ เพิ่มรายการ wishlist สำเร็จ', 'success');
+}
+
+function toggleBought(id) {
+  const items = getWishes();
+  const item = items.find(i => i.id === id);
+  if (item) { item.bought = !item.bought; saveWishes(items); renderFinanceAndWish(); renderDashboard();
+  showToast(item.bought ? '✅ ทำเครื่องหมายว่าซื้อแล้ว' : '↩️ ยกเลิกสถานะซื้อ', 'info'); }
+}
+
+function deleteWish(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  saveWishes(getWishes().filter(i => i.id !== id));
+  renderFinanceAndWish();
+  renderDashboard();  // ← เพิ่ม
+}
+function renderFinanceAndWish() {
+  const list = document.getElementById('finance-list');
+  const empty = document.getElementById('finance-empty');
+  const filter = document.getElementById('finance-type-filter').value;
+
+  let financeItems = getFinances();
+  let wishItems = getWishes();
+  const priorityFilter = document.getElementById('finance-priority-filter').value;
+  if (priorityFilter) {
+  financeItems = financeItems.filter(i => i.priority === priorityFilter);
+  wishItems = wishItems.filter(i => i.priority === priorityFilter);
+}
+  
+  let combined = [];
+
+  // เตรียมข้อมูล Finance
+  if (filter === 'all' || filter === 'finance') {
+    financeItems.forEach(item => {
+      const pct = Math.min(100, (item.saved / item.target) * 100);
+      combined.push({
+        type: 'finance',
+        id: item.id,
+        title: item.name,
+        detail: `${FINANCE_CAT_LABELS[item.category] || item.category} · ${item.saved.toLocaleString()} / ${item.target.toLocaleString()} บาท (${pct.toFixed(0)}%)`,
+        progress: pct,
+        raw: item,
+        html: `
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <div class="progress-label">${item.saved.toLocaleString()} / ${item.target.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
+          <div class="item-footer">
+            <span></span>
+            <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateFinanceSaved(${item.id})">อัพเดตยอด</button>
+          </div>
+        `
+      });
+    });
+    renderFinanceSummary();  // ← เพิ่มตอนท้าย
+  }
+
+  // เตรียมข้อมูล Wishlist
+  if (filter === 'all' || filter === 'wishlist') {
+    wishItems.forEach(item => {
+      combined.push({
+        type: 'wishlist',
+        id: item.id,
+        title: item.name + (item.bought ? ' ✅' : ''),
+        detail: `${WISH_CAT_LABELS[item.category] || item.category || 'อื่นๆ'} · ${item.price ? item.price.toLocaleString() + ' บาท' : 'ไม่มีราคา'} · ${PRIORITY_LABELS[item.priority]}`,
+        progress: item.bought ? 100 : 0,
+        raw: item,
+        html: `
+          <div class="item-footer">
+            ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ดูลิงก์</a>` : '<span></span>'}
+            <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="toggleBought(${item.id})">${item.bought ? '↩ ยังไม่ได้ซื้อ' : '✓ ซื้อแล้ว'}</button>
+          </div>
+        `
+      });
+    });
+  }
+
+  // เรียงลำดับตาม createdAt (ใหม่สุดขึ้นก่อน)
+  combined.sort((a, b) => b.raw.createdAt.localeCompare(a.raw.createdAt));
+
+  list.innerHTML = '';
+  empty.style.display = combined.length === 0 ? 'block' : 'none';
+
+  combined.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    card.style.opacity = (item.type === 'wishlist' && item.raw.bought) ? '0.5' : '1';
+    card.innerHTML = `
+      <div class="item-top">
+        <div>
+          <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+          <span class="item-cat" style="background:${item.type === 'finance' ? 'rgba(78,203,113,.15)' : 'rgba(200,169,110,.15)'}; color:${item.type === 'finance' ? 'var(--green)' : 'var(--accent2)'}">
+            ${item.type === 'finance' ? '💰 การเงิน' : '🛍️ Wishlist'}
+          </span>
+          <div class="item-title" style="margin-top:6px; ${item.type === 'wishlist' && item.raw.bought ? 'text-decoration:line-through;' : ''}">${item.title}</div>
+        </div>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="${item.type === 'finance' ? `editFinance(${item.id})` : `editWish(${item.id})`}">✎</button>
+          <button class="del-x" style="font-size:16px;" onclick="${item.type === 'finance' ? `deleteFinance(${item.id})` : `deleteWish(${item.id})`}">✕</button>
+        </div>
+      </div>
+      <div class="item-desc">${item.detail}</div>
+      ${item.html}
+    `;
+    list.appendChild(card);
+  });
+}
+// ==========================================================
+// MODULE: Study Plan
+// ==========================================================
+const STUDY_KEY = 'study_items';
+function getStudies() { return JSON.parse(localStorage.getItem(STUDY_KEY) || '[]'); }
+function saveStudies(items) { localStorage.setItem(STUDY_KEY, JSON.stringify(items)); }
+
+const STUDY_CAT_LABELS = {
+  art: '🎨 ศิลปะ',
+  coding: '💻 โค้ดดิ้ง',
+  language: '🌍 ภาษา',
+  music: '🎵 ดนตรี',
+  fitness: '💪 ฟิตเนส',
+  other: '📦 อื่นๆ'
+};
+
+const STUDY_STATUS_LABELS = {
+  planning: '📝 วางแผน',
+  studying: '📖 กำลังเรียน',
+  completed: '✅ เสร็จแล้ว'
+};
+
+function openStudyModal() {
+  document.getElementById('study-input-title').value = '';
+  document.getElementById('study-input-category').value = 'other';
+  document.getElementById('study-input-goal').value = '';
+  document.getElementById('study-input-note').value = '';
+  document.getElementById('study-modal').classList.add('show');
+  document.getElementById('study-input-priority').value = 'important';
+}
+
+function confirmSaveStudy() {
+  const title = document.getElementById('study-input-title').value.trim();
+  if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
+  const item = {
+    id: Date.now(),
+    title,
+    category: document.getElementById('study-input-category').value,
+    goal: document.getElementById('study-input-goal').value.trim(),
+    note: document.getElementById('study-input-note').value.trim(),
+    priority: document.getElementById('study-input-priority').value,
+    status: 'planning',
+    createdAt: new Date().toISOString()
+  };
+  const items = getStudies();
+  items.unshift(item);
+  saveStudies(items);
+  closeModal('study-modal');
+  renderStudy();
+  showToast('✅ เพิ่มแผนเรียนสำเร็จ', 'success');
+}
+
+function cycleStudyStatus(id) {
+  const items = getStudies();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  const order = ['planning', 'studying', 'completed'];
+  item.status = order[(order.indexOf(item.status) + 1) % order.length];
+  saveStudies(items);
+  renderStudy();
+  showToast(`📖 เปลี่ยนสถานะเป็น ${STUDY_STATUS_LABELS[item.status]}`, 'info');
+}
+
+function deleteStudy(id) {
+  if (!confirm('ลบแผนเรียนนี้?')) return;
+  saveStudies(getStudies().filter(i => i.id !== id));
+  renderStudy();
+  showToast('🗑️ ลบแผนเรียนแล้ว', 'error');
+}
+
+function renderStudy() {
+  const list = document.getElementById('study-list');
+  const empty = document.getElementById('study-empty');
+  const statusFilter = document.getElementById('study-status-filter').value;
+
+  let items = getStudies();
+  const priorityFilter = document.getElementById('study-priority-filter').value;
+  if (priorityFilter) items = items.filter(i => i.priority === priorityFilter);
+  if (statusFilter) items = items.filter(i => i.status === statusFilter);
+
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    card.innerHTML = `
+      <div class="item-top">
+        <div>
+          <span class="item-cat">${STUDY_CAT_LABELS[item.category] || item.category}</span>
+          <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+          <div class="item-title" style="margin-top:6px;">${item.title}</div>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button class="del-x" style="color:var(--accent);" onclick="editStudy(${item.id})">✎</button>
+          <button class="del-x" onclick="deleteStudy(${item.id})">✕</button>
+        </div>
+      </div>
+      ${item.goal ? `<div class="item-desc">🎯 ${item.goal}</div>` : ''}
+      ${item.note ? `<div class="item-desc">${item.note}</div>` : ''}
+      <div class="item-footer">
+        <span class="item-date">📅 ${new Date(item.createdAt).toLocaleDateString('th-TH')}</span>
+        <span class="status-badge status-${item.status === 'completed' ? 'done' : item.status === 'studying' ? 'in_progress' : 'not_started'}" style="cursor:pointer;" onclick="cycleStudyStatus(${item.id})">${STUDY_STATUS_LABELS[item.status]} (คลิกเปลี่ยน)</span>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+// Edit Study
+function editStudy(id) {
+  const item = getStudies().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('study-input-title').value = item.title;
+  document.getElementById('study-input-category').value = item.category || 'other';
+  document.getElementById('study-input-goal').value = item.goal || '';
+  document.getElementById('study-input-note').value = item.note || '';
+  document.getElementById('study-input-priority').value = item.priority || 'important';
+  document.getElementById('study-modal').querySelector('h3').textContent = 'แก้ไขแผนเรียน';
+  document.getElementById('study-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditStudy;
+  setEditMode('study', id);
+  document.getElementById('study-modal').classList.add('show');
+}
+
+function confirmEditStudy() {
+  if (editingId === null) return;
+  const title = document.getElementById('study-input-title').value.trim();
+  if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
+  const items = getStudies();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.title = title;
+    item.category = document.getElementById('study-input-category').value;
+    item.goal = document.getElementById('study-input-goal').value.trim();
+    item.note = document.getElementById('study-input-note').value.trim();
+    item.priority = document.getElementById('study-input-priority').value;
+    saveStudies(items);
+  }
+  closeModal('study-modal');
+  resetStudyModal();
+  clearEditMode();
+  renderStudy();
+  showToast('✅ แก้ไขแผนเรียนสำเร็จ', 'success');
+}
+
+function resetStudyModal() {
+  document.getElementById('study-modal').querySelector('h3').textContent = 'เพิ่มแผนเรียน';
+  document.getElementById('study-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveStudy;
+  document.getElementById('study-input-title').value = '';
+  document.getElementById('study-input-category').value = 'other';
+  document.getElementById('study-input-goal').value = '';
+  document.getElementById('study-input-note').value = '';
+  document.getElementById('study-input-priority').value = 'important';
+}
+// ==========================================================
+// MODULE: Project Board
+// ==========================================================
+const PROJECT_KEY = 'project_items';
+function getProjects() {
+  const items = JSON.parse(localStorage.getItem(PROJECT_KEY) || '[]');
+  return items.map(i => {
+    // แปลง priority เก่าเป็นใหม่
+    if (i.priority && !PRIORITY_LABELS[i.priority]) {
+      const map = { high: 'critical', medium: 'important', low: 'low' };
+      i.priority = map[i.priority] || 'important';
+    }
+    if (!i.priority) i.priority = 'important';
+    return i;
+  });
+}
+function saveProjects(items) { localStorage.setItem(PROJECT_KEY, JSON.stringify(items)); }
+
+const PROJECT_STATUS_LABELS = {
+  planning: '📝 วางแผน',
+  active: '🚀 กำลังทำ',
+  review: '🔍 ทบทวน',
+  done: '✅ เสร็จแล้ว',
+};
+const PRIORITY_LABELS = {
+  critical: '⭐⭐⭐ สำคัญ+เร่งด่วน',
+  important: '⭐⭐ สำคัญ (ไม่เร่ง)',
+  urgent: '⭐ เร่งด่วน (ไม่สำคัญ)',
+  low: '☆ ทิ้ง/เลื่อน'
+};
+const PRIORITY_ORDER = ['critical', 'important', 'urgent', 'low'];
+
+const PROJECT_STATUS_ORDER = ['planning', 'active', 'review', 'done'];
+function renderRelationCheckboxes(selectedIds = {}) {
+  const container = document.getElementById('project-relations-container');
+  if (!container) return;
+  
+  const visions = getVisions();
+  const goals = getGoals();
+  const studies = getStudies();
+  const refs = getRefs();
+  const finances = getFinances();
+  const wishes = getWishes();
+  
+  let html = '';
+  
+  // Life Map
+  if (visions.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent);margin-top:2px;">🗺️ Life Map</div>`;
+    visions.forEach(v => {
+      const checked = (selectedIds.visionIds || []).includes(v.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="vision" value="${v.id}" ${checked}> ${v.title}</label>`;
+    });
+  }
+  
+  // Goals
+  if (goals.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent2);margin-top:2px;">🎯 Goals</div>`;
+    goals.forEach(g => {
+      const checked = (selectedIds.goalIds || []).includes(g.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="goal" value="${g.id}" ${checked}> ${g.title}</label>`;
+    });
+  }
+  
+  // Study
+  if (studies.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent);margin-top:2px;">📚 Study</div>`;
+    studies.forEach(s => {
+      const checked = (selectedIds.studyIds || []).includes(s.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="study" value="${s.id}" ${checked}> ${s.title}</label>`;
+    });
+  }
+  
+  // Ref
+  if (refs.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent2);margin-top:2px;">📁 Ref Library</div>`;
+    refs.forEach(r => {
+      const checked = (selectedIds.refIds || []).includes(r.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="ref" value="${r.id}" ${checked}> ${r.note || r.board || 'รูป'}</label>`;
+    });
+  }
+  
+  // Finance
+  if (finances.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--green);margin-top:2px;">💰 Finance</div>`;
+    finances.forEach(f => {
+      const checked = (selectedIds.financeIds || []).includes(f.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="finance" value="${f.id}" ${checked}> ${f.name}</label>`;
+    });
+  }
+  
+  // Wishlist
+  if (wishes.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent2);margin-top:2px;">🛍️ Wishlist</div>`;
+    wishes.forEach(w => {
+      const checked = (selectedIds.wishIds || []).includes(w.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="wish" value="${w.id}" ${checked}> ${w.name}</label>`;
+    });
+  }
+  
+  if (!visions.length && !goals.length && !studies.length && !refs.length && !finances.length && !wishes.length) {
+    html = `<div style="grid-column:1/-1;color:var(--muted);font-size:12px;">ยังไม่มีข้อมูลในโมดูลอื่นๆ สร้างข้อมูลก่อนแล้วค่อยกลับมาเชื่อมโยง</div>`;
+  }
+  
+  container.innerHTML = html;
+}
+
+function getSelectedRelations() {
+  const container = document.getElementById('project-relations-container');
+  if (!container) return {};
+  
+  const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+  const result = { visionIds: [], goalIds: [], studyIds: [], refIds: [], financeIds: [], wishIds: [] };
+  
+  checkboxes.forEach(cb => {
+    const type = cb.dataset.type;
+    const id = parseInt(cb.value);
+    if (type === 'vision') result.visionIds.push(id);
+    else if (type === 'goal') result.goalIds.push(id);
+    else if (type === 'study') result.studyIds.push(id);
+    else if (type === 'ref') result.refIds.push(id);
+    else if (type === 'finance') result.financeIds.push(id);
+    else if (type === 'wish') result.wishIds.push(id);
+  });
+  
+  return result;
+}
+function openProjectModal() {
+  document.getElementById('project-input-title').value = '';
+  document.getElementById('project-input-desc').value = '';
+  document.getElementById('project-input-deadline').value = '';
+  document.getElementById('project-input-note').value = '';
+  document.getElementById('project-input-priority').value = 'important';
+  document.getElementById('project-input-progress').value = 0;
+  document.getElementById('project-progress-label').textContent = '0%';
+  document.getElementById('project-input-startdate').value = '';
+  document.getElementById('project-input-tags').value = '';
+  renderRelationCheckboxes([]);
+  document.getElementById('project-modal').querySelector('h3').textContent = '📋 เพิ่มโปรเจกต์ใหม่';
+  document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveProject;
+  document.getElementById('project-modal').classList.add('show');
+}
+
+function confirmSaveProject() {
+  const title = document.getElementById('project-input-title').value.trim();
+  if (!title) { alert('กรุณาใส่ชื่อโปรเจกต์'); return; }
+  
+  const relations = getSelectedRelations();
+  
+  const item = {
+    id: Date.now(),
+    title,
+    desc: document.getElementById('project-input-desc').value.trim(),
+    deadline: document.getElementById('project-input-deadline').value || null,
+    note: document.getElementById('project-input-note').value.trim(),
+    priority: document.getElementById('project-input-priority').value,
+    progress: parseInt(document.getElementById('project-input-progress').value) || 0,
+    startDate: document.getElementById('project-input-startdate').value || null,
+    tags: document.getElementById('project-input-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+    status: 'planning',
+    ...relations,
+    createdAt: new Date().toISOString()
+  };
+  const items = getProjects();
+  items.unshift(item);
+  saveProjects(items);
+  closeModal('project-modal');
+  renderProjects();
+  renderDashboard();
+  showToast('✅ เพิ่มโปรเจกต์สำเร็จ', 'success');
+}
+
+function cycleProjectStatus(id) {
+  const items = getProjects();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  const idx = PROJECT_STATUS_ORDER.indexOf(item.status);
+  item.status = PROJECT_STATUS_ORDER[(idx + 1) % PROJECT_STATUS_ORDER.length];
+  saveProjects(items);
+  renderProjects();
+  renderDashboard();
+  showToast(`📋 เปลี่ยนสถานะเป็น ${PROJECT_STATUS_LABELS[item.status]}`, 'info');
+}
+
+function deleteProject(id) {
+  if (!confirm('ลบโปรเจกต์นี้?')) return;
+  saveProjects(getProjects().filter(i => i.id !== id));
+  renderProjects();
+  renderDashboard();
+  showToast('🗑️ ลบโปรเจกต์แล้ว', 'error');
+}
+
+function renderProjects() {
+  const list = document.getElementById('projects-list');
+  const empty = document.getElementById('projects-empty');
+  const statusFilter = document.getElementById('project-status-filter').value;
+
+  let items = getProjects();
+  const priorityFilter = document.getElementById('project-priority-filter').value;
+  if (priorityFilter) items = items.filter(i => i.priority === priorityFilter);
+  if (statusFilter) items = items.filter(i => i.status === statusFilter);
+
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const statusLabel = PROJECT_STATUS_LABELS[item.status] || item.status;
+    const statusClass = item.status === 'done' ? 'status-done' : 
+                        item.status === 'active' ? 'status-in_progress' : 'status-not_started';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    const totalRelations = (item.visionIds?.length || 0) + (item.goalIds?.length || 0) + 
+                           (item.studyIds?.length || 0) + (item.refIds?.length || 0) +
+                           (item.financeIds?.length || 0) + (item.wishIds?.length || 0);
+    
+    card.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <span class="item-cat" style="background:${item.status === 'done' ? 'rgba(78,203,113,.15)' : item.status === 'active' ? 'rgba(200,169,110,.15)' : 'rgba(138,135,152,.15)'}; color:${item.status === 'done' ? 'var(--green)' : item.status === 'active' ? 'var(--accent2)' : 'var(--muted)'}">
+              ${statusLabel}
+            </span>
+            <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+            ${item.tags?.slice(0,3).map(t => `<span class="tag" style="background:rgba(200,169,110,.10);color:var(--accent2);font-size:8px;padding:1px 6px;">#${t}</span>`).join('') || ''}
+            ${totalRelations > 0 ? `<span class="tag" style="background:rgba(78,203,113,.12);color:var(--green);font-size:8px;">🔗 ${totalRelations}</span>` : ''}
+          </div>
+          <div class="item-title" style="margin-top:4px;cursor:pointer;" onclick="openProjectDetail(${item.id})">${item.title}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          <button class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openProjectDetail(${item.id})">📋</button>
+          <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 4px;" onclick="editProject(${item.id})">✎</button>
+          <button class="del-x" style="font-size:16px;padding:2px 4px;" onclick="deleteProject(${item.id})">✕</button>
+        </div>
+      </div>
+      ${item.desc ? `<div class="item-desc" style="font-size:12px;cursor:pointer;" onclick="openProjectDetail(${item.id})">${item.desc}</div>` : ''}
+      <div style="margin-top:6px;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
+          <span>ความคืบหน้า</span>
+          <span>${item.progress || 0}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${item.progress || 0}%;transition:width 0.5s;"></div></div>
+      </div>
+      <div class="item-footer">
+        <span class="item-date">${item.deadline ? '📅 ' + new Date(item.deadline).toLocaleDateString('th-TH') : 'ไม่มีกำหนด'}</span>
+        <span class="status-badge ${statusClass}" style="cursor:pointer;" onclick="cycleProjectStatus(${item.id})">${statusLabel} ↻</span>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+let detailProjectId = null;
+
+function openProjectDetail(id) {
+  const project = getProjects().find(p => p.id === id);
+  if (!project) { showToast('❌ ไม่พบโปรเจกต์', 'error'); return; }
+  detailProjectId = id;
+  
+  // ดึงข้อมูลที่เกี่ยวข้อง
+  const visions = getVisions().filter(v => (project.visionIds || []).includes(v.id));
+  const goals = getGoals().filter(g => (project.goalIds || []).includes(g.id));
+  const studies = getStudies().filter(s => (project.studyIds || []).includes(s.id));
+  const refs = getRefs().filter(r => (project.refIds || []).includes(r.id));
+  const finances = getFinances().filter(f => (project.financeIds || []).includes(f.id));
+  const wishes = getWishes().filter(w => (project.wishIds || []).includes(w.id));
+  
+  const content = document.getElementById('project-detail-content');
+  document.getElementById('project-detail-title').textContent = project.title;
+  
+  let html = `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+      <span class="status-badge ${project.status === 'done' ? 'status-done' : project.status === 'active' ? 'status-in_progress' : 'status-not_started'}">${PROJECT_STATUS_LABELS[project.status]}</span>
+      <span class="status-badge" style="background:rgba(124,110,245,.12);color:var(--accent);">${PROJECT_PRIORITY_LABELS[project.priority] || '🟡 ปานกลาง'}</span>
+      ${(project.tags || []).map(t => `<span class="tag" style="background:rgba(200,169,110,.12);color:var(--accent2);padding:2px 8px;border-radius:10px;font-size:9px;">#${t}</span>`).join('')}
+    </div>
+    
+    <div style="color:var(--muted);font-size:13px;margin-bottom:10px;">${project.desc || 'ไม่มีคำอธิบาย'}</div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:var(--muted);margin-bottom:10px;background:var(--surface2);padding:8px 12px;border-radius:8px;">
+      ${project.startDate ? `<span>📅 เริ่ม: ${new Date(project.startDate).toLocaleDateString('th-TH')}</span>` : ''}
+      ${project.deadline ? `<span>📅 กำหนด: ${new Date(project.deadline).toLocaleDateString('th-TH')}</span>` : ''}
+      <span>📊 ความคืบหน้า: ${project.progress || 0}%</span>
+      <span>🔗 เชื่อมโยง: ${(project.visionIds?.length||0)+(project.goalIds?.length||0)+(project.studyIds?.length||0)+(project.refIds?.length||0)+(project.financeIds?.length||0)+(project.wishIds?.length||0)} รายการ</span>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:6px;">
+  `;
+  
+  // Life Map
+  if (visions.length) {
+    html += `<div class="project-detail-card"><div class="label">🗺️ Life Map</div><div class="value">${visions.map(v => `<span class="relation-tag vision" onclick="switchPage('vision')">${v.title}</span>`).join('')}</div></div>`;
+  }
+  
+  // Goals
+  if (goals.length) {
+    html += `<div class="project-detail-card"><div class="label">🎯 Goals</div><div class="value">${goals.map(g => `<span class="relation-tag goal" onclick="switchPage('goals')">${g.title}</span>`).join('')}</div></div>`;
+  }
+  
+  // Study
+  if (studies.length) {
+    html += `<div class="project-detail-card"><div class="label">📚 Study</div><div class="value">${studies.map(s => `<span class="relation-tag study" onclick="switchPage('study')">${s.title}</span>`).join('')}</div></div>`;
+  }
+  
+  // Ref
+  if (refs.length) {
+    html += `<div class="project-detail-card"><div class="label">📁 Ref Library (${refs.length})</div><div class="value"><div class="ref-thumb-grid">${refs.slice(0,8).map(r => `<img src="${r.url}" onclick="openLightbox('${r.url}')" title="${r.note || r.board}">`).join('')}${refs.length > 8 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${refs.length-8}</span>` : ''}</div></div></div>`;
+  }
+  
+  // Finance
+  if (finances.length) {
+    html += `<div class="project-detail-card"><div class="label">💰 Finance</div><div class="value">${finances.map(f => `<span class="relation-tag finance" onclick="switchPage('finance')">${f.name}: ${f.saved.toLocaleString()}/${f.target.toLocaleString()} บาท</span>`).join('')}</div></div>`;
+  }
+  
+  // Wishlist
+  if (wishes.length) {
+    html += `<div class="project-detail-card"><div class="label">🛍️ Wishlist</div><div class="value">${wishes.map(w => `<span class="relation-tag wish" onclick="switchPage('finance')">${w.name}${w.price ? ' ('+w.price.toLocaleString()+' บาท)' : ''}</span>`).join('')}</div></div>`;
+  }
+  
+  if (!visions.length && !goals.length && !studies.length && !refs.length && !finances.length && !wishes.length) {
+    html += `<div style="grid-column:1/-1;color:var(--muted);font-size:12px;padding:12px;text-align:center;background:var(--surface2);border-radius:8px;">ยังไม่มีการเชื่อมโยงกับโมดูลอื่นๆ</div>`;
+  }
+  
+  html += `</div>`;
+  
+  if (project.note) {
+    html += `<div style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);">📝 ${project.note}</div>`;
+  }
+  
+  content.innerHTML = html;
+  document.getElementById('project-detail-modal').classList.add('show');
+}
+
+function editProjectFromDetail() {
+  if (detailProjectId) {
+    closeModal('project-detail-modal');
+    editProject(detailProjectId);
+  }
+}
+
+// Edit Project
+function editProject(id) {
+  const item = getProjects().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('project-input-title').value = item.title;
+  document.getElementById('project-input-desc').value = item.desc || '';
+  document.getElementById('project-input-deadline').value = item.deadline || '';
+  document.getElementById('project-input-note').value = item.note || '';
+  document.getElementById('project-input-priority').value = item.priority || 'important';
+  document.getElementById('project-input-progress').value = item.progress || 0;
+  document.getElementById('project-progress-label').textContent = (item.progress || 0) + '%';
+  document.getElementById('project-input-startdate').value = item.startDate || '';
+  document.getElementById('project-input-tags').value = (item.tags || []).join(', ');
+  renderRelationCheckboxes({
+    visionIds: item.visionIds || [],
+    goalIds: item.goalIds || [],
+    studyIds: item.studyIds || [],
+    refIds: item.refIds || [],
+    financeIds: item.financeIds || [],
+    wishIds: item.wishIds || []
+  });
+  document.getElementById('project-modal').querySelector('h3').textContent = '✎ แก้ไขโปรเจกต์';
+  document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditProject;
+  setEditMode('project', id);
+  document.getElementById('project-modal').classList.add('show');
+}
+
+function confirmEditProject() {
+  if (editingId === null) return;
+  const title = document.getElementById('project-input-title').value.trim();
+  if (!title) { alert('กรุณาใส่ชื่อโปรเจกต์'); return; }
+  
+  const relations = getSelectedRelations();
+  const items = getProjects();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.title = title;
+    item.desc = document.getElementById('project-input-desc').value.trim();
+    item.deadline = document.getElementById('project-input-deadline').value || null;
+    item.note = document.getElementById('project-input-note').value.trim();
+    item.priority = document.getElementById('project-input-priority').value || 'important';
+    item.progress = parseInt(document.getElementById('project-input-progress').value) || 0;
+    item.startDate = document.getElementById('project-input-startdate').value || null;
+    item.tags = document.getElementById('project-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    item.visionIds = relations.visionIds || [];
+    item.goalIds = relations.goalIds || [];
+    item.studyIds = relations.studyIds || [];
+    item.refIds = relations.refIds || [];
+    item.financeIds = relations.financeIds || [];
+    item.wishIds = relations.wishIds || [];
+    saveProjects(items);
+  }
+  closeModal('project-modal');
+  resetProjectModal();
+  clearEditMode();
+  renderProjects();
+  renderDashboard();
+  showToast('✅ แก้ไขโปรเจกต์สำเร็จ', 'success');
+}
+
+function resetProjectModal() {
+  document.getElementById('project-modal').querySelector('h3').textContent = '📋 เพิ่มโปรเจกต์ใหม่';
+  document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveProject;
+  document.getElementById('project-input-title').value = '';
+  document.getElementById('project-input-desc').value = '';
+  document.getElementById('project-input-deadline').value = '';
+  document.getElementById('project-input-note').value = '';
+  document.getElementById('project-input-priority').value = 'important';
+  document.getElementById('project-input-progress').value = 0;
+  document.getElementById('project-progress-label').textContent = '0%';
+  document.getElementById('project-input-startdate').value = '';
+  document.getElementById('project-input-tags').value = '';
+  document.getElementById('project-relations-container').innerHTML = '';
+}
+
+// ==========================================================
+// EXPORT / IMPORT
+// ==========================================================
+function exportAll() {
+  const data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    ref_library_items: getRefs(),
+    life_vision_items: getVisions(),
+    goals_items: getGoals(),
+    finance_items: getFinances(),
+    wishlist_items: getWishes(),
+    study_items: getStudies(),      // ← เพิ่ม
+    project_items: getProjects()    // ← เพิ่ม
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `second-brain-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importAll(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!confirm('⚠️ ข้อมูลเดิมทั้งหมดจะถูกลบและแทนที่ด้วยข้อมูลจากไฟล์\n\nดำเนินการต่อ?')) {
+    event.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.ref_library_items) saveRefs(data.ref_library_items);
+      if (data.life_vision_items) saveVisions(data.life_vision_items);
+      if (data.goals_items) saveGoals(data.goals_items);
+      if (data.finance_items) saveFinances(data.finance_items);
+      if (data.wishlist_items) saveWishes(data.wishlist_items);
+      if (data.study_items) saveStudies(data.study_items);
+      if (data.project_items) saveProjects(data.project_items);
+      renderRef(); renderVision(); renderGoals(); renderFinanceAndWish(); renderDashboard(); renderFinanceSummary();   // ← แก้ไข
+      alert('✅ กู้คืนข้อมูลสำเร็จ');
+    } catch (err) {
+      alert('❌ ไฟล์ไม่ถูกต้อง: ' + err.message);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+// ==========================================================
+// EDIT FUNCTIONS — เปิด modal เดิมแต่เติมข้อมูล + เปลี่ยนปุ่มบันทึก
+// ==========================================================
+
+function setEditMode(module, id) {
+  editingId = id;
+  editingModule = module;
+}
+
+function clearEditMode() {
+  editingId = null;
+  editingModule = null;
+}
+
+// --- Edit Vision ---
+function editVision(id) {
+  const item = getVisions().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('vision-input-category').value = item.category || 'career';  // ดึงค่าหมวดหมู่
+  document.getElementById('vision-input-title').value = item.title;
+  document.getElementById('vision-input-desc').value = item.desc || '';
+  document.getElementById('vision-modal').querySelector('h3').textContent = 'แก้ไขวิสัยทัศน์';
+  document.getElementById('vision-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditVision;
+  setEditMode('vision', id);
+  document.getElementById('vision-modal').classList.add('show');
+  document.getElementById('vision-input-priority').value = item.priority || 'important';
+}
+
+function confirmEditVision() {
+  if (editingId === null) return;
+  const title = document.getElementById('vision-input-title').value.trim();
+  if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
+  const items = getVisions();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.category = document.getElementById('vision-input-category').value;  // บันทึกหมวดหมู่
+    item.title = title;
+    item.desc = document.getElementById('vision-input-desc').value.trim();
+    item.priority = document.getElementById('vision-input-priority').value;  // บันทึกความสำคัญ
+    saveVisions(items);
+  }
+  closeModal('vision-modal');
+  resetVisionModal();
+  clearEditMode();
+  renderVision();
+  renderDashboard();
+}
+
+function resetVisionModal() {
+  document.getElementById('vision-modal').querySelector('h3').textContent = 'เพิ่มวิสัยทัศน์ชีวิต';
+  document.getElementById('vision-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveVision;
+  document.getElementById('vision-input-category').value = 'career';  // default
+  document.getElementById('vision-input-title').value = '';
+  document.getElementById('vision-input-desc').value = '';
+  document.getElementById('vision-input-priority').value = 'important';
+}
+
+// --- Edit Goal ---
+function editGoal(id) {
+  const item = getGoals().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('goal-input-title').value = item.title;
+  document.getElementById('goal-input-category').value = item.category || 'career';  // ดึงค่าหมวดหมู่
+  document.getElementById('goal-input-date').value = item.deadline || '';
+  document.getElementById('goal-input-note').value = item.note || '';
+  document.getElementById('goal-modal').querySelector('h3').textContent = 'แก้ไขเป้าหมาย';
+  document.getElementById('goal-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditGoal;
+  setEditMode('goal', id);
+  document.getElementById('goal-modal').classList.add('show');
+  document.getElementById('goal-input-priority').value = item.priority || 'important';
+}
+
+function confirmEditGoal() {
+  if (editingId === null) return;
+  const title = document.getElementById('goal-input-title').value.trim();
+  if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
+  const items = getGoals();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.title = title;
+    item.category = document.getElementById('goal-input-category').value;  // บันทึกหมวดหมู่
+    item.deadline = document.getElementById('goal-input-date').value || null;
+    item.note = document.getElementById('goal-input-note').value.trim();
+    item.priority = document.getElementById('goal-input-priority').value;  // บันทึกความสำคัญ
+    saveGoals(items);
+  }
+  closeModal('goal-modal');
+  resetGoalModal();
+  clearEditMode();
+  renderGoals();
+  renderDashboard();
+}
+
+function resetGoalModal() {
+  document.getElementById('goal-modal').querySelector('h3').textContent = 'เพิ่มเป้าหมาย';
+  document.getElementById('goal-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveGoal;
+  document.getElementById('goal-input-title').value = '';
+  document.getElementById('goal-input-category').value = 'career';  // default
+  document.getElementById('goal-input-date').value = '';
+  document.getElementById('goal-input-note').value = '';
+  document.getElementById('goal-input-priority').value = item.priority || 'important';
+}
+
+// --- Edit Finance ---
+function editFinance(id) {
+  const item = getFinances().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('finance-input-name').value = item.name;
+  document.getElementById('finance-input-category').value = item.category || 'other';
+  document.getElementById('finance-input-target').value = item.target;
+  document.getElementById('finance-input-saved').value = item.saved;
+  document.getElementById('finance-modal').querySelector('h3').textContent = 'แก้ไขเป้าหมายการเงิน';
+  document.getElementById('finance-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditFinance;
+  setEditMode('finance', id);
+  document.getElementById('finance-modal').classList.add('show');
+  document.getElementById('finance-input-priority').value = item.priority || 'important';
+}
+
+function confirmEditFinance() {
+  if (editingId === null) return;
+  const name = document.getElementById('finance-input-name').value.trim();
+  const target = parseFloat(document.getElementById('finance-input-target').value);
+  if (!name || isNaN(target) || target <= 0) { alert('กรุณาใส่ชื่อและเป้าหมายที่ถูกต้อง'); return; }
+  const items = getFinances();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.name = name;
+    item.target = target;
+    item.saved = parseFloat(document.getElementById('finance-input-saved').value) || 0;
+    item.priority = document.getElementById('finance-input-priority').value;
+    saveFinances(items);
+  }
+  closeModal('finance-modal');
+  resetFinanceModal();
+  clearEditMode();
+  renderFinanceAndWish();
+  renderDashboard();
+}
+
+function resetFinanceModal() {
+  document.getElementById('finance-modal').querySelector('h3').textContent = 'เพิ่มเป้าหมายการเงิน';
+  document.getElementById('finance-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFinance;
+  document.getElementById('finance-input-name').value = '';
+  document.getElementById('finance-input-category').value = 'other';
+  document.getElementById('finance-input-target').value = '';
+  document.getElementById('finance-input-saved').value = '';
+  document.getElementById('finance-input-priority').value = 'important';
+}
+
+// --- Edit Wishlist ---
+function editWish(id) {
+  const item = getWishes().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('wish-input-name').value = item.name;
+  document.getElementById('wish-input-category').value = item.category || 'other';
+  document.getElementById('wish-input-price').value = item.price || '';
+  document.getElementById('wish-input-priority').value = item.priority;
+  document.getElementById('wish-input-link').value = item.link || '';
+  document.getElementById('wish-modal').querySelector('h3').textContent = 'แก้ไขของที่อยากได้';
+  document.getElementById('wish-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditWish;
+  setEditMode('wish', id);
+  document.getElementById('wish-modal').classList.add('show');
+  document.getElementById('wish-input-priority').value = item.priority || 'important';
+}
+
+function confirmEditWish() {
+  if (editingId === null) return;
+  const name = document.getElementById('wish-input-name').value.trim();
+  if (!name) { alert('กรุณาใส่ชื่อสิ่งของ'); return; }
+  const items = getWishes();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.name = name;
+    item.price = parseFloat(document.getElementById('wish-input-price').value) || 0;
+    item.priority = document.getElementById('wish-input-priority').value;
+    item.link = document.getElementById('wish-input-link').value.trim();
+    saveWishes(items);
+  }
+  closeModal('wish-modal');
+  resetWishModal();
+  clearEditMode();
+  renderFinanceAndWish();  // ← แก้ไข
+  renderDashboard();  // ← เพิ่มบรรทัดนี้
+}
+
+function resetWishModal() {
+  document.getElementById('wish-modal').querySelector('h3').textContent = 'เพิ่มของที่อยากได้';
+  document.getElementById('wish-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveWish;
+  document.getElementById('wish-input-name').value = '';
+  document.getElementById('wish-input-category').value = 'other';
+  document.getElementById('wish-input-price').value = '';
+  document.getElementById('wish-input-priority').value = 'medium';
+  document.getElementById('wish-input-link').value = '';
+  document.getElementById('wish-input-priority').value = 'important';
+}
+
+// --- Edit Ref ---
+function editRef(id) {
+  const item = getRefs().find(i => i.id === id);
+  if (!item) return;
+  pendingUploadUrl = item.url;
+  document.getElementById('ref-modal-preview').src = item.url;
+  document.getElementById('ref-input-category').value = item.category;
+  document.getElementById('ref-input-board').value = item.board || '';
+  document.getElementById('ref-input-tags').value = (item.tags || []).join(', ');
+  document.getElementById('ref-input-note').value = item.note || '';
+  document.getElementById('ref-modal').querySelector('h3').textContent = 'แก้ไขรายละเอียดรูป';
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditRef;
+  setEditMode('ref', id);
+  document.getElementById('ref-modal').classList.add('show');
+}
+
+function confirmEditRef() {
+  if (editingId === null || !pendingUploadUrl) return;
+  const items = getRefs();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.category = document.getElementById('ref-input-category').value.trim();
+    item.board = document.getElementById('ref-input-board').value.trim() || 'uncategorized';
+    item.tags = document.getElementById('ref-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    item.note = document.getElementById('ref-input-note').value.trim();
+    saveRefs(items);
+  }
+  closeModal('ref-modal');
+  resetRefModal();
+  clearEditMode();
+  renderRef();
+  renderDashboard();
+}
+
+function resetRefModal() {
+  document.getElementById('ref-modal').querySelector('h3').textContent = 'เพิ่มรายละเอียดรูป';
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveRef;
+  document.getElementById('ref-modal-preview').src = '';
+  document.getElementById('ref-input-category').value = 'other';
+  document.getElementById('ref-input-board').value = '';
+  document.getElementById('ref-input-tags').value = '';
+  document.getElementById('ref-input-note').value = '';
+  pendingUploadUrl = null;
+}
+// ==========================================================
+// TOAST NOTIFICATIONS
+// ==========================================================
+function showToast(message, type = 'info', duration = 2500) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = type;
+  toast.classList.add('show');
+  
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.classList.remove('show');
+  }, duration);
+}
+// ==========================================================
+// CALENDAR
+// ==========================================================
+let calendarDate = new Date();
+
+function renderCalendar() {
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  
+  // Header
+  const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
+                      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  document.getElementById('calendar-month').textContent = `${monthNames[month]} ${year + 543}`;
+  
+  // First day of month
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  
+  // Get goals with deadlines
+  const goals = getGoals().filter(g => g.deadline);
+  
+  // Build grid
+  const grid = document.getElementById('calendar-grid');
+  const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+  let html = dayNames.map(d => `<div style="text-align:center;font-size:10px;color:var(--muted);padding:4px 0;">${d}</div>`).join('');
+  
+  // Empty days before first day
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div style="padding:4px;"></div>`;
+  }
+  
+  // Days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isToday = dateStr === todayStr;
+    const dayGoals = goals.filter(g => g.deadline === dateStr);
+    const hasDeadline = dayGoals.length > 0;
+    
+    html += `
+      <div style="
+        text-align:center; padding:4px 2px; border-radius:4px;
+        background: ${isToday ? 'var(--accent)' : hasDeadline ? 'rgba(200,169,110,.15)' : 'transparent'};
+        color: ${isToday ? 'white' : hasDeadline ? 'var(--accent2)' : 'var(--text)'};
+        font-size:12px; cursor: ${hasDeadline ? 'pointer' : 'default'};
+        position: relative; min-height:28px;
+      " onclick="${hasDeadline ? `showDayGoals('${dateStr}')` : ''}">
+        ${day}
+        ${hasDeadline ? `<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:6px;">●</span>` : ''}
+        ${isToday ? `<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:6px;">⬤</span>` : ''}
+      </div>
+    `;
+  }
+  
+  grid.innerHTML = html;
+}
+
+function changeMonth(delta) {
+  calendarDate.setMonth(calendarDate.getMonth() + delta);
+  renderCalendar();
+}
+
+function resetCalendar() {
+  calendarDate = new Date();
+  renderCalendar();
+}
+
+function showDayGoals(dateStr) {
+  const goals = getGoals().filter(g => g.deadline === dateStr);
+  if (goals.length === 0) return;
+  
+  const msg = goals.map(g => `🎯 ${g.title} (${STATUS_LABELS[g.status]})`).join('\n');
+  alert(`📅 ${new Date(dateStr).toLocaleDateString('th-TH')}\n\n${msg}`);
+  switchPage('goals');
+}
+// ==========================================================
+// CALENDAR TOGGLE
+// ==========================================================
+let calendarCollapsed = false;
+
+function toggleCalendar() {
+  calendarCollapsed = !calendarCollapsed;
+  const body = document.getElementById('calendar-body');
+  const icon = document.getElementById('calendar-toggle-icon');
+  const arrow = document.querySelector('#calendar-month + span');
+  
+  if (calendarCollapsed) {
+    body.classList.add('collapsed');
+    icon.classList.add('rotated');
+    if (arrow) arrow.textContent = '▶';
+  } else {
+    body.classList.remove('collapsed');
+    icon.classList.remove('rotated');
+    if (arrow) arrow.textContent = '▼';
+  }
+  localStorage.setItem('calendar_collapsed', calendarCollapsed);
+}
+
+// ---------- Init ----------
+function initApp() {
+  renderNav();
+  let lastPage = localStorage.getItem('last_active_page') || 'dashboard';
+  const validPages = PAGES.map(p => p.id);
+  if (!validPages.includes(lastPage)) {
+    lastPage = 'dashboard';
+  }
+  switchPage(lastPage);
+  renderRef();
+  renderVision();
+  renderGoals();
+  renderFinanceAndWish();
+  renderDashboard();
+  renderCalendar();
+
+  const savedState = localStorage.getItem('calendar_collapsed');
+  if (savedState === 'true') {
+    calendarCollapsed = true;
+    const body = document.getElementById('calendar-body');
+    const icon = document.getElementById('calendar-toggle-icon');
+    const arrow = document.querySelector('#calendar-month + span');
+    if (body) body.classList.add('collapsed');
+    if (icon) icon.classList.add('rotated');
+    if (arrow) arrow.textContent = '▶';
+  }
+}
+
+
+initApp();
+
+</script>
+</body>
+</html>
