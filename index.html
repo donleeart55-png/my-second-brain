@@ -488,6 +488,472 @@ firebase.auth().signInAnonymously().catch(err => {
 .journal-tab.active {
   display: block;
 }
+/* Bottom Tab Bar */
+.bottom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 100;
+  transition: transform 0.3s ease;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+}
+
+.bottom-tab-bar.hidden {
+  transform: translateY(100%);
+}
+
+.bottom-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.bottom-tab.active {
+  color: var(--accent);
+}
+
+.bottom-tab-icon {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+
+.bottom-tab-label {
+  font-size: 11px;
+}
+
+.fab-note {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(124,110,245,0.4);
+  transition: transform 0.2s;
+  margin-top: -16px;
+}
+
+.fab-note:active {
+  transform: scale(0.95);
+}
+
+.more-menu {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  padding: 8px 0;
+  display: none;
+  z-index: 101;
+}
+
+.more-menu.show {
+  display: block;
+}
+
+.more-menu-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.more-menu-item:hover {
+  background: var(--surface2);
+}
+
+/* Notes Section */
+.notes-tabs {
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 16px;
+}
+
+.notes-tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.notes-tab.active {
+  border-bottom-color: #2196F3;
+  color: #2196F3;
+}
+
+/* Padding for content */
+#content {
+  padding-bottom: 80px;
+}
+/* ===== Finance Module New ===== */
+.finance-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.finance-tab {
+  flex-shrink: 0;
+  padding: 9px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  transition: all 0.2s;
+}
+
+.finance-tab.active {
+  background: var(--accent);
+  color: white;
+}
+
+.finance-tab:hover:not(.active) {
+  background: var(--surface2);
+}
+
+.finance-tab-content {
+  display: none;
+}
+
+.finance-tab-content.active {
+  display: block;
+}
+
+/* Transaction List */
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.transaction-item.income {
+  border-left: 3px solid var(--green);
+}
+
+.transaction-item.expense {
+  border-left: 3px solid var(--red);
+}
+
+.transaction-info {
+  flex: 1;
+}
+
+.transaction-category {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.transaction-note {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.transaction-amount {
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 12px;
+}
+
+.transaction-amount.income {
+  color: var(--green);
+}
+
+.transaction-amount.expense {
+  color: var(--red);
+}
+
+/* Budget Card */
+.budget-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.budget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.budget-category {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.budget-amount {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.budget-progress {
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.budget-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.budget-progress-fill.over {
+  background: linear-gradient(90deg, var(--red), #ff6b6b);
+}
+
+.budget-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Summary Cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.summary-card.income {
+  border-color: var(--green);
+}
+
+.summary-card.expense {
+  border-color: var(--red);
+}
+
+.summary-card.balance {
+  border-color: var(--accent);
+}
+
+.summary-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.summary-value.income {
+  color: var(--green);
+}
+
+.summary-value.expense {
+  color: var(--red);
+}
+
+.summary-value.balance {
+  color: var(--accent);
+}
+/* ===== Budget Preset ===== */
+.preset-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.preset-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.preset-total {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.preset-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Budget Modal — กว้างพอดี content */
+#budget-modal .modal {
+  max-width: 420px;
+}
+
+/* Grid 1 column — แต่ละหมวดเต็มบรรทัด */
+.budget-checkbox-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.budget-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: var(--surface2);
+  border-radius: 6px;
+}
+
+.budget-checkbox-item input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.budget-checkbox-item label {
+  flex: 1;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.budget-checkbox-item input[type="number"] {
+  width: 70px;
+  padding: 4px 6px;
+  font-size: 11px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+}
+
+.budget-total-display {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+/* ===== Editable Budget Categories ===== */
+.budget-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--surface2);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  flex-wrap: nowrap;
+}
+
+.budget-cat-row input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.budget-cat-row input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.budget-cat-row input[type="number"] {
+  width: 80px;
+  padding: 4px 8px;
+  font-size: 12px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+}
+
+.budget-cat-row .del-x {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.budget-add-cat-btn {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.budget-add-cat-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Budget Modal — กว้างกว่าปกติ + ซ่อน scroll แนวนอน */
+#budget-modal .modal {
+  max-width: 520px;
+  overflow-x: hidden;
+}
 </style>
 </head>
 <body>
@@ -702,52 +1168,94 @@ firebase.auth().signInAnonymously().catch(err => {
 
 <!-- ============ PAGE: Finance & Wishlist ============ -->
 <div class="page" id="page-finance">
-  <!-- Finance Summary -->
-  <div id="finance-summary" style="
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 4px; margin-bottom: 10px;
-  ">
-    <div class="item-card" style="text-align:center;padding:4px 6px;border-color:var(--green);">
-      <div style="font-size:14px;">💰</div>
-      <div style="font-size:13px;font-weight:700;color:var(--green);" id="finance-total-target">0</div>
-      <div style="color:var(--muted);font-size:10px;">เป้าหมายรวม</div>
-    </div>
-    <div class="item-card" style="text-align:center;padding:4px 6px;border-color:var(--accent);">
-      <div style="font-size:14px;">📈</div>
-      <div style="font-size:13px;font-weight:700;color:var(--accent);" id="finance-total-saved">0</div>
-      <div style="color:var(--muted);font-size:10px;">เก็บได้แล้ว</div>
-    </div>
-    <div class="item-card" style="text-align:center;padding:4px 6px;border-color:var(--accent2);">
-      <div style="font-size:14px;">🎯</div>
-      <div style="font-size:13px;font-weight:700;color:var(--accent2);" id="finance-avg-progress">0%</div>
-      <div style="color:var(--muted);font-size:10px;">ความคืบหน้าเฉลี่ย</div>
-    </div>
-    <div class="item-card" style="text-align:center;padding:4px 6px;border-color:var(--green);">
-      <div style="font-size:14px;">🏆</div>
-      <div style="font-size:13px;font-weight:700;color:var(--green);" id="finance-completed">0</div>
-      <div style="color:var(--muted);font-size:10px;">สำเร็จแล้ว</div>
-    </div>
+  <!-- Finance Tabs -->
+  <div class="finance-tabs">
+    <button class="finance-tab active" onclick="switchFinanceTab('overview')"> Overview</button>
+    <button class="finance-tab" onclick="switchFinanceTab('transactions')"> Transactions</button>
+    <button class="finance-tab" onclick="switchFinanceTab('budgets')"> Budgets</button>
+    <button class="finance-tab" onclick="switchFinanceTab('goals')">💰 Goals</button>
+    <button class="finance-tab" onclick="switchFinanceTab('wishlist')">️ Wishlist</button>
   </div>
-  <div class="toolbar">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">
-      <button class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
-      <button class="btn" onclick="openWishModal()">🛍️ + ของที่อยากได้</button>
-      <select class="input" id="finance-type-filter" onchange="renderFinanceAndWish()" style="flex:1;min-width:140px;">
-        <option value="all">ทั้งหมด (การเงิน + wishlist)</option>
-        <option value="finance">💰 การเงิน</option>
-        <option value="wishlist">🛍️ Wishlist</option>
+
+  <!-- Tab: Overview -->
+  <div id="finance-overview" class="finance-tab-content active">
+    <div class="summary-grid">
+      <div class="summary-card income">
+        <div class="summary-label">💰 รายรับเดือนนี้</div>
+        <div class="summary-value income" id="finance-month-income">0</div>
+      </div>
+      <div class="summary-card expense">
+        <div class="summary-label">💸 รายจ่ายเดือนนี้</div>
+        <div class="summary-value expense" id="finance-month-expense">0</div>
+      </div>
+      <div class="summary-card balance">
+        <div class="summary-label">💵 คงเหลือ</div>
+        <div class="summary-value balance" id="finance-month-balance">0</div>
+      </div>
+    </div>
+    <div id="finance-budget-summary"></div>
+  </div>
+
+  <!-- Tab: Transactions -->
+  <div id="finance-transactions" class="finance-tab-content">
+    <div class="toolbar">
+      <button class="btn" onclick="openTransactionModal()">+ เพิ่มรายการ</button>
+      <button class="btn secondary" onclick="openImportCSVModal()">📥 Import CSV</button>
+      <select class="input" id="transaction-type-filter" onchange="renderFinanceTransactions()">
+        <option value="all">ทั้งหมด</option>
+        <option value="income">รายรับ</option>
+        <option value="expense">รายจ่าย</option>
       </select>
-      <select class="input" id="finance-priority-filter" onchange="renderFinanceAndWish()">
-      <option value="">⭐ ทุกระดับ</option>
-      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-      <option value="low">☆ ทิ้ง/เลื่อน</option>
-    </select>
     </div>
+    <div id="transaction-list"></div>
+    <div class="empty" id="transaction-empty" style="display:none;">ยังไม่มีรายการ</div>
   </div>
-  <div id="finance-list"></div>
-  <div class="empty" id="finance-empty" style="display:none;">ยังไม่มีรายการ</div>
+
+  <!-- Tab: Budgets -->
+  <div id="finance-budgets" class="finance-tab-content">
+    <div class="toolbar">
+  <button class="btn" onclick="openBudgetModal()">+ ตั้งงบประมาณ</button>
+  <button class="btn secondary" onclick="openPresetUseModal()"> จาก Preset</button>
+  <button class="btn secondary" onclick="openPresetSaveModal()">💾 บันทึก Preset</button>
+  <select class="input" id="budget-month-filter" onchange="renderBudgets()">
+    <option value="">เดือนนี้</option>
+  </select>
+</div>
+<div id="budget-list"></div>
+<div class="empty" id="budget-empty" style="display:none;">ยังไม่มีงบประมาณ</div>
+<div id="preset-list" style="margin-top:16px;"></div>
+</div>
+  <!-- Tab: Goals -->
+  <div id="finance-goals" class="finance-tab-content">
+    <div class="toolbar">
+      <button class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
+      <select class="input" id="finance-priority-filter" onchange="renderFinanceGoals()">
+        <option value="">⭐ ทุกระดับ</option>
+        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+        <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+        <option value="low">☆ ทิ้ง/เลื่อน</option>
+      </select>
+    </div>
+    <div id="finance-goals-list"></div>
+    <div class="empty" id="finance-goals-empty" style="display:none;">ยังไม่มีเป้าหมายการเงิน</div>
+  </div>
+
+  <!-- Tab: Wishlist -->
+  <div id="finance-wishlist" class="finance-tab-content">
+    <div class="toolbar">
+      <button class="btn" onclick="openWishModal()">🛍️ + ของที่อยากได้</button>
+      <select class="input" id="wish-priority-filter" onchange="renderWishlist()">
+        <option value="">⭐ ทุกระดับ</option>
+        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+        <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+        <option value="low">☆ ทิ้ง/เลื่อน</option>
+      </select>
+    </div>
+    <div id="wishlist-list"></div>
+    <div class="empty" id="wishlist-empty" style="display:none;">ยังไม่มี Wishlist</div>
+  </div>
 </div>
 
 <!-- ============ PAGE: Study Plan ============ -->
@@ -1044,6 +1552,10 @@ firebase.auth().signInAnonymously().catch(err => {
     <div class="field"><label>เก็บได้แล้ว (บาท)</label>
       <input class="input" type="number" id="finance-input-saved" placeholder="0">
     </div>
+    <div class="field">
+  <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
+  <input class="input" id="finance-input-tags" placeholder="เช่น emergency, 3-month">
+</div>
     <div class="field"><label>⭐ ความสำคัญ</label>
   <select class="input" id="finance-input-priority">
     <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
@@ -1084,6 +1596,10 @@ firebase.auth().signInAnonymously().catch(err => {
     <div class="field"><label>เก็บได้แล้ว (บาท)</label>
       <input class="input" type="number" id="wish-input-saved" placeholder="0">
     </div>
+    <div class="field">
+  <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
+  <input class="input" id="wish-input-tags" placeholder="เช่น tech, gadget">
+</div>
     <div class="field"><label>ความสำคัญ</label>
       <select class="input" id="wish-input-priority">
         <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
@@ -1223,6 +1739,197 @@ firebase.auth().signInAnonymously().catch(err => {
     </div>
   </div>
 </div>
+<!-- Bottom Tab Bar -->
+<div class="bottom-tab-bar" id="bottom-tab-bar">
+  <div class="bottom-tab" data-section="ref">
+    <div class="bottom-tab-icon">📁</div>
+    <div class="bottom-tab-label">Ref</div>
+  </div>
+  <div class="bottom-tab" data-section="goals">
+    <div class="bottom-tab-icon">🎯</div>
+    <div class="bottom-tab-label">Goals</div>
+  </div>
+  <button class="fab-note" id="fab-note">📝</button>
+  <div class="bottom-tab" data-section="study">
+    <div class="bottom-tab-icon">📚</div>
+    <div class="bottom-tab-label">Study</div>
+  </div>
+  <div class="bottom-tab" data-section="projects">
+    <div class="bottom-tab-icon">📋</div>
+    <div class="bottom-tab-label">Projects</div>
+  </div>
+  <div class="bottom-tab" id="more-tab">
+    <div class="bottom-tab-icon">⋯</div>
+    <div class="bottom-tab-label">More</div>
+  </div>
+</div>
+
+<div class="more-menu" id="more-menu">
+  <div class="more-menu-item" data-section="dashboard">📊 Dashboard</div>
+  <div class="more-menu-item" data-section="vision">🗺️ Life Map</div>
+  <div class="more-menu-item" data-section="finance">💰 Finance</div>
+  <div class="more-menu-item" data-section="settings">⚙️ ตั้งค่า</div>
+</div>
+<!-- Transaction Modal -->
+<div class="modal-overlay" id="transaction-modal">
+  <div class="modal">
+    <h3>เพิ่มรายการเงิน</h3>
+    <div class="field">
+      <label>📅 วันที่</label>
+      <input class="input" type="date" id="transaction-input-date">
+    </div>
+    <div class="field">
+      <label>ประเภท</label>
+      <select class="input" id="transaction-input-type">
+        <option value="expense">💸 รายจ่าย</option>
+        <option value="income">💰 รายรับ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>หมวดหมู่</label>
+      <select class="input" id="transaction-input-category">
+        <option value="food">🍜 อาหาร</option>
+        <option value="transport"> เดินทาง</option>
+        <option value="entertainment">🎬 บันเทิง</option>
+        <option value="shopping">🛍️ ช้อปปิ้ง</option>
+        <option value="health">💊 สุขภาพ</option>
+        <option value="education">📚 การศึกษา</option>
+        <option value="bills">📄 บิล/ค่าครองชีพ</option>
+        <option value="salary">💼 เงินเดือน</option>
+        <option value="freelance">💻 ฟรีแลนซ์</option>
+        <option value="investment">📈 ลงทุน</option>
+        <option value="other">📦 อื่นๆ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>จำนวนเงิน (บาท)</label>
+      <input class="input" type="number" id="transaction-input-amount" placeholder="0">
+    </div>
+    <div class="field">
+      <label>รายละเอียด</label>
+      <input class="input" id="transaction-input-note" placeholder="เช่น ข้าวกลางวัน">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('transaction-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveTransaction()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Budget Modal -->
+<div class="modal-overlay" id="budget-modal">
+  <div class="modal">
+    <h3>ตั้งงบประมาณรายเดือน</h3>
+    <div class="field">
+      <label>📅 เดือน</label>
+      <input class="input" type="month" id="budget-input-month">
+    </div>
+    <div class="field">
+      <label style="font-weight:600;">เลือกหมวด + วงเงิน</label>
+      <div class="budget-checkbox-group" id="budget-category-group"></div>
+      <div class="budget-total-display" id="budget-total-display">รวม: 0 บาท</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('budget-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveBudget()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+<!-- Budget Edit Modal -->
+<div class="modal-overlay" id="budget-edit-modal">
+  <div class="modal">
+    <h3>✎ แก้ไขงบประมาณ</h3>
+    <div class="field">
+      <label> เดือน</label>
+      <input class="input" type="month" id="budget-edit-input-month">
+    </div>
+    <div class="field">
+      <label>หมวดหมู่</label>
+      <select class="input" id="budget-edit-input-category">
+        <option value="food">🍜 อาหาร</option>
+        <option value="transport">🚗 เดินทาง</option>
+        <option value="entertainment">🎬 บันเทิง</option>
+        <option value="shopping">🛍️ ช้อปปิ้ง</option>
+        <option value="health">💊 สุขภาพ</option>
+        <option value="bills"> บิล/ค่าครองชีพ</option>
+        <option value="other">📦 อื่นๆ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>วงเงิน (บาท)</label>
+      <input class="input" type="number" id="budget-edit-input-limit" placeholder="5000">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('budget-edit-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmEditBudget()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import CSV Modal -->
+<div class="modal-overlay" id="import-csv-modal">
+  <div class="modal">
+    <h3>📥 Import CSV จาก Bluecoins</h3>
+    <div class="field">
+      <label>เลือกไฟล์ CSV</label>
+      <input class="input" type="file" id="csv-file-input" accept=".csv">
+    </div>
+    <div class="field">
+      <label style="font-size:11px;color:var(--muted);">
+        รูปแบบ CSV: date,type,category,amount,note<br>
+        ตัวอย่าง: 2026-07-11,expense,food,150,ข้าวกลางวัน
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('import-csv-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmImportCSV()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preset Modal (บันทึก preset ใหม่) -->
+<div class="modal-overlay" id="preset-save-modal">
+  <div class="modal">
+    <h3>💾 บันทึกเป็น Preset</h3>
+    <div class="field">
+      <label>ชื่อ Preset</label>
+      <input class="input" id="preset-input-name" placeholder="เช่น งบเดือนปกติ">
+    </div>
+    <div class="field">
+      <label style="font-size:11px;color:var(--muted);">
+        จะบันทึกหมวด + วงเงินที่เลือกไว้ปัจจุบัน
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('preset-save-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSavePreset()">บันทึก Preset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create from Preset Modal -->
+<div class="modal-overlay" id="preset-use-modal">
+  <div class="modal">
+    <h3>📋 สร้างจาก Preset</h3>
+    <div class="field">
+      <label>เลือก Preset</label>
+      <select class="input" id="preset-select"></select>
+    </div>
+    <div class="field">
+      <label>📅 เดือน</label>
+      <input class="input" type="month" id="preset-input-month">
+    </div>
+    <div class="field">
+      <label style="font-size:11px;color:var(--muted);">
+        ⚠️ ถ้ามี budget ซ้ำหมวด+เดือนเดิม จะเพิ่มแยกเป็นอีกแถว
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('preset-use-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmCreateFromPreset()">สร้าง Budgets</button>
+    </div>
+  </div>
+</div>
 <script>
 // ==========================================================
 // สถาปัตยกรรม: แต่ละโมดูลมี store ของตัวเอง แยกขาดจากกัน
@@ -1244,6 +1951,23 @@ function closeModal(id) {
   if (id === 'wish-update-modal') {
   pendingWishId = null;
   document.getElementById('wish-update-amount').value = '';
+}
+if (id === 'transaction-modal') {
+  pendingTransactionId = null;
+  document.getElementById('transaction-input-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('transaction-input-type').value = 'expense';
+  document.getElementById('transaction-input-category').value = 'food';
+  document.getElementById('transaction-input-amount').value = '';
+  document.getElementById('transaction-input-note').value = '';
+}
+if (id === 'budget-edit-modal') {
+  editingBudgetId = null;
+  document.getElementById('budget-edit-input-month').value = '';
+  document.getElementById('budget-edit-input-category').value = 'food';
+  document.getElementById('budget-edit-input-limit').value = '';
+}
+if (id === 'import-csv-modal') {
+  document.getElementById('csv-file-input').value = '';
 }
   clearEditMode();
 }
@@ -1332,6 +2056,85 @@ function switchPageWithFilter(pageId, filterValue) {
     }, 100);
   }
 }
+// ===== Bottom Tab Bar Logic =====
+const topNav = document.querySelector('.nav');
+const bottomBar = document.getElementById('bottom-tab-bar');
+
+// IntersectionObserver — Hide/Show bottom bar
+const observer = new IntersectionObserver(
+  ([entry]) => {
+    if (entry.isIntersecting) {
+      bottomBar.classList.add('hidden');
+    } else {
+      bottomBar.classList.remove('hidden');
+    }
+  },
+  { threshold: 0 }
+);
+observer.observe(topNav);
+
+// Bottom tab clicks
+document.querySelectorAll('.bottom-tab[data-section]').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const section = tab.dataset.section;
+    switchPage(section);
+    updateBottomTabActive(section);
+  });
+});
+
+// FAB click
+document.getElementById('fab-note').addEventListener('click', () => {
+  switchPage('journal');
+  updateBottomTabActive('journal');
+  switchJournalTab('inbox');
+});
+
+// More menu toggle
+document.getElementById('more-tab').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('more-menu').classList.toggle('show');
+});
+
+// More menu items
+document.querySelectorAll('.more-menu-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const section = item.dataset.section;
+    switchPage(section);
+    document.getElementById('more-menu').classList.remove('show');
+    document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('fab-note').classList.remove('active');
+  });
+});
+
+// Close more menu on outside click
+document.addEventListener('click', () => {
+  document.getElementById('more-menu').classList.remove('show');
+});
+
+// Update active state
+function updateBottomTabActive(section) {
+  document.querySelectorAll('.bottom-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.dataset.section === section) {
+      tab.classList.add('active');
+    }
+  });
+  
+  // FAB active state
+  const fab = document.getElementById('fab-note');
+  if (section === 'journal') {
+    fab.classList.add('active');
+  } else {
+    fab.classList.remove('active');
+  }
+}
+
+// Sync with switchPage
+const originalSwitchPage = switchPage;
+switchPage = function(pageId) {
+  originalSwitchPage(pageId);
+  updateBottomTabActive(pageId);
+};
 // ==========================================================
 // FIRESTORE HELPERS — ใช้ร่วมกันทุกโมดูล
 // ==========================================================
@@ -1744,8 +2547,17 @@ async function globalSearch() {  // ← เพิ่ม async
 const refModule = createFirestoreModule('refs');
 let refListeners = [];
 let pendingUploadUrl = null; let pendingFinanceId = null;
+let pendingTransactionId = null;
+let pendingBudgetId = null;
 let editingId = null;
 let editingModule = null;
+// ===== Shared constants (ต้องอยู่ก่อน modules ทั้งหมด) =====
+const PRIORITY_LABELS = {
+  critical: '⭐⭐⭐ สำคัญ+เร่งด่วน',
+  important: '⭐⭐ สำคัญ (ไม่เร่ง)',
+  urgent: '⭐ เร่งด่วน (ไม่สำคัญ)',
+  low: '☆ ทิ้ง/เลื่อน'
+};
 
 function getRefs() { return refModule.getItems(); }
 function saveRefs(items) { return refModule.saveItems(items); }
@@ -2183,19 +2995,20 @@ async function confirmSaveFinance() {
   const target = parseFloat(document.getElementById('finance-input-target').value);
   if (!name || isNaN(target) || target <= 0) { alert('กรุณาใส่ชื่อและเป้าหมายที่ถูกต้อง'); return; }
   const item = {
-    id: Date.now(),
-    name,
-    category: document.getElementById('finance-input-category').value,
-    target,
-    saved: parseFloat(document.getElementById('finance-input-saved').value) || 0,
-    createdAt: new Date().toISOString(),
-    priority: document.getElementById('finance-input-priority').value,
-  };
+  id: Date.now(),
+  name,
+  category: document.getElementById('finance-input-category').value,
+  target,
+  saved: parseFloat(document.getElementById('finance-input-saved').value) || 0,
+  priority: document.getElementById('finance-input-priority').value,
+  tags: document.getElementById('finance-input-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+  createdAt: new Date().toISOString(),
+};
   const items = await getFinances();
   items.unshift(item);
   await saveFinances(items);
   closeModal('finance-modal');
-  renderFinanceAndWish();
+  await renderFinanceGoals();
   renderDashboard();  // ← เพิ่ม
   showToast('✅ เพิ่มเป้าหมายการเงินสำเร็จ', 'success');
 }
@@ -2208,15 +3021,19 @@ async function updateFinanceSaved(id) {  // ← เพิ่ม async
   document.getElementById('finance-update-modal').classList.add('show');
 }
 
-async function confirmUpdateFinance() {  // ← เพิ่ม async
+async function confirmUpdateFinance() {
   if (pendingFinanceId === null) return;
   const val = parseFloat(document.getElementById('finance-update-amount').value);
   if (isNaN(val) || val < 0) { alert('กรุณาใส่ตัวเลขที่ถูกต้อง'); return; }
-  const items = await getFinances();  // ← เพิ่ม await
+  const items = await getFinances();
   const item = items.find(i => i.id === pendingFinanceId);
-  if (item) { item.saved = val; saveFinances(items); renderFinanceAndWish(); renderDashboard();
+  if (item) {
+    item.saved = val;
+    await saveFinances(items);
+    await renderFinanceGoals();
+    renderDashboard();
     showToast('✅ อัพเดตยอดเงินเรียบร้อย', 'success');
-   }
+  }
   closeModal('finance-update-modal');
   pendingFinanceId = null;
 }
@@ -2232,55 +3049,908 @@ async function deleteFinance(id) {
 
   const finances = await getFinances();  // ← เพิ่ม await
   await saveFinances(finances.filter(i => i.id !== id));  // ← เพิ่ม await
-  renderFinanceAndWish();
+  await renderWishlist();
   renderDashboard();
   showToast('🗑️ ลบเป้าหมายการเงินแล้ว', 'error');
 }
 
-function renderFinance() {
-  const list = document.getElementById('finance-list');
-  const empty = document.getElementById('finance-empty');
-  const items = getFinances();
+// ==========================================================
+// MODULE 6: Finance Transactions
+// TransactionItem { id, date, type, category, amount, note, createdAt }
+// ==========================================================
+const transactionModule = createFirestoreModule('transactions');
+let transactionListeners = [];
 
+const TRANSACTION_CAT_LABELS = {
+  food: '🍜 อาหาร',
+  transport: '🚗 เดินทาง',
+  entertainment: '🎬 บันเทิง',
+  shopping: '🛍️ ช้อปปิ้ง',
+  health: '💊 สุขภาพ',
+  education: '📚 การศึกษา',
+  bills: '📄 บิล/ค่าครองชีพ',
+  salary: '💼 เงินเดือน',
+  freelance: ' ฟรีแลนซ์',
+  investment: '📈 ลงทุน',
+  other: '📦 อื่นๆ'
+};
+
+function getTransactions() { return transactionModule.getItems(); }
+function saveTransactions(items) { return transactionModule.saveItems(items); }
+function onTransactionsSnapshot(callback) {
+  const unsub = transactionModule.onSnapshot(callback);
+  transactionListeners.push(unsub);
+  return unsub;
+}
+transactionModule.migrateFromLocalStorage('finance_transactions');
+
+// ==========================================================
+// MODULE: Budgets
+// BudgetItem { id, month, category, limit, createdAt }
+// ==========================================================
+const budgetModule = createFirestoreModule('budgets');
+let budgetListeners = [];
+
+const BUDGET_CATEGORIES = [
+  { key: 'food', label: '🍜 อาหาร', default: 3000 },
+  { key: 'transport', label: '🚗 เดินทาง', default: 1500 },
+  { key: 'entertainment', label: '🎬 บันเทิง', default: 1000 },
+  { key: 'shopping', label: '🛍️ ช้อปปิ้ง', default: 1000 },
+  { key: 'health', label: '💊 สุขภาพ', default: 500 },
+  { key: 'bills', label: ' บิล/ค่าครองชีพ', default: 1500 },
+  { key: 'other', label: '📦 อื่นๆ', default: 500 }
+];
+
+const BUDGET_CAT_LABELS = Object.fromEntries(BUDGET_CATEGORIES.map(c => [c.key, c.label]));
+
+function getBudgets() { return budgetModule.getItems(); }
+function saveBudgets(items) { return budgetModule.saveItems(items); }
+function onBudgetsSnapshot(callback) {
+  const unsub = budgetModule.onSnapshot(callback);
+  budgetListeners.push(unsub);
+  return unsub;
+}
+budgetModule.migrateFromLocalStorage('finance_budgets');
+// ===== Custom Budget Categories (เก็บใน localStorage) =====
+const DEFAULT_BUDGET_CATEGORIES = [
+  { key: 'food', label: '🍜 อาหาร', default: 3000 },
+  { key: 'transport', label: '🚗 เดินทาง', default: 1500 },
+  { key: 'entertainment', label: ' บันเทิง', default: 1000 },
+  { key: 'shopping', label: '🛍️ ช้อปปิ้ง', default: 1000 },
+  { key: 'health', label: '💊 สุขภาพ', default: 500 },
+  { key: 'bills', label: '📄 บิล/ค่าครองชีพ', default: 1500 },
+  { key: 'other', label: '📦 อื่นๆ', default: 500 }
+];
+
+function getCustomCategories() {
+  try {
+    return JSON.parse(localStorage.getItem('budget_custom_categories') || '[]');
+  } catch { return []; }
+}
+
+function saveCustomCategories(items) {
+  localStorage.setItem('budget_custom_categories', JSON.stringify(items));
+}
+
+function getAllBudgetCategories() {
+  const custom = getCustomCategories();
+  return [...BUDGET_CATEGORIES, ...custom];
+}
+
+function addCustomCategory(label, defaultAmount) {
+  const custom = getCustomCategories();
+  const key = 'custom_' + Date.now();
+  custom.push({ key, label: label || 'หมวดใหม่', default: defaultAmount || 0 });
+  saveCustomCategories(custom);
+  return key;
+}
+
+function updateCustomCategory(key, label) {
+  const custom = getCustomCategories();
+  const item = custom.find(c => c.key === key);
+  if (item) {
+    item.label = label;
+    saveCustomCategories(custom);
+  }
+}
+
+function deleteCustomCategory(key) {
+  const custom = getCustomCategories().filter(c => c.key !== key);
+  saveCustomCategories(custom);
+}
+
+// Override BUDGET_CAT_LABELS ให้รวม custom ด้วย
+function getBudgetCatLabels() {
+  const all = getAllBudgetCategories();
+  return Object.fromEntries(all.map(c => [c.key, c.label]));
+}
+// ==========================================================
+// MODULE: Budget Presets
+// BudgetPreset { id, name, items: [{category, limit}], createdAt }
+// ==========================================================
+const presetModule = createFirestoreModule('budget_presets');
+let presetListeners = [];
+
+function getPresets() { return presetModule.getItems(); }
+function savePresets(items) { return presetModule.saveItems(items); }
+function onPresetsSnapshot(callback) {
+  const unsub = presetModule.onSnapshot(callback);
+  presetListeners.push(unsub);
+  return unsub;
+}
+presetModule.migrateFromLocalStorage('budget_presets');
+
+// ===== Import CSV from Bluecoins =====
+function openImportCSVModal() {
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('import-csv-modal').classList.add('show');
+}
+
+async function confirmImportCSV() {
+  const fileInput = document.getElementById('csv-file-input');
+  const file = fileInput.files[0];
+  
+  if (!file) {
+    alert('กรุณาเลือกไฟล์ CSV');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const text = e.target.result;
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      // Skip header if exists
+      const startIndex = lines[0].toLowerCase().includes('date') ? 1 : 0;
+      
+      const transactions = [];
+      for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        const parts = line.split(',');
+        if (parts.length < 4) continue;
+        
+        const [date, type, category, amount, ...noteParts] = parts;
+        const note = noteParts.join(',').trim();
+        
+        if (!date || !type || !amount) continue;
+        
+        transactions.push({
+          id: Date.now() + i,
+          date: date.trim(),
+          type: type.trim().toLowerCase() === 'income' ? 'income' : 'expense',
+          category: category.trim() || 'other',
+          amount: parseFloat(amount),
+          note: note || '',
+          createdAt: new Date().toISOString()
+        });
+      }
+      
+      if (transactions.length === 0) {
+        alert('ไม่พบข้อมูลในไฟล์ CSV');
+        return;
+      }
+      
+      const existingItems = await getTransactions();
+      const newItems = [...transactions, ...existingItems];
+      await saveTransactions(newItems);
+      
+      closeModal('import-csv-modal');
+      renderFinanceTransactions();
+      renderFinanceOverview();
+      showToast(`✅ Import สำเร็จ ${transactions.length} รายการ`, 'success');
+    } catch (err) {
+      alert('❌ เกิดข้อผิดพลาด: ' + err.message);
+    }
+  };
+  
+  reader.readAsText(file);
+}
+
+// ===== Finance Tab Switching =====
+function switchFinanceTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.finance-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.textContent.toLowerCase().includes(tabName) || 
+        (tabName === 'overview' && tab.textContent.includes('Overview')) ||
+        (tabName === 'transactions' && tab.textContent.includes('Transactions')) ||
+        (tabName === 'budgets' && tab.textContent.includes('Budgets')) ||
+        (tabName === 'goals' && tab.textContent.includes('Goals')) ||
+        (tabName === 'wishlist' && tab.textContent.includes('Wishlist'))) {
+      tab.classList.add('active');
+    }
+  });
+  
+  // Update tab content
+  document.querySelectorAll('.finance-tab-content').forEach(content => content.classList.remove('active'));
+  const target = document.getElementById(`finance-${tabName}`);
+  if (target) target.classList.add('active');
+  
+  // Render according to tab
+  if (tabName === 'overview') renderFinanceOverview();
+  else if (tabName === 'transactions') renderFinanceTransactions();
+  else if (tabName === 'budgets') renderBudgets();
+  else if (tabName === 'goals') renderFinanceGoals();
+  else if (tabName === 'wishlist') renderWishlist();
+}
+
+// ===== Transaction CRUD =====
+function openTransactionModal() {
+  document.getElementById('transaction-input-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('transaction-input-type').value = 'expense';
+  document.getElementById('transaction-input-category').value = 'food';
+  document.getElementById('transaction-input-amount').value = '';
+  document.getElementById('transaction-input-note').value = '';
+  document.getElementById('transaction-modal').classList.add('show');
+}
+
+async function confirmSaveTransaction() {
+  const amount = parseFloat(document.getElementById('transaction-input-amount').value);
+  if (isNaN(amount) || amount <= 0) {
+    alert('กรุณาใส่จำนวนเงินที่ถูกต้อง');
+    return;
+  }
+  
+  const item = {
+    id: Date.now(),
+    date: document.getElementById('transaction-input-date').value,
+    type: document.getElementById('transaction-input-type').value,
+    category: document.getElementById('transaction-input-category').value,
+    amount,
+    note: document.getElementById('transaction-input-note').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  
+  const items = await getTransactions();
+  items.unshift(item);
+  await saveTransactions(items);
+  
+  closeModal('transaction-modal');
+  renderFinanceTransactions();
+  renderFinanceOverview();
+  showToast('✅ เพิ่มรายการสำเร็จ', 'success');
+}
+
+async function deleteTransaction(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  const items = await getTransactions();
+  await saveTransactions(items.filter(i => i.id !== id));
+  renderFinanceTransactions();
+  renderFinanceOverview();
+  showToast('🗑️ ลบรายการแล้ว', 'error');
+}
+
+async function renderFinanceTransactions() {
+  const list = document.getElementById('transaction-list');
+  const empty = document.getElementById('transaction-empty');
+  const typeFilter = document.getElementById('transaction-type-filter').value;
+  
+  let items = await getTransactions();
+  
+  // Filter by type
+  if (typeFilter !== 'all') {
+    items = items.filter(i => i.type === typeFilter);
+  }
+  
+  // Sort by date (newest first)
+  items.sort((a, b) => b.date.localeCompare(a.date));
+  
   list.innerHTML = '';
   empty.style.display = items.length === 0 ? 'block' : 'none';
+  
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = `transaction-item ${item.type}`;
+    
+    const categoryLabel = TRANSACTION_CAT_LABELS[item.category] || item.category;
+    const amountDisplay = item.type === 'income' ? `+${item.amount.toLocaleString()}` : `-${item.amount.toLocaleString()}`;
+    
+    card.innerHTML = `
+      <div class="transaction-info">
+        <div class="transaction-category">${categoryLabel} · ${new Date(item.date).toLocaleDateString('th-TH')}</div>
+        <div class="transaction-note">${item.note || 'ไม่มีรายละเอียด'}</div>
+      </div>
+      <div class="transaction-amount ${item.type}">${amountDisplay} บาท</div>
+      <button class="del-x" style="font-size:14px;margin-left:8px;" onclick="deleteTransaction(${item.id})">✕</button>
+    `;
+    
+    list.appendChild(card);
+  });
+}
 
+// ===== Budget Modal =====
+function openBudgetModal() {
+  document.getElementById('budget-input-month').value = new Date().toISOString().slice(0, 7);
+  renderBudgetCategoryCheckboxes();
+  document.getElementById('budget-modal').classList.add('show');
+}
+function renderBudgetCategoryCheckboxes() {
+  const group = document.getElementById('budget-category-group');
+  const categories = getAllBudgetCategories();
+  
+  group.innerHTML = categories.map(cat => {
+    const isCustom = cat.key.startsWith('custom_');
+    return `
+      <div class="budget-checkbox-item" data-key="${cat.key}">
+        <input type="checkbox" id="budget-cat-${cat.key}" checked onchange="updateBudgetTotal()">
+        <label for="budget-cat-${cat.key}">${cat.label}</label>
+        <input type="number" id="budget-limit-${cat.key}" value="${cat.default}" min="0" onchange="updateBudgetTotal()">
+        ${isCustom ? `<button class="del-x" style="font-size:12px;" onclick="onRemoveCategory('${cat.key}')">✕</button>` : ''}
+      </div>
+    `;
+  }).join('') + `
+    <button class="budget-add-cat-btn" onclick="onAddCategory()">+ เพิ่มหมวดหมู่ใหม่</button>
+  `;
+  
+  updateBudgetTotal();
+}
+function onCategoryLabelChange(key, value) {
+  if (key.startsWith('custom_')) {
+    updateCustomCategory(key, value);
+  }
+}
+
+
+function updateBudgetTotal() {
+  let total = 0;
+  document.querySelectorAll('#budget-category-group .budget-checkbox-item').forEach(row => {
+    const key = row.dataset.key;
+    const checkbox = document.getElementById(`budget-cat-${key}`);
+    const limitInput = document.getElementById(`budget-limit-${key}`);
+    if (checkbox && checkbox.checked && limitInput) {
+      total += parseFloat(limitInput.value) || 0;
+    }
+  });
+  document.getElementById('budget-total-display').textContent = `รวม: ${total.toLocaleString()} บาท`;
+}
+function onAddCategory() {
+  const label = prompt('ชื่อหมวดหมู่ใหม่:');
+  if (!label || !label.trim()) return;
+  const amount = parseFloat(prompt('วงเงินเริ่มต้น (บาท):', '0')) || 0;
+  const key = addCustomCategory(label.trim(), amount);
+  renderBudgetCategoryCheckboxes();
+}
+
+function onRemoveCategory(key) {
+  if (!confirm('ลบหมวดหมู่นี้? (budget ที่ใช้หมวดนี้จะยังอยู่ แต่จะแสดงเป็น key แทน)')) return;
+  deleteCustomCategory(key);
+  renderBudgetCategoryCheckboxes();
+}
+
+async function confirmSaveBudget() {
+  const month = document.getElementById('budget-input-month').value;
+  if (!month) { alert('กรุณาเลือกเดือน'); return; }
+  
+  const items = await getBudgets();
+  let count = 0;
+  
+  document.querySelectorAll('#budget-category-group .budget-checkbox-item').forEach(row => {
+    const key = row.dataset.key;
+    const checkbox = document.getElementById(`budget-cat-${key}`);
+    const limitInput = document.getElementById(`budget-limit-${key}`);
+    
+    if (!checkbox || !checkbox.checked || !limitInput) return;
+    
+    const limit = parseFloat(limitInput.value) || 0;
+    if (limit <= 0) return;
+    
+    items.push({
+      id: Date.now() + count,
+      month,
+      category: key,
+      limit,
+      createdAt: new Date().toISOString()
+    });
+    count++;
+  });
+  
+  if (count === 0) { alert('กรุณาเลือกอย่างน้อย 1 หมวด'); return; }
+  
+  await saveBudgets(items);
+  closeModal('budget-modal');
+  renderBudgets();
+  renderFinanceOverview();
+  showToast(`✅ สร้างงบประมาณ ${count} หมวดสำเร็จ`, 'success');
+}
+// ===== Budget List =====
+async function renderBudgets() {
+  const list = document.getElementById('budget-list');
+  const empty = document.getElementById('budget-empty');
+  const monthFilter = document.getElementById('budget-month-filter').value;
+  
+  let items = await getBudgets();
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  
+  if (monthFilter) {
+    items = items.filter(i => i.month === monthFilter);
+  } else {
+    items = items.filter(i => i.month === currentMonth);
+  }
+  
+  // Group by category
+  const grouped = {};
+  items.forEach(item => {
+    if (!grouped[item.category]) grouped[item.category] = [];
+    grouped[item.category].push(item);
+  });
+  
+  list.innerHTML = '';
+  empty.style.display = Object.keys(grouped).length === 0 ? 'block' : 'none';
+  
+  for (const [catKey, budgets] of Object.entries(grouped)) {
+    const catInfo = getAllBudgetCategories().find(c => c.key === catKey);
+    const totalLimit = budgets.reduce((sum, b) => sum + b.limit, 0);
+    
+    const card = document.createElement('div');
+card.className = 'budget-card';
+card.innerHTML = `
+  <div class="budget-header">
+    <div class="budget-category">${catInfo ? catInfo.label : catKey}</div>
+    <div class="budget-amount">${budgets.length} รายการ · ${totalLimit.toLocaleString()} บาท</div>
+  </div>
+  <div style="margin-top:8px;">
+    ${budgets.map(b => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:11px;color:var(--muted);border-top:1px dashed var(--border);">
+        <span>${b.month}</span>
+        <span>${b.limit.toLocaleString()} บาท</span>
+        <div style="display:flex;gap:4px;">
+          <button class="del-x" style="font-size:10px;color:var(--accent);" onclick="editBudget(${b.id})">✎</button>
+          <button class="del-x" style="font-size:10px;" onclick="deleteBudget(${b.id})">✕</button>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+`;
+list.appendChild(card);
+  }
+}
+let editingBudgetId = null;
+
+function openEditBudgetModal(id) {
+  editingBudgetId = id;
+  getBudgets().then(items => {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    document.getElementById('budget-edit-input-month').value = item.month;
+    document.getElementById('budget-edit-input-category').value = item.category;
+    document.getElementById('budget-edit-input-limit').value = item.limit;
+    document.getElementById('budget-edit-modal').classList.add('show');
+  });
+}
+
+async function editBudget(id) {
+  openEditBudgetModal(id);
+}
+
+async function confirmEditBudget() {
+  if (editingBudgetId === null) return;
+  const limit = parseFloat(document.getElementById('budget-edit-input-limit').value);
+  if (isNaN(limit) || limit <= 0) { alert('กรุณาใส่จำนวนเงินที่ถูกต้อง'); return; }
+  
+  const items = await getBudgets();
+  const item = items.find(i => i.id === editingBudgetId);
+  if (item) {
+    item.month = document.getElementById('budget-edit-input-month').value;
+    item.category = document.getElementById('budget-edit-input-category').value;
+    item.limit = limit;
+    await saveBudgets(items);
+    closeModal('budget-edit-modal');
+    renderBudgets();
+    renderFinanceOverview();
+    showToast('✅ แก้ไขงบประมาณสำเร็จ', 'success');
+  }
+}
+
+async function deleteBudget(id) {
+  if (!confirm('ลบงบประมาณนี้?')) return;
+  const items = await getBudgets();
+  await saveBudgets(items.filter(i => i.id !== id));
+  renderBudgets();
+  renderFinanceOverview();
+  showToast('🗑️ ลบงบประมาณแล้ว', 'error');
+}
+// ===== Preset Save =====
+function openPresetSaveModal() {
+  document.getElementById('preset-input-name').value = '';
+  document.getElementById('preset-save-modal').classList.add('show');
+}
+
+async function confirmSavePreset() {
+  const name = document.getElementById('preset-input-name').value.trim();
+  if (!name) { alert('กรุณาใส่ชื่อ Preset'); return; }
+  
+  const items = [];
+  document.querySelectorAll('#budget-category-group .budget-checkbox-item').forEach(row => {
+    const key = row.dataset.key;
+    const checkbox = document.getElementById(`budget-cat-${key}`);
+    const limitInput = document.getElementById(`budget-limit-${key}`);
+    
+    if (checkbox && checkbox.checked && limitInput) {
+      items.push({ category: key, limit: parseFloat(limitInput.value) || 0 });
+    }
+  });
+  
+  if (items.length === 0) { alert('กรุณาเลือกอย่างน้อย 1 หมวด'); return; }
+  
+  const presets = await getPresets();
+  presets.push({
+    id: Date.now(),
+    name,
+    items,
+    createdAt: new Date().toISOString()
+  });
+  await savePresets(presets);
+  
+  closeModal('preset-save-modal');
+  renderPresets();
+  showToast(`✅ บันทึก Preset "${name}" แล้ว`, 'success');
+}
+
+// ===== Preset Use =====
+async function openPresetUseModal() {
+  const presets = await getPresets();
+  const select = document.getElementById('preset-select');
+  
+  if (presets.length === 0) {
+    select.innerHTML = '<option value="">ยังไม่มี Preset</option>';
+  } else {
+    select.innerHTML = presets.map(p => {
+      const total = p.items.reduce((sum, i) => sum + i.limit, 0);
+      return `<option value="${p.id}">${p.name} (${total.toLocaleString()} บาท)</option>`;
+    }).join('');
+  }
+  
+  document.getElementById('preset-input-month').value = new Date().toISOString().slice(0, 7);
+  document.getElementById('preset-use-modal').classList.add('show');
+}
+
+async function confirmCreateFromPreset() {
+  const presetId = parseInt(document.getElementById('preset-select').value);
+  const month = document.getElementById('preset-input-month').value;
+  
+  if (!presetId || !month) { alert('กรุณาเลือก Preset และเดือน'); return; }
+  
+  const presets = await getPresets();
+  const preset = presets.find(p => p.id === presetId);
+  if (!preset) { alert('ไม่พบ Preset'); return; }
+  
+  const budgets = await getBudgets();
+  let count = 0;
+  
+  preset.items.forEach(item => {
+    if (item.limit <= 0) return;
+    
+    // เพิ่มแยก ไม่ทับของเดิม
+    budgets.push({
+      id: Date.now() + count,
+      month,
+      category: item.category,
+      limit: item.limit,
+      createdAt: new Date().toISOString()
+    });
+    count++;
+  });
+  
+  await saveBudgets(budgets);
+  closeModal('preset-use-modal');
+  renderBudgets();
+  renderFinanceOverview();
+  showToast(`✅ สร้างจาก Preset "${preset.name}" ${count} หมวด`, 'success');
+}
+
+// ===== Preset List =====
+async function renderPresets() {
+  const container = document.getElementById('preset-list');
+  const presets = await getPresets();
+  
+  if (presets.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  let html = '<h3 style="font-size:13px;color:var(--muted);margin-bottom:8px;">📋 Presets ที่บันทึกไว้</h3>';
+  
+  presets.forEach(p => {
+    const total = p.items.reduce((sum, i) => sum + i.limit, 0);
+    html += `
+      <div class="preset-card">
+        <div>
+          <div class="preset-name">${p.name}</div>
+          <div class="preset-total">${p.items.length} หมวด · ${total.toLocaleString()} บาท/เดือน</div>
+        </div>
+        <div class="preset-actions">
+          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="usePreset(${p.id})">ใช้งาน</button>
+          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editPresetName(${p.id})">✎</button>
+          <button class="del-x" style="font-size:12px;" onclick="deletePreset(${p.id})">✕</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+async function editPresetName(id) {
+  const presets = await getPresets();
+  const preset = presets.find(p => p.id === id);
+  if (!preset) return;
+  
+  const newName = prompt('ชื่อ Preset ใหม่:', preset.name);
+  if (!newName || !newName.trim()) return;
+  
+  preset.name = newName.trim();
+  await savePresets(presets);
+  renderPresets();
+  showToast('✅ เปลี่ยนชื่อ Preset แล้ว', 'success');
+}
+
+async function usePreset(id) {
+  const presets = await getPresets();
+  const preset = presets.find(p => p.id === id);
+  if (!preset) return;
+  
+  const month = prompt('เดือนที่จะสร้าง (YYYY-MM):', new Date().toISOString().slice(0, 7));
+  if (!month) return;
+  
+  const budgets = await getBudgets();
+  let count = 0;
+  
+  preset.items.forEach(item => {
+    if (item.limit <= 0) return;
+    budgets.push({
+      id: Date.now() + count,
+      month,
+      category: item.category,
+      limit: item.limit,
+      createdAt: new Date().toISOString()
+    });
+    count++;
+  });
+  
+  await saveBudgets(budgets);
+  renderBudgets();
+  renderFinanceOverview();
+  showToast(`✅ ใช้ Preset "${preset.name}" ${count} หมวด`, 'success');
+}
+
+async function deletePreset(id) {
+  if (!confirm('ลบ Preset นี้?')) return;
+  const presets = await getPresets();
+  await savePresets(presets.filter(p => p.id !== id));
+  renderPresets();
+  showToast('🗑️ ลบ Preset แล้ว', 'error');
+}
+
+async function renderFinanceBudgets() {
+  const list = document.getElementById('budget-list');
+  const empty = document.getElementById('budget-empty');
+  const monthFilter = document.getElementById('budget-month-filter').value;
+  
+  let items = await getBudgets();
+  const transactions = await getTransactions();
+  
+  // Filter by month
+  if (monthFilter) {
+    items = items.filter(i => i.month === monthFilter);
+  } else {
+    // Default: current month
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    items = items.filter(i => i.month === currentMonth);
+  }
+  
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+  
+  for (const item of items) {
+    const categoryLabel = BUDGET_CAT_LABELS[item.category] || item.category;
+    
+    // Calculate spent amount
+    const spent = transactions
+      .filter(t => t.type === 'expense' && t.category === item.category && t.date.startsWith(item.month))
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const pct = Math.min(100, (spent / item.limit) * 100);
+    const isOver = spent > item.limit;
+    
+    const card = document.createElement('div');
+    card.className = 'budget-card';
+    card.innerHTML = `
+      <div class="budget-header">
+        <div class="budget-category">${categoryLabel}</div>
+        <div class="budget-amount">${spent.toLocaleString()} / ${item.limit.toLocaleString()} บาท</div>
+      </div>
+      <div class="budget-progress">
+        <div class="budget-progress-fill ${isOver ? 'over' : ''}" style="width:${pct}%"></div>
+      </div>
+      <div class="budget-footer">
+        <span>${pct.toFixed(0)}% ${isOver ? '⚠️ เกินงบ' : ''}</span>
+        <button class="del-x" style="font-size:12px;" onclick="deleteBudget(${item.id})">✕ ลบ</button>
+      </div>
+    `;
+    
+    list.appendChild(card);
+  }
+}
+// ===== Finance Overview (ครบถ้วน) =====
+async function renderFinanceOverview() {
+  const transactions = await getTransactions();
+  const budgets = await getBudgets();
+  
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  
+  // Calculate monthly income/expense
+  const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+  const income = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const expense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const balance = income - expense;
+  
+  // Update summary cards
+  const incomeEl = document.getElementById('finance-month-income');
+  const expenseEl = document.getElementById('finance-month-expense');
+  const balanceEl = document.getElementById('finance-month-balance');
+  
+  if (incomeEl) incomeEl.textContent = income.toLocaleString();
+  if (expenseEl) expenseEl.textContent = expense.toLocaleString();
+  if (balanceEl) balanceEl.textContent = balance.toLocaleString();
+  
+  // Render budget summary
+  const budgetSummary = document.getElementById('finance-budget-summary');
+  if (!budgetSummary) return;
+  
+  const monthBudgets = budgets.filter(b => b.month === currentMonth);
+  
+  if (monthBudgets.length === 0) {
+    budgetSummary.innerHTML = '<div class="empty">ยังไม่มีงบประมาณเดือนนี้</div>';
+  } else {
+    // Group by category
+    const grouped = {};
+    monthBudgets.forEach(b => {
+      if (!grouped[b.category]) grouped[b.category] = { limit: 0, spent: 0 };
+      grouped[b.category].limit += b.limit;
+      
+      const spent = monthTransactions
+        .filter(t => t.type === 'expense' && t.category === b.category)
+        .reduce((sum, t) => sum + t.amount, 0);
+      grouped[b.category].spent += spent;
+    });
+    
+    let html = '<h3 style="font-size:13px;color:var(--muted);margin:16px 0 8px;">📊 งบประมาณเดือนนี้</h3>';
+    
+    for (const [catKey, data] of Object.entries(grouped)) {
+      const catInfo = getAllBudgetCategories().find(c => c.key === catKey);
+      const pct = Math.min(100, (data.spent / data.limit) * 100);
+      const isOver = data.spent > data.limit;
+      
+      html += `
+        <div class="budget-card">
+          <div class="budget-header">
+            <div class="budget-category">${catInfo ? catInfo.label : catKey}</div>
+            <div class="budget-amount">${data.spent.toLocaleString()} / ${data.limit.toLocaleString()} บาท</div>
+          </div>
+          <div class="budget-progress">
+            <div class="budget-progress-fill ${isOver ? 'over' : ''}" style="width:${pct}%"></div>
+          </div>
+          <div class="budget-footer">
+            <span>${pct.toFixed(0)}% ${isOver ? '⚠️ เกินงบ' : ''}</span>
+          </div>
+        </div>
+      `;
+    }
+    
+    budgetSummary.innerHTML = html;
+  }
+}
+
+// ===== Finance Goals (แยกจากเดิม) =====
+async function renderFinanceGoals() {
+  const list = document.getElementById('finance-goals-list');
+  const empty = document.getElementById('finance-goals-empty');
+  const priorityFilter = document.getElementById('finance-priority-filter').value;
+  
+  let items = await getFinances();
+  
+  if (priorityFilter) {
+    items = items.filter(i => i.priority === priorityFilter);
+  }
+  
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+  
   items.forEach(item => {
     const pct = Math.min(100, (item.saved / item.target) * 100);
     const card = document.createElement('div');
     card.className = 'item-card';
+    
+    const categoryLabel = FINANCE_CAT_LABELS[item.category] || item.category;
     const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
-    card.innerHTML = `
-      <div class="item-top">
-        <div class="item-title">${item.name}</div>
-        <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
-        <button class="del-x" style="color:var(--accent);" onclick="editFinance(${item.id})">✎</button>
-        <button class="del-x" onclick="deleteFinance(${item.id})">✕</button>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div class="progress-label">${item.saved.toLocaleString()} / ${item.target.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
-      <div class="item-footer">
-        <span></span>
-        <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateFinanceSaved(${item.id})">อัพเดตยอด</button>
-      </div>
-    `;
+    
+    const tagsHtml = (item.tags || []).length > 0 
+  ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px;">${item.tags.map(t => `<span class="tag" style="background:rgba(200,169,110,.15);color:var(--accent2);padding:1px 6px;border-radius:10px;font-size:9px;">${t}</span>`).join('')}</div>`
+  : '';
+
+card.innerHTML = `
+  <div class="item-top">
+    <div>
+      <span class="item-cat">${categoryLabel}</span>
+      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+      <div class="item-title" style="margin-top:6px;">${item.name}</div>
+      ${tagsHtml}
+    </div>
+    <div style="display:flex;gap:2px;align-items:center;">
+      <button class="del-x" style="color:var(--accent);" onclick="editFinance(${item.id})">✎</button>
+      <button class="del-x" onclick="deleteFinance(${item.id})">✕</button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+  <div class="progress-label">${item.saved.toLocaleString()} / ${item.target.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
+  <div class="item-footer">
+    <span></span>
+    <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateFinanceSaved(${item.id})">อัพเดตยอด</button>
+  </div>
+`;
     list.appendChild(card);
   });
 }
-async function renderFinanceSummary() {
-  const finances = await getFinances();
+
+// ===== Wishlist (แยกจากเดิม) =====
+async function renderWishlist() {
+  const list = document.getElementById('wishlist-list');
+  const empty = document.getElementById('wishlist-empty');
+  const priorityFilter = document.getElementById('wish-priority-filter').value;
   
-  const totalTarget = finances.reduce((sum, f) => sum + f.target, 0);
-  const totalSaved = finances.reduce((sum, f) => sum + f.saved, 0);
-  const avgProgress = finances.length > 0 
-    ? Math.round(finances.reduce((sum, f) => sum + Math.min(100, (f.saved / f.target) * 100), 0) / finances.length)
-    : 0;
-  const completed = finances.filter(f => f.saved >= f.target).length;
+  let items = await getWishes();
   
-  document.getElementById('finance-total-target').textContent = totalTarget.toLocaleString();
-  document.getElementById('finance-total-saved').textContent = totalSaved.toLocaleString();
-  document.getElementById('finance-avg-progress').textContent = avgProgress + '%';
-  document.getElementById('finance-completed').textContent = completed;
+  if (priorityFilter) {
+    items = items.filter(i => i.priority === priorityFilter);
+  }
+  
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+  
+  items.forEach(item => {
+    const saved = item.saved || 0;
+    const price = item.price || 0;
+    const pct = price > 0 ? Math.min(100, (saved / price) * 100) : 0;
+    
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.style.opacity = item.bought ? '0.5' : '1';
+    
+    const categoryLabel = WISH_CAT_LABELS[item.category] || item.category;
+    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    
+    const tagsHtml = (item.tags || []).length > 0 
+  ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px;">${item.tags.map(t => `<span class="tag" style="background:rgba(200,169,110,.15);color:var(--accent2);padding:1px 6px;border-radius:10px;font-size:9px;">${t}</span>`).join('')}</div>`
+  : '';
+
+card.innerHTML = `
+  <div class="item-top">
+    <div>
+      <span class="item-cat">${categoryLabel}</span>
+      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+      <div class="item-title" style="margin-top:6px;${item.bought ? 'text-decoration:line-through;' : ''}">${item.name}${item.bought ? ' ✅' : ''}</div>
+      ${tagsHtml}
+    </div>
+    <div style="display:flex;gap:2px;align-items:center;">
+      <button class="del-x" style="color:var(--accent);" onclick="editWish(${item.id})">✎</button>
+      <button class="del-x" onclick="deleteWish(${item.id})">✕</button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+  <div class="progress-label">${saved.toLocaleString()} / ${price.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
+  <div class="item-footer">
+    ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ดูลิงก์</a>` : '<span></span>'}
+    <div style="display:flex;gap:4px;margin-left:auto;">
+      <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateWishSaved(${item.id})">อัพเดตยอด</button>
+      <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="toggleBought(${item.id})">${item.bought ? '↩ ยังไม่ได้ซื้อ' : '✓ ซื้อแล้ว'}</button>
+    </div>
+  </div>
+`;
+    
+    list.appendChild(card);
+  });
 }
 
 // ==========================================================
@@ -2341,22 +4011,23 @@ function openWishModal() {
 async function confirmSaveWish() {
   const name = document.getElementById('wish-input-name').value.trim();
   if (!name) { alert('กรุณาใส่ชื่อสิ่งของ'); return; }
-  const item = {
-    id: Date.now(),
-    name,
-    category: document.getElementById('wish-input-category').value,
-    price: parseFloat(document.getElementById('wish-input-price').value) || 0,
-    saved: parseFloat(document.getElementById('wish-input-saved').value) || 0,
-    priority: document.getElementById('wish-input-priority').value,
-    link: document.getElementById('wish-input-link').value.trim(),
-    bought: false,
-    createdAt: new Date().toISOString()
-  };
+const item = {
+  id: Date.now(),
+  name,
+  category: document.getElementById('wish-input-category').value,
+  price: parseFloat(document.getElementById('wish-input-price').value) || 0,
+  saved: parseFloat(document.getElementById('wish-input-saved').value) || 0,
+  priority: document.getElementById('wish-input-priority').value,
+  link: document.getElementById('wish-input-link').value.trim(),
+  tags: document.getElementById('wish-input-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+  bought: false,
+  createdAt: new Date().toISOString()
+};
   const items = await getWishes();
   items.unshift(item);
   await saveWishes(items);
   closeModal('wish-modal');
-  renderFinanceAndWish();
+  await renderWishlist();
   renderDashboard();  // ← เพิ่ม
   showToast('✅ เพิ่มรายการ wishlist สำเร็จ', 'success');
 }
@@ -2364,8 +4035,13 @@ async function confirmSaveWish() {
 async function toggleBought(id) {
   const items = await getWishes();
   const item = items.find(i => i.id === id);
-  if (item) { item.bought = !item.bought; saveWishes(items); renderFinanceAndWish(); renderDashboard();
-  showToast(item.bought ? '✅ ทำเครื่องหมายว่าซื้อแล้ว' : '↩️ ยกเลิกสถานะซื้อ', 'info'); }
+  if (item) {
+    item.bought = !item.bought;
+    await saveWishes(items);
+    await renderWishlist();
+    renderDashboard();
+    showToast(item.bought ? '✅ ทำเครื่องหมายว่าซื้อแล้ว' : '↩️ ยกเลิกสถานะซื้อ', 'info');
+  }
 }
 
 async function deleteWish(id) {
@@ -2379,17 +4055,21 @@ async function deleteWish(id) {
 
   const wishes = await getWishes();  // ← เพิ่ม await
   await saveWishes(wishes.filter(i => i.id !== id));  // ← เพิ่ม await
-  renderFinanceAndWish();
+  await renderWishlist();
   renderDashboard();
   showToast('🗑️ ลบรายการ Wishlist แล้ว', 'error');
 }
 async function renderFinanceAndWish() {
   const list = document.getElementById('finance-list');
-  const empty = document.getElementById('finance-empty');
-  const filter = document.getElementById('finance-type-filter').value;
+const empty = document.getElementById('finance-empty');
+if (!list || !empty) return; // ป้องกัน error ถ้าเปลี่ยนเป็น tabs แล้ว
+
+const typeFilterEl = document.getElementById('finance-type-filter');
+const priorityFilterEl = document.getElementById('finance-priority-filter');
+const filter = typeFilterEl ? typeFilterEl.value : 'all';
+const priorityFilter = priorityFilterEl ? priorityFilterEl.value : '';
 
   const [financeItems, wishItems] = await Promise.all([getFinances(), getWishes()]);
-  const priorityFilter = document.getElementById('finance-priority-filter').value;
   
   let filteredFinance = financeItems;
   let filteredWish = wishItems;
@@ -2486,24 +4166,24 @@ if (filter === 'all' || filter === 'wishlist') {
     list.appendChild(card);
   });
 }
-async function updateWishSaved(id) {  // ← เพิ่ม async
+async function updateWishSaved(id) {
   pendingWishId = id;
-  const items = await getWishes();  // ← เพิ่ม await
+  const items = await getWishes();
   const item = items.find(i => i.id === id);
   document.getElementById('wish-update-amount').value = item ? item.saved : 0;
   document.getElementById('wish-update-modal').classList.add('show');
 }
 
-async function confirmUpdateWish() {  // ← เพิ่ม async
+async function confirmUpdateWish() {
   if (pendingWishId === null) return;
   const val = parseFloat(document.getElementById('wish-update-amount').value);
   if (isNaN(val) || val < 0) { alert('กรุณาใส่ตัวเลขที่ถูกต้อง'); return; }
-  const items = await getWishes();  // ← เพิ่ม await
+  const items = await getWishes();
   const item = items.find(i => i.id === pendingWishId);
   if (item) {
     item.saved = val;
-    await saveWishes(items);  // ← เพิ่ม await
-    renderFinanceAndWish();
+    await saveWishes(items);
+    await renderWishlist();
     renderDashboard();
     showToast('✅ อัพเดตยอดเงินเรียบร้อย', 'success');
   }
@@ -2717,12 +4397,6 @@ const PROJECT_STATUS_LABELS = {
   active: '🚀 กำลังทำ',
   review: '🔍 ทบทวน',
   done: '✅ เสร็จแล้ว',
-};
-const PRIORITY_LABELS = {
-  critical: '⭐⭐⭐ สำคัญ+เร่งด่วน',
-  important: '⭐⭐ สำคัญ (ไม่เร่ง)',
-  urgent: '⭐ เร่งด่วน (ไม่สำคัญ)',
-  low: '☆ ทิ้ง/เลื่อน'
 };
 
 const PROJECT_STATUS_ORDER = ['planning', 'active', 'review', 'done'];
@@ -3483,7 +5157,8 @@ async function importAll(event) {
         renderRef(),
         renderVision(),
         renderGoals(),
-        renderFinanceAndWish(),
+        renderFinanceGoals(),
+        renderWishlist(),
         renderDashboard(),
         renderFinanceSummary()
       ]);
@@ -3614,6 +5289,7 @@ async function editFinance(id) {
   setEditMode('finance', id);
   document.getElementById('finance-modal').classList.add('show');
   document.getElementById('finance-input-priority').value = item.priority || 'important';
+  document.getElementById('finance-input-tags').value = (item.tags || []).join(', ');
 }
 
 async function confirmEditFinance() {
@@ -3621,20 +5297,23 @@ async function confirmEditFinance() {
   const name = document.getElementById('finance-input-name').value.trim();
   const target = parseFloat(document.getElementById('finance-input-target').value);
   if (!name || isNaN(target) || target <= 0) { alert('กรุณาใส่ชื่อและเป้าหมายที่ถูกต้อง'); return; }
-  const items = await getFinances();  // ← เพิ่ม await
+  const items = await getFinances();
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.name = name;
+    item.category = document.getElementById('finance-input-category').value;  // ← เพิ่มบรรทัดนี้
     item.target = target;
     item.saved = parseFloat(document.getElementById('finance-input-saved').value) || 0;
     item.priority = document.getElementById('finance-input-priority').value;
-    await saveFinances(items);  // ← เพิ่ม await
+    item.tags = document.getElementById('finance-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    await saveFinances(items);
   }
   closeModal('finance-modal');
   resetFinanceModal();
   clearEditMode();
-  renderFinanceAndWish();
+  await renderFinanceGoals();  // ← เปลี่ยนจาก renderFinanceAndWish()
   renderDashboard();
+  showToast('✅ แก้ไขเป้าหมายการเงินสำเร็จ', 'success');
 }
 
 function resetFinanceModal() {
@@ -3645,6 +5324,7 @@ function resetFinanceModal() {
   document.getElementById('finance-input-target').value = '';
   document.getElementById('finance-input-saved').value = '';
   document.getElementById('finance-input-priority').value = 'important';
+  document.getElementById('finance-input-tags').value = '';
 }
 
 // --- Edit Wishlist ---
@@ -3658,6 +5338,7 @@ async function editWish(id) {
   document.getElementById('wish-input-saved').value = item.saved || 0;
   document.getElementById('wish-input-priority').value = item.priority;
   document.getElementById('wish-input-link').value = item.link || '';
+  document.getElementById('wish-input-tags').value = (item.tags || []).join(', ');
   document.getElementById('wish-modal').querySelector('h3').textContent = 'แก้ไขของที่อยากได้';
   document.getElementById('wish-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditWish;
   setEditMode('wish', id);
@@ -3671,18 +5352,21 @@ async function confirmEditWish() {
   const items = await getWishes();
   const item = items.find(i => i.id === editingId);
   if (item) {
-    item.name = name;
-    item.price = parseFloat(document.getElementById('wish-input-price').value) || 0;
-    item.saved = parseFloat(document.getElementById('wish-input-saved').value) || 0;
-    item.priority = document.getElementById('wish-input-priority').value;
-    item.link = document.getElementById('wish-input-link').value.trim();
-    saveWishes(items);
-  }
+  item.name = name;
+  item.category = document.getElementById('wish-input-category').value;
+  item.price = parseFloat(document.getElementById('wish-input-price').value) || 0;
+  item.saved = parseFloat(document.getElementById('wish-input-saved').value) || 0;
+  item.priority = document.getElementById('wish-input-priority').value;
+  item.link = document.getElementById('wish-input-link').value.trim();
+  item.tags = document.getElementById('wish-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  await saveWishes(items);
+}
   closeModal('wish-modal');
   resetWishModal();
   clearEditMode();
-  renderFinanceAndWish();  // ← แก้ไข
-  renderDashboard();  // ← เพิ่มบรรทัดนี้
+  await renderWishlist();  // ← เปลี่ยนจาก renderFinanceAndWish()
+  renderDashboard();
+  showToast('✅ แก้ไข Wishlist สำเร็จ', 'success');
 }
 
 function resetWishModal() {
@@ -3693,8 +5377,10 @@ function resetWishModal() {
   document.getElementById('wish-input-price').value = '';
   document.getElementById('wish-input-priority').value = 'medium';
   document.getElementById('wish-input-link').value = '';
+  document.getElementById('wish-input-category').value = 'other';
   document.getElementById('wish-input-priority').value = 'important';
   document.getElementById('wish-input-saved').value = '';
+  document.getElementById('wish-input-tags').value = '';
 }
 
 // --- Edit Ref ---
@@ -3880,8 +5566,11 @@ async function initApp() {
   onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); });
   onDailySnapshot(() => { renderDaily(); renderDashboard(); renderNav(); });
   onRefsSnapshot(() => { renderRef(); renderDashboard(); renderNav(); });
-  onFinancesSnapshot(() => { renderFinanceAndWish(); renderDashboard(); renderNav(); });
-  onWishesSnapshot(() => { renderFinanceAndWish(); renderDashboard(); renderNav(); });
+  onFinancesSnapshot(() => { renderFinanceGoals(); renderDashboard(); renderNav(); });
+  onWishesSnapshot(() => { renderWishlist(); renderDashboard(); renderNav(); });
+  onBudgetsSnapshot(() => { renderBudgets(); renderFinanceOverview(); renderDashboard(); });
+  onTransactionsSnapshot(() => { renderFinanceTransactions(); renderFinanceOverview(); });
+  onPresetsSnapshot(() => { renderPresets(); });
   onVisionsSnapshot(() => { renderVision(); renderDashboard(); renderNav(); });
   onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); });
   onProjectsSnapshot(() => { renderProjects(); renderDashboard(); renderNav(); });
@@ -3897,11 +5586,18 @@ async function initApp() {
   renderGoals();
   renderStudy();
   renderProjects();
-  renderFinanceAndWish();
+  renderFinanceGoals();
+  renderWishlist();
   renderDashboard();
   renderCalendar();
   renderInbox();
   renderDaily();
+  renderFinanceTransactions();
+  renderBudgets();
+  renderPresets();
+  renderFinanceOverview();
+  renderFinanceGoals();
+  renderWishlist();
 
   const savedState = localStorage.getItem('calendar_collapsed');
   if (savedState === 'true') {
