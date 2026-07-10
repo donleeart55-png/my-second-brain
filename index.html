@@ -5,6 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Second Brain</title>
 <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+<!-- Firebase SDK (compat mode) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+// ==========================================================
+// FIREBASE SETUP
+// ==========================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBtlEfdiW_TpVC_N5pkO1XHqHb-afHfhRI",
+  authDomain: "donlee2ndbrain.firebaseapp.com",
+  projectId: "donlee2ndbrain",
+  storageBucket: "donlee2ndbrain.firebasestorage.app",
+  messagingSenderId: "385769369683",
+  appId: "1:385769369683:web:a29fefd9a5d4fa41b056a6"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// เปิด offline persistence (Firestore จัดการเอง)
+db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+  console.warn('⚠️ Offline persistence:', err.code);
+});
+
+// Anonymous auth — ไม่ต้องมีหน้า login
+firebase.auth().signInAnonymously().catch(err => {
+  console.error('⚠️ Auth error:', err);
+});
+</script>
 <style>
   :root {
     --bg: #0e0e12; --surface: #16161e; --surface2: #1e1e2a; --border: #2a2a3a;
@@ -1215,9 +1245,20 @@ function renderNav() {
   nav.innerHTML = PAGES.map(p => {
     let badge = '';
     if (p.id === 'journal') {
-      const inbox = getInbox();
-      const count = inbox.filter(i => !i.processed).length;
-      if (count > 0) badge = ` <span style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:2px;">${count}</span>`;
+      // ใช้ .then() เพราะ getInbox() เป็น Promise
+      getInbox().then(items => {
+        const count = items.filter(i => !i.processed).length;
+        const badgeEl = document.getElementById(`nav-badge-${p.id}`);
+        if (badgeEl) {
+          if (count > 0) {
+            badgeEl.textContent = count;
+            badgeEl.style.display = 'inline';
+          } else {
+            badgeEl.style.display = 'none';
+          }
+        }
+      });
+      badge = ` <span id="nav-badge-journal" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:2px;display:none;">0</span>`;
     }
     const isPrimary = p.primary ? 'primary' : '';
     return `<button class="nav-btn ${isPrimary}" id="nav-${p.id}" onclick="switchPage('${p.id}')">${p.label}${badge}</button>`;
@@ -1270,18 +1311,129 @@ function switchPageWithFilter(pageId, filterValue) {
     }, 100);
   }
 }
+// ==========================================================
+// FIRESTORE HELPERS — ใช้ร่วมกันทุกโมดูล
+// ==========================================================
+let firestoreReady = false;
+let pendingOperations = [];
+
+function waitForFirestore() {
+  return new Promise((resolve) => {
+    if (firestoreReady) { resolve(); return; }
+    const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        firestoreReady = true;
+        unsubscribe();
+        resolve();
+      }
+    });
+    // fallback: หลังจาก 2 วินาที ถ้ายังไม่ auth ให้ resolve ไปก่อน
+    setTimeout(() => {
+      if (!firestoreReady) {
+        firestoreReady = true;
+        resolve();
+      }
+    }, 2000);
+  });
+}
+
+function createFirestoreModule(collectionName, docId = 'items') {
+  const docRef = db.collection(collectionName).doc(docId);
+  let listeners = [];
+  let currentData = [];
+
+  // ฟังก์ชันหลัก
+  async function getItems() {
+    await waitForFirestore();
+    try {
+      const doc = await docRef.get();
+      if (doc.exists) {
+        const data = doc.data();
+        currentData = data.items || [];
+      } else {
+        currentData = [];
+        await docRef.set({ items: [] });
+      }
+      return [...currentData];
+    } catch (err) {
+      console.warn(`⚠️ getItems(${collectionName}) error:`, err);
+      return currentData.length ? [...currentData] : [];
+    }
+  }
+
+  async function saveItems(items) {
+    await waitForFirestore();
+    currentData = [...items];
+    try {
+      await docRef.set({ items: currentData });
+      // เก็บ localStorage backup เผื่อ (optional)
+      try {
+        localStorage.setItem(`fb_${collectionName}_backup`, JSON.stringify(currentData));
+      } catch (e) {}
+    } catch (err) {
+      console.warn(`⚠️ saveItems(${collectionName}) error:`, err);
+      // fallback: เก็บ localStorage ไว้ก่อน
+      try {
+        localStorage.setItem(`fb_${collectionName}_backup`, JSON.stringify(currentData));
+      } catch (e) {}
+      throw err;
+    }
+  }
+
+  function onSnapshot(callback) {
+    const unsubscribe = docRef.onSnapshot(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        currentData = data.items || [];
+        callback([...currentData]);
+      } else {
+        currentData = [];
+        callback([]);
+      }
+    }, err => {
+      console.warn(`⚠️ onSnapshot(${collectionName}) error:`, err);
+    });
+    listeners.push(unsubscribe);
+    return unsubscribe;
+  }
+
+  // ฟังก์ชัน cleanup
+  function cleanup() {
+    listeners.forEach(unsub => { try { unsub(); } catch (e) {} });
+    listeners = [];
+  }
+
+  // Migrate จาก localStorage (ถ้ามี)
+  async function migrateFromLocalStorage(localStorageKey) {
+    try {
+      const localData = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+      if (localData.length > 0) {
+        const current = await getItems();
+        if (current.length === 0) {
+          await saveItems(localData);
+          console.log(`✅ Migrated ${localStorageKey} (${localData.length} items) to Firestore`);
+        }
+      }
+    } catch (e) {}
+  }
+
+  return { getItems, saveItems, onSnapshot, cleanup, migrateFromLocalStorage, docRef };
+}
 
 // ==========================================================
 // DASHBOARD
 // ==========================================================
-function renderDashboard() {
-  const refs = getRefs();
-  const visions = getVisions();
-  const goals = getGoals();
-  const finances = getFinances();
-  const wishes = getWishes();
-  const studies = getStudies();
-  const projects = getProjects();
+async function renderDashboard() {
+  const [refs, visions, goals, finances, wishes, studies, projects, inbox] = await Promise.all([
+    getRefs(),
+    getVisions(),
+    getGoals(),
+    getFinances(),
+    getWishes(),
+    getStudies(),
+    getProjects(),
+    getInbox()
+  ]);
   
   // ===== สถิติ =====
   document.getElementById('dash-ref-count').textContent = refs.length;
@@ -1291,71 +1443,61 @@ function renderDashboard() {
   document.getElementById('dash-project-count').textContent = projects.length;
   document.getElementById('dash-finance-count').textContent = finances.length;
   document.getElementById('dash-wish-count').textContent = wishes.length;
-// ===== Inbox Quick Entry =====
-const inboxCount = getInbox().filter(i => !i.processed).length;
-// ปุ่มด่วน + badge แสดงอยู่ที่ HTML แล้ว ใช้ JS อัพเดต badge แทน
-document.querySelector('#page-dashboard .sub')?.insertAdjacentHTML('afterend', `
-  <div style="display:flex;gap:8px;align-items:center;margin:12px 0;padding:12px 16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">
-    <span style="font-size:14px;">💡</span>
-    <span style="flex:1;font-size:13px;color:var(--muted);">${inboxCount > 0 ? `📥 มี Inbox ค้าง ${inboxCount} รายการ` : 'ไม่มี Inbox ค้าง 🎉'}</span>
-    <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openInboxModal()">+ พิมพ์ความคิด</button>
-  </div>
-`);
+
   // ===== สถิติความสำคัญ (Priority) =====
-function countPriority(items) {
-  const counts = { critical: 0, important: 0, urgent: 0, low: 0 };
-  items.forEach(i => {
-    const p = i.priority || 'important';
-    if (counts.hasOwnProperty(p)) counts[p]++;
+  function countPriority(items) {
+    const counts = { critical: 0, important: 0, urgent: 0, low: 0 };
+    items.forEach(i => {
+      const p = i.priority || 'important';
+      if (counts.hasOwnProperty(p)) counts[p]++;
+    });
+    return counts;
+  }
+
+  const visionPriority = countPriority(visions);
+  const goalPriority = countPriority(goals);
+  const financePriority = countPriority(finances);
+  const wishPriority = countPriority(wishes);
+  const studyPriority = countPriority(studies);
+  const projectPriority = countPriority(projects);
+
+  const totalPriority = { critical: 0, important: 0, urgent: 0, low: 0 };
+  [visionPriority, goalPriority, financePriority, wishPriority, studyPriority, projectPriority].forEach(p => {
+    totalPriority.critical += p.critical;
+    totalPriority.important += p.important;
+    totalPriority.urgent += p.urgent;
+    totalPriority.low += p.low;
   });
-  return counts;
-}
 
-const visionPriority = countPriority(getVisions());
-const goalPriority = countPriority(getGoals());
-const financePriority = countPriority(getFinances());
-const wishPriority = countPriority(getWishes());
-const studyPriority = countPriority(getStudies());
-const projectPriority = countPriority(getProjects());
-
-// รวมทั้งหมด
-const totalPriority = { critical: 0, important: 0, urgent: 0, low: 0 };
-[visionPriority, goalPriority, financePriority, wishPriority, studyPriority, projectPriority].forEach(p => {
-  totalPriority.critical += p.critical;
-  totalPriority.important += p.important;
-  totalPriority.urgent += p.urgent;
-  totalPriority.low += p.low;
-});
-
-const priorityDiv = document.getElementById('dash-priority-stats');
-if (totalPriority.critical + totalPriority.important + totalPriority.urgent + totalPriority.low === 0) {
-  priorityDiv.innerHTML = `<span style="color:var(--muted);font-size:12px;">ยังไม่มีข้อมูล priority</span>`;
-} else {
-  priorityDiv.innerHTML = `
-  <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
-    <span style="font-size:11px;">⭐⭐⭐</span>
-    <span style="font-size:13px;font-weight:700;color:var(--accent);">${totalPriority.critical}</span>
-    <span style="font-size:9px;color:var(--muted);">เร่ง</span>
-  </div>
-  <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
-    <span style="font-size:11px;">⭐⭐</span>
-    <span style="font-size:13px;font-weight:700;color:var(--accent2);">${totalPriority.important}</span>
-    <span style="font-size:9px;color:var(--muted);">สำคัญ</span>
-  </div>
-  <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
-    <span style="font-size:11px;">⭐</span>
-    <span style="font-size:13px;font-weight:700;color:var(--green);">${totalPriority.urgent}</span>
-    <span style="font-size:9px;color:var(--muted);">ด่วน</span>
-  </div>
-  <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);opacity:0.5;">
-    <span style="font-size:11px;">☆</span>
-    <span style="font-size:13px;font-weight:700;color:var(--muted);">${totalPriority.low}</span>
-    <span style="font-size:9px;color:var(--muted);">ทิ้ง</span>
-  </div>
-`;
-}
+  const priorityDiv = document.getElementById('dash-priority-stats');
+  if (totalPriority.critical + totalPriority.important + totalPriority.urgent + totalPriority.low === 0) {
+    priorityDiv.innerHTML = `<span style="color:var(--muted);font-size:12px;">ยังไม่มีข้อมูล priority</span>`;
+  } else {
+    priorityDiv.innerHTML = `
+      <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
+        <span style="font-size:11px;">⭐⭐⭐</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent);">${totalPriority.critical}</span>
+        <span style="font-size:9px;color:var(--muted);">เร่ง</span>
+      </div>
+      <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
+        <span style="font-size:11px;">⭐⭐</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent2);">${totalPriority.important}</span>
+        <span style="font-size:9px;color:var(--muted);">สำคัญ</span>
+      </div>
+      <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
+        <span style="font-size:11px;">⭐</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green);">${totalPriority.urgent}</span>
+        <span style="font-size:9px;color:var(--muted);">ด่วน</span>
+      </div>
+      <div style="display:flex;gap:3px;align-items:center;background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);opacity:0.5;">
+        <span style="font-size:11px;">☆</span>
+        <span style="font-size:13px;font-weight:700;color:var(--muted);">${totalPriority.low}</span>
+        <span style="font-size:9px;color:var(--muted);">ทิ้ง</span>
+      </div>
+    `;
+  }
   
-  // ===== สถานะเป้าหมาย - คลิกไปที่ Goals พร้อม filter =====
+  // ===== สถานะเป้าหมาย =====
   const statusCount = { not_started: 0, in_progress: 0, done: 0 };
   goals.forEach(g => statusCount[g.status]++);
   
@@ -1508,13 +1650,21 @@ function getTimeAgo(dateString) {
 // ==========================================================
 // GLOBAL SEARCH
 // ==========================================================
-function globalSearch() {
+async function globalSearch() {  // ← เพิ่ม async
   const query = document.getElementById('global-search').value.toLowerCase().trim();
   const results = document.getElementById('global-search-results');
   if (!query) { results.innerHTML = ''; return; }
   
+  const [refs, visions, goals, finances, wishes] = await Promise.all([  // ← เพิ่ม await
+    getRefs(),
+    getVisions(),
+    getGoals(),
+    getFinances(),
+    getWishes()
+  ]);
+  
   const all = [];
-  getRefs().forEach(i => all.push({ 
+  refs.forEach(i => all.push({ 
     type: '📁 Ref', 
     title: i.note || 'รูป', 
     detail: i.board || '',
@@ -1522,7 +1672,7 @@ function globalSearch() {
     id: i.id, 
     module: 'ref' 
   }));
-  getVisions().forEach(i => all.push({ 
+  visions.forEach(i => all.push({ 
     type: '🗺️ Vision', 
     title: i.title, 
     detail: VISION_CAT_LABELS[i.category] || i.category,
@@ -1530,7 +1680,7 @@ function globalSearch() {
     id: i.id, 
     module: 'vision' 
   }));
-  getGoals().forEach(i => all.push({ 
+  goals.forEach(i => all.push({ 
     type: '🎯 Goal', 
     title: i.title, 
     detail: STATUS_LABELS[i.status] || i.status,
@@ -1538,7 +1688,7 @@ function globalSearch() {
     id: i.id, 
     module: 'goals' 
   }));
-  getFinances().forEach(i => all.push({ 
+  finances.forEach(i => all.push({ 
     type: '💰 Finance', 
     title: i.name, 
     detail: FINANCE_CAT_LABELS[i.category] || i.category || 'อื่นๆ',
@@ -1546,7 +1696,7 @@ function globalSearch() {
     id: i.id, 
     module: 'finance' 
   }));
-  getWishes().forEach(i => all.push({ 
+  wishes.forEach(i => all.push({ 
     type: '🛍️ Wish', 
     title: i.name, 
     detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ',
@@ -1570,13 +1720,22 @@ function globalSearch() {
 // MODULE 1: Ref Library
 // RefItem { id, url, category, tags[], note, createdAt }
 // ==========================================================
-const REF_KEY = 'ref_library_items';
+const refModule = createFirestoreModule('refs');
+let refListeners = [];
 let pendingUploadUrl = null; let pendingFinanceId = null;
 let editingId = null;
 let editingModule = null;
 
-function getRefs() { return JSON.parse(localStorage.getItem(REF_KEY) || '[]'); }
-function saveRefs(items) { localStorage.setItem(REF_KEY, JSON.stringify(items)); }
+function getRefs() { return refModule.getItems(); }
+function saveRefs(items) { return refModule.saveItems(items); }
+function onRefsSnapshot(callback) {
+  const unsub = refModule.onSnapshot(callback);
+  refListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลเก่า
+refModule.migrateFromLocalStorage('ref_items');
 
 function openUploadWidget() {
   const widget = cloudinary.createUploadWidget({
@@ -1599,7 +1758,7 @@ function openUploadWidget() {
   widget.open();
 }
 
-function confirmSaveRef() {
+async function confirmSaveRef() {
   if (!pendingUploadUrl) return;
     const item = {
     id: Date.now(),
@@ -1610,9 +1769,9 @@ function confirmSaveRef() {
     note: document.getElementById('ref-input-note').value.trim(),
     createdAt: new Date().toISOString()
   };
-  const items = getRefs();
+  const items = await getRefs();
   items.unshift(item);
-  saveRefs(items);
+  await saveRefs(items);
   closeModal('ref-modal');
   pendingUploadUrl = null;
   renderRef();
@@ -1620,16 +1779,17 @@ function confirmSaveRef() {
   showToast('✅ เพิ่มรูปอ้างอิงสำเร็จ', 'success');
 }
 
-function deleteRef(id) {
+async function deleteRef(id) {
   if (!confirm('ลบรูปนี้ออกจากคลัง? (รูปจริงบน Cloudinary จะยังอยู่)')) return;
 
-  const projects = getProjects();
+  const projects = await getProjects();  // ← เพิ่ม await
   projects.forEach(p => {
     if (p.refIds) p.refIds = p.refIds.filter(rid => rid !== id);
   });
-  saveProjects(projects);
+  await saveProjects(projects);  // ← เพิ่ม await
 
-  saveRefs(getRefs().filter(i => i.id !== id));
+  const refs = await getRefs();  // ← เพิ่ม await
+  await saveRefs(refs.filter(i => i.id !== id));  // ← เพิ่ม await
   renderRef();
   renderDashboard();
   showToast('🗑️ ลบรูปอ้างอิงแล้ว', 'error');
@@ -1641,7 +1801,7 @@ function openLightbox(url) {
 }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
 
-function renderRef() {
+async function renderRef() {
   const grid = document.getElementById('ref-grid');
   const empty = document.getElementById('ref-empty');
   const search = document.getElementById('ref-search').value.toLowerCase();
@@ -1649,7 +1809,7 @@ function renderRef() {
   const boardFilter = document.getElementById('ref-board-filter').value;
   const sortBy = document.getElementById('ref-sort').value;
 
-  let items = getRefs();
+  let items = await getRefs();  // ← เพิ่ม await
   
   // กรองตามหมวดหมู่
   if (catFilter) items = items.filter(i => i.category === catFilter);
@@ -1693,9 +1853,9 @@ function renderRef() {
   updateBoardTabs();
   updateBoardFilter();
 }
-function updateBoardTabs() {
+async function updateBoardTabs() {
   const tabs = document.getElementById('ref-board-tabs');
-  const items = getRefs();
+  const items = await getRefs();  // ← เพิ่ม await
   const boards = [...new Set(items.map(i => i.board || 'uncategorized'))];
   const currentBoard = document.getElementById('ref-board-filter').value;
   
@@ -1709,9 +1869,9 @@ function updateBoardTabs() {
   `;
 }
 
-function updateBoardFilter() {
+async function updateBoardFilter() {
   const select = document.getElementById('ref-board-filter');
-  const items = getRefs();
+  const items = await getRefs();  // ← เพิ่ม await
   const boards = [...new Set(items.map(i => i.board || 'uncategorized'))];
   const currentValue = select.value;
   select.innerHTML = `<option value="">📁 ทุก Board</option>` + 
@@ -1719,10 +1879,12 @@ function updateBoardFilter() {
 }
 
 // ==========================================================
-// MODULE 2: Life Map (Vision)
-// VisionItem { id, category, title, desc, createdAt }
+// MODULE: Vision (Firestore)
 // ==========================================================
-const VISION_KEY = 'life_vision_items';
+// สร้าง Firestore module instance
+const visionModule = createFirestoreModule('visions');
+let visionListeners = [];
+
 const VISION_CAT_LABELS = {
   career: '💼 อาชีพ/งาน',
   health: '💪 สุขภาพ',
@@ -1731,18 +1893,36 @@ const VISION_CAT_LABELS = {
   lifestyle: '🌟 ไลฟ์สไตล์',
   other: '📦 อื่นๆ'
 };
-function getVisions() { return JSON.parse(localStorage.getItem(VISION_KEY) || '[]'); }
-function saveVisions(items) { localStorage.setItem(VISION_KEY, JSON.stringify(items)); }
 
+// ฟังก์ชันเดิม — เปลี่ยน implementation
+function getVisions() {
+  return visionModule.getItems();
+}
+
+function saveVisions(items) {
+  return visionModule.saveItems(items);
+}
+
+// ฟังก์ชันใหม่สำหรับ real-time sync
+function onVisionsSnapshot(callback) {
+  const unsub = visionModule.onSnapshot(callback);
+  visionListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลจาก localStorage ครั้งแรก
+visionModule.migrateFromLocalStorage('life_vision_items');
+
+// --- ฟังก์ชันอื่นๆ (ไม่ต้องแก้) ---
 function openVisionModal() {
-  document.getElementById('vision-input-category').value = 'career';  // default
+  document.getElementById('vision-input-category').value = 'career';
   document.getElementById('vision-input-title').value = '';
   document.getElementById('vision-input-desc').value = '';
   document.getElementById('vision-modal').classList.add('show');
   document.getElementById('vision-input-priority').value = 'important';
 }
 
-function confirmSaveVision() {
+async function confirmSaveVision() {
   const title = document.getElementById('vision-input-title').value.trim();
   if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
   const item = {
@@ -1753,44 +1933,46 @@ function confirmSaveVision() {
     priority: document.getElementById('vision-input-priority').value,  // บันทึกความสำคัญ
     createdAt: new Date().toISOString()
   };
-  const items = getVisions();
+  const items = await getVisions();
   items.unshift(item);
-  saveVisions(items);
+  await saveVisions(items);
   closeModal('vision-modal');
   renderVision();
   renderDashboard();  // ← เพิ่ม
   showToast('✅ เพิ่มวิสัยทัศน์สำเร็จ', 'success');
 }
 
-function deleteVision(id) {
+async function deleteVision(id) {
   if (!confirm('ลบรายการนี้?')) return;
 
-  const projects = getProjects();
+  const projects = await getProjects();  // ← เพิ่ม await
   projects.forEach(p => {
     if (p.visionIds) p.visionIds = p.visionIds.filter(vid => vid !== id);
   });
-  saveProjects(projects);
+  await saveProjects(projects);  // ← เพิ่ม await
 
-  saveVisions(getVisions().filter(i => i.id !== id));
+  const visions = await getVisions();  // ← เพิ่ม await
+  await saveVisions(visions.filter(i => i.id !== id));  // ← เพิ่ม await
   renderVision();
   renderDashboard();
   showToast('🗑️ ลบวิสัยทัศน์แล้ว', 'error');
 }
 
-function renderVision() {
+async function renderVision() {
   const list = document.getElementById('vision-list');
   const empty = document.getElementById('vision-empty');
   const catFilter = document.getElementById('vision-cat-filter').value;
 
-  let items = getVisions();
+  const items = await getVisions();
   const priorityFilter = document.getElementById('vision-priority-filter').value;
-  if (priorityFilter) items = items.filter(i => i.priority === priorityFilter);
-  if (catFilter) items = items.filter(i => i.category === catFilter);
+  let filteredItems = items;
+  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
+  if (catFilter) filteredItems = filteredItems.filter(i => i.category === catFilter);
 
   list.innerHTML = '';
-  empty.style.display = items.length === 0 ? 'block' : 'none';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
 
-  items.forEach(item => {
+  filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
     const categoryLabel = VISION_CAT_LABELS[item.category] || item.category; // ← ใช้ VISION_CAT_LABELS
@@ -1817,7 +1999,8 @@ function renderVision() {
 // MODULE 3: Goals
 // GoalItem { id, title, category, deadline, status, note, createdAt }
 // ==========================================================
-const GOAL_KEY = 'goals_items';
+const goalsModule = createFirestoreModule('goals');
+let goalListeners = [];
 const GOAL_CAT_LABELS = {
   career: '💼 อาชีพ/งาน',
   health: '💪 สุขภาพ',
@@ -1825,8 +2008,16 @@ const GOAL_CAT_LABELS = {
   skill: '🎯 ทักษะ',
   other: '📦 อื่นๆ'
 };
-function getGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '[]'); }
-function saveGoals(items) { localStorage.setItem(GOAL_KEY, JSON.stringify(items)); }
+function getGoals() { return goalsModule.getItems(); }
+function saveGoals(items) { return goalsModule.saveItems(items); }
+function onGoalsSnapshot(callback) {
+  const unsub = goalsModule.onSnapshot(callback);
+  goalListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลเก่า
+goalsModule.migrateFromLocalStorage('goals_items');
 
 const STATUS_LABELS = { not_started: 'ยังไม่เริ่ม', in_progress: 'กำลังทำ', done: 'สำเร็จแล้ว' };
 
@@ -1839,7 +2030,7 @@ function openGoalModal() {
   document.getElementById('goal-input-priority').value = 'important';
 }
 
-function confirmSaveGoal() {
+async function confirmSaveGoal() {
   const title = document.getElementById('goal-input-title').value.trim();
   if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
   const item = {
@@ -1852,17 +2043,17 @@ function confirmSaveGoal() {
     priority: document.getElementById('goal-input-priority').value,  // บันทึกความสำคัญ
     createdAt: new Date().toISOString()
   };
-  const items = getGoals();
+  const items = await getGoals();
   items.unshift(item);
-  saveGoals(items);
+  await saveGoals(items);
   closeModal('goal-modal');
   renderGoals();
   renderDashboard();  // ← เพิ่ม
   showToast('✅ เพิ่มเป้าหมายสำเร็จ', 'success');
 }
 
-function cycleGoalStatus(id) {
-  const items = getGoals();
+async function cycleGoalStatus(id) {
+  const items = await getGoals();
   const item = items.find(i => i.id === id);
   if (!item) return;
   const order = ['not_started', 'in_progress', 'done'];
@@ -1872,37 +2063,39 @@ function cycleGoalStatus(id) {
   renderDashboard();  // ← เพิ่ม
 }
 
-function deleteGoal(id) {
+async function deleteGoal(id) {
   if (!confirm('ลบเป้าหมายนี้?')) return;
 
-  const projects = getProjects();
+  const projects = await getProjects();  // ← เพิ่ม await
   projects.forEach(p => {
     if (p.goalIds) p.goalIds = p.goalIds.filter(gid => gid !== id);
   });
-  saveProjects(projects);
+  await saveProjects(projects);  // ← เพิ่ม await
 
-  saveGoals(getGoals().filter(i => i.id !== id));
+  const goals = await getGoals();  // ← เพิ่ม await
+  await saveGoals(goals.filter(i => i.id !== id));  // ← เพิ่ม await
   renderGoals();
   renderDashboard();
   showToast('🗑️ ลบเป้าหมายแล้ว', 'error');
 }
 
-function renderGoals() {
+async function renderGoals() {
   const list = document.getElementById('goals-list');
   const empty = document.getElementById('goals-empty');
   const catFilter = document.getElementById('goal-cat-filter').value;
   const statusFilter = document.getElementById('goal-status-filter').value;
 
-  let items = getGoals();
+  const items = await getGoals();
   const priorityFilter = document.getElementById('goal-priority-filter').value;
-  if (priorityFilter) items = items.filter(i => i.priority === priorityFilter);
-  if (catFilter) items = items.filter(i => i.category === catFilter);
-  if (statusFilter) items = items.filter(i => i.status === statusFilter);
+  let filteredItems = items;
+  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
+  if (catFilter) filteredItems = filteredItems.filter(i => i.category === catFilter);
+  if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
 
   list.innerHTML = '';
-  empty.style.display = items.length === 0 ? 'block' : 'none';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
 
-  items.forEach(item => {
+  filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
     const categoryLabel = GOAL_CAT_LABELS[item.category] || item.category; // ← ใช้ GOAL_CAT_LABELS
@@ -1933,7 +2126,8 @@ function renderGoals() {
 // MODULE 4: Finance
 // FinanceItem { id, name, target, saved, createdAt }
 // ==========================================================
-const FINANCE_KEY = 'finance_items';
+const financeModule = createFirestoreModule('finances');
+let financeListeners = [];
 const FINANCE_CAT_LABELS = {
   emergency: '🚨 กองทุนฉุกเฉิน',
   saving: '🏦 ออมทรัพย์',
@@ -1943,8 +2137,16 @@ const FINANCE_CAT_LABELS = {
   big_purchase: '🛒 ของใหญ่/ช้อปปิ้ง',
   other: '📦 อื่นๆ'
 };
-function getFinances() { return JSON.parse(localStorage.getItem(FINANCE_KEY) || '[]'); }
-function saveFinances(items) { localStorage.setItem(FINANCE_KEY, JSON.stringify(items)); }
+function getFinances() { return financeModule.getItems(); }
+function saveFinances(items) { return financeModule.saveItems(items); }
+function onFinancesSnapshot(callback) {
+  const unsub = financeModule.onSnapshot(callback);
+  financeListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลเก่า
+financeModule.migrateFromLocalStorage('finance_items');
 
 function openFinanceModal() {
   document.getElementById('finance-input-name').value = '';
@@ -1955,7 +2157,7 @@ function openFinanceModal() {
   document.getElementById('finance-modal').classList.add('show');
 }
 
-function confirmSaveFinance() {
+async function confirmSaveFinance() {
   const name = document.getElementById('finance-input-name').value.trim();
   const target = parseFloat(document.getElementById('finance-input-target').value);
   if (!name || isNaN(target) || target <= 0) { alert('กรุณาใส่ชื่อและเป้าหมายที่ถูกต้อง'); return; }
@@ -1968,28 +2170,28 @@ function confirmSaveFinance() {
     createdAt: new Date().toISOString(),
     priority: document.getElementById('finance-input-priority').value,
   };
-  const items = getFinances();
+  const items = await getFinances();
   items.unshift(item);
-  saveFinances(items);
+  await saveFinances(items);
   closeModal('finance-modal');
   renderFinanceAndWish();
   renderDashboard();  // ← เพิ่ม
   showToast('✅ เพิ่มเป้าหมายการเงินสำเร็จ', 'success');
 }
 
-function updateFinanceSaved(id) {
+async function updateFinanceSaved(id) {  // ← เพิ่ม async
   pendingFinanceId = id;
-  const items = getFinances();
+  const items = await getFinances();  // ← เพิ่ม await
   const item = items.find(i => i.id === id);
   document.getElementById('finance-update-amount').value = item ? item.saved : 0;
   document.getElementById('finance-update-modal').classList.add('show');
 }
 
-function confirmUpdateFinance() {
+async function confirmUpdateFinance() {  // ← เพิ่ม async
   if (pendingFinanceId === null) return;
   const val = parseFloat(document.getElementById('finance-update-amount').value);
   if (isNaN(val) || val < 0) { alert('กรุณาใส่ตัวเลขที่ถูกต้อง'); return; }
-  const items = getFinances();
+  const items = await getFinances();  // ← เพิ่ม await
   const item = items.find(i => i.id === pendingFinanceId);
   if (item) { item.saved = val; saveFinances(items); renderFinanceAndWish(); renderDashboard();
     showToast('✅ อัพเดตยอดเงินเรียบร้อย', 'success');
@@ -1998,16 +2200,17 @@ function confirmUpdateFinance() {
   pendingFinanceId = null;
 }
 
-function deleteFinance(id) {
+async function deleteFinance(id) {
   if (!confirm('ลบเป้าหมายการเงินนี้?')) return;
 
-  const projects = getProjects();
+  const projects = await getProjects();  // ← เพิ่ม await
   projects.forEach(p => {
     if (p.financeIds) p.financeIds = p.financeIds.filter(fid => fid !== id);
   });
-  saveProjects(projects);
+  await saveProjects(projects);  // ← เพิ่ม await
 
-  saveFinances(getFinances().filter(i => i.id !== id));
+  const finances = await getFinances();  // ← เพิ่ม await
+  await saveFinances(finances.filter(i => i.id !== id));  // ← เพิ่ม await
   renderFinanceAndWish();
   renderDashboard();
   showToast('🗑️ ลบเป้าหมายการเงินแล้ว', 'error');
@@ -2043,8 +2246,8 @@ function renderFinance() {
     list.appendChild(card);
   });
 }
-function renderFinanceSummary() {
-  const finances = getFinances();
+async function renderFinanceSummary() {
+  const finances = await getFinances();
   
   const totalTarget = finances.reduce((sum, f) => sum + f.target, 0);
   const totalSaved = finances.reduce((sum, f) => sum + f.saved, 0);
@@ -2063,7 +2266,8 @@ function renderFinanceSummary() {
 // MODULE 5: Wishlist
 // WishItem { id, name, price, priority, link, bought, createdAt }
 // ==========================================================
-const WISH_KEY = 'wishlist_items';
+const wishModule = createFirestoreModule('wishlist');
+let wishListeners = [];
 const WISH_CAT_LABELS = {
   tech: '📱 เทคโนโลยี',
   art: '🎨 อุปกรณ์ศิลปะ',
@@ -2075,17 +2279,31 @@ const WISH_CAT_LABELS = {
   other: '📦 อื่นๆ'
 };
 function getWishes() {
-  const items = JSON.parse(localStorage.getItem(WISH_KEY) || '[]');
-  return items.map(i => {
-    if (i.priority && !PRIORITY_LABELS[i.priority]) {
-      const map = { high: 'critical', medium: 'important', low: 'low' };
-      i.priority = map[i.priority] || 'important';
-    }
-    if (!i.priority) i.priority = 'important';
-    return i;
+  return wishModule.getItems().then(items => {
+    // migrate priority เก่า (high/medium/low → ใหม่)
+    return items.map(i => {
+      if (i.priority && !PRIORITY_LABELS[i.priority]) {
+        const map = { high: 'critical', medium: 'important', low: 'low' };
+        i.priority = map[i.priority] || 'important';
+      }
+      if (!i.priority) i.priority = 'important';
+      return i;
+    });
   });
 }
-function saveWishes(items) { localStorage.setItem(WISH_KEY, JSON.stringify(items)); }
+
+function saveWishes(items) {
+  return wishModule.saveItems(items);
+}
+
+function onWishesSnapshot(callback) {
+  const unsub = wishModule.onSnapshot(callback);
+  wishListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลจาก localStorage
+wishModule.migrateFromLocalStorage('wishlist_items');
 
 
 function openWishModal() {
@@ -2098,7 +2316,7 @@ function openWishModal() {
   document.getElementById('wish-input-priority').value = 'important';
 }
 
-function confirmSaveWish() {
+async function confirmSaveWish() {
   const name = document.getElementById('wish-input-name').value.trim();
   if (!name) { alert('กรุณาใส่ชื่อสิ่งของ'); return; }
   const item = {
@@ -2111,54 +2329,58 @@ function confirmSaveWish() {
     bought: false,
     createdAt: new Date().toISOString()
   };
-  const items = getWishes();
+  const items = await getWishes();
   items.unshift(item);
-  saveWishes(items);
+  await saveWishes(items);
   closeModal('wish-modal');
   renderFinanceAndWish();
   renderDashboard();  // ← เพิ่ม
   showToast('✅ เพิ่มรายการ wishlist สำเร็จ', 'success');
 }
 
-function toggleBought(id) {
-  const items = getWishes();
+async function toggleBought(id) {
+  const items = await getWishes();
   const item = items.find(i => i.id === id);
   if (item) { item.bought = !item.bought; saveWishes(items); renderFinanceAndWish(); renderDashboard();
   showToast(item.bought ? '✅ ทำเครื่องหมายว่าซื้อแล้ว' : '↩️ ยกเลิกสถานะซื้อ', 'info'); }
 }
 
-function deleteWish(id) {
+async function deleteWish(id) {
   if (!confirm('ลบรายการนี้?')) return;
 
-  const projects = getProjects();
+  const projects = await getProjects();  // ← เพิ่ม await
   projects.forEach(p => {
     if (p.wishIds) p.wishIds = p.wishIds.filter(wid => wid !== id);
   });
-  saveProjects(projects);
+  await saveProjects(projects);  // ← เพิ่ม await
 
-  saveWishes(getWishes().filter(i => i.id !== id));
+  const wishes = await getWishes();  // ← เพิ่ม await
+  await saveWishes(wishes.filter(i => i.id !== id));  // ← เพิ่ม await
   renderFinanceAndWish();
   renderDashboard();
   showToast('🗑️ ลบรายการ Wishlist แล้ว', 'error');
 }
-function renderFinanceAndWish() {
+async function renderFinanceAndWish() {
   const list = document.getElementById('finance-list');
   const empty = document.getElementById('finance-empty');
   const filter = document.getElementById('finance-type-filter').value;
 
-  let financeItems = getFinances();
-  let wishItems = getWishes();
+  const [financeItems, wishItems] = await Promise.all([getFinances(), getWishes()]);
   const priorityFilter = document.getElementById('finance-priority-filter').value;
+  
+  let filteredFinance = financeItems;
+  let filteredWish = wishItems;
+  
   if (priorityFilter) {
-  financeItems = financeItems.filter(i => i.priority === priorityFilter);
-  wishItems = wishItems.filter(i => i.priority === priorityFilter);
-}
+    filteredFinance = filteredFinance.filter(i => i.priority === priorityFilter);
+    filteredWish = filteredWish.filter(i => i.priority === priorityFilter);
+  }
   
   let combined = [];
 
   // เตรียมข้อมูล Finance
   if (filter === 'all' || filter === 'finance') {
-    financeItems.forEach(item => {
+    filteredFinance.forEach(item => {
       const pct = Math.min(100, (item.saved / item.target) * 100);
       combined.push({
         type: 'finance',
@@ -2209,7 +2431,7 @@ function renderFinanceAndWish() {
   combined.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
-    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    const priorityLabel = PRIORITY_LABELS[item.raw.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
     card.style.opacity = (item.type === 'wishlist' && item.raw.bought) ? '0.5' : '1';
     card.innerHTML = `
       <div class="item-top">
@@ -2234,9 +2456,18 @@ function renderFinanceAndWish() {
 // ==========================================================
 // MODULE: Study Plan
 // ==========================================================
-const STUDY_KEY = 'study_items';
-function getStudies() { return JSON.parse(localStorage.getItem(STUDY_KEY) || '[]'); }
-function saveStudies(items) { localStorage.setItem(STUDY_KEY, JSON.stringify(items)); }
+const studyModule = createFirestoreModule('studies');
+let studyListeners = [];
+function getStudies() { return studyModule.getItems(); }
+function saveStudies(items) { return studyModule.saveItems(items); }
+function onStudiesSnapshot(callback) {
+  const unsub = studyModule.onSnapshot(callback);
+  studyListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลเก่า
+studyModule.migrateFromLocalStorage('study_items');
 
 const STUDY_CAT_LABELS = {
   art: '🎨 ศิลปะ',
@@ -2262,7 +2493,7 @@ function openStudyModal() {
   document.getElementById('study-input-priority').value = 'important';
 }
 
-function confirmSaveStudy() {
+async function confirmSaveStudy() {
   const title = document.getElementById('study-input-title').value.trim();
   if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
   const item = {
@@ -2275,54 +2506,56 @@ function confirmSaveStudy() {
     status: 'planning',
     createdAt: new Date().toISOString()
   };
-  const items = getStudies();
+  const items = await getStudies();
   items.unshift(item);
-  saveStudies(items);
+  await saveStudies(items);
   closeModal('study-modal');
   renderStudy();
   showToast('✅ เพิ่มแผนเรียนสำเร็จ', 'success');
 }
 
-function cycleStudyStatus(id) {
-  const items = getStudies();
+async function cycleStudyStatus(id) {
+  const items = await getStudies();  // ← เพิ่ม await
   const item = items.find(i => i.id === id);
   if (!item) return;
   const order = ['planning', 'studying', 'completed'];
   item.status = order[(order.indexOf(item.status) + 1) % order.length];
-  saveStudies(items);
+  await saveStudies(items);  // ← เพิ่ม await
   renderStudy();
   showToast(`📖 เปลี่ยนสถานะเป็น ${STUDY_STATUS_LABELS[item.status]}`, 'info');
 }
 
-function deleteStudy(id) {
+async function deleteStudy(id) {
   if (!confirm('ลบแผนเรียนนี้?')) return;
 
-  const projects = getProjects();
+  const projects = await getProjects();  // ← เพิ่ม await
   projects.forEach(p => {
     if (p.studyIds) p.studyIds = p.studyIds.filter(sid => sid !== id);
   });
-  saveProjects(projects);
+  await saveProjects(projects);  // ← เพิ่ม await
 
-  saveStudies(getStudies().filter(i => i.id !== id));
+  const studies = await getStudies();  // ← เพิ่ม await
+  await saveStudies(studies.filter(i => i.id !== id));  // ← เพิ่ม await
   renderStudy();
   renderDashboard();
   showToast('🗑️ ลบแผนเรียนแล้ว', 'error');
 }
 
-function renderStudy() {
+async function renderStudy() {
   const list = document.getElementById('study-list');
   const empty = document.getElementById('study-empty');
   const statusFilter = document.getElementById('study-status-filter').value;
 
-  let items = getStudies();
+  const items = await getStudies();
   const priorityFilter = document.getElementById('study-priority-filter').value;
-  if (priorityFilter) items = items.filter(i => i.priority === priorityFilter);
-  if (statusFilter) items = items.filter(i => i.status === statusFilter);
+  let filteredItems = items;
+  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
+  if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
 
   list.innerHTML = '';
-  empty.style.display = items.length === 0 ? 'block' : 'none';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
 
-  items.forEach(item => {
+  filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
     const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
@@ -2350,8 +2583,9 @@ function renderStudy() {
 }
 
 // Edit Study
-function editStudy(id) {
-  const item = getStudies().find(i => i.id === id);
+async function editStudy(id) {
+  const items = await getStudies();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
   document.getElementById('study-input-title').value = item.title;
   document.getElementById('study-input-category').value = item.category || 'other';
@@ -2363,12 +2597,11 @@ function editStudy(id) {
   setEditMode('study', id);
   document.getElementById('study-modal').classList.add('show');
 }
-
-function confirmEditStudy() {
+async function confirmEditStudy() {
   if (editingId === null) return;
   const title = document.getElementById('study-input-title').value.trim();
   if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
-  const items = getStudies();
+  const items = await getStudies();
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.title = title;
@@ -2397,20 +2630,30 @@ function resetStudyModal() {
 // ==========================================================
 // MODULE: Project Board
 // ==========================================================
-const PROJECT_KEY = 'project_items';
+const projectModule = createFirestoreModule('projects');
+let projectListeners = [];
 function getProjects() {
-  const items = JSON.parse(localStorage.getItem(PROJECT_KEY) || '[]');
-  return items.map(i => {
-    // แปลง priority เก่าเป็นใหม่
-    if (i.priority && !PRIORITY_LABELS[i.priority]) {
-      const map = { high: 'critical', medium: 'important', low: 'low' };
-      i.priority = map[i.priority] || 'important';
-    }
-    if (!i.priority) i.priority = 'important';
-    return i;
+  return projectModule.getItems().then(items => {
+    // migrate priority เก่า (high/medium/low → ใหม่)
+    return items.map(i => {
+      if (i.priority && !PRIORITY_LABELS[i.priority]) {
+        const map = { high: 'critical', medium: 'important', low: 'low' };
+        i.priority = map[i.priority] || 'important';
+      }
+      if (!i.priority) i.priority = 'important';
+      return i;
+    });
   });
 }
-function saveProjects(items) { localStorage.setItem(PROJECT_KEY, JSON.stringify(items)); }
+function saveProjects(items) { return projectModule.saveItems(items); }
+function onProjectsSnapshot(callback) {
+  const unsub = projectModule.onSnapshot(callback);
+  projectListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลเก่า
+projectModule.migrateFromLocalStorage('project_items');
 
 const PROJECT_STATUS_LABELS = {
   planning: '📝 วางแผน',
@@ -2426,16 +2669,18 @@ const PRIORITY_LABELS = {
 };
 
 const PROJECT_STATUS_ORDER = ['planning', 'active', 'review', 'done'];
-function renderRelationCheckboxes(selectedIds = {}) {
+async function renderRelationCheckboxes(selectedIds = {}) {  // ← เพิ่ม async
   const container = document.getElementById('project-relations-container');
   if (!container) return;
   
-  const visions = getVisions();
-  const goals = getGoals();
-  const studies = getStudies();
-  const refs = getRefs();
-  const finances = getFinances();
-  const wishes = getWishes();
+  const [visions, goals, studies, refs, finances, wishes] = await Promise.all([  // ← เพิ่ม await
+    getVisions(),
+    getGoals(),
+    getStudies(),
+    getRefs(),
+    getFinances(),
+    getWishes()
+  ]);
   
   let html = '';
   
@@ -2520,7 +2765,7 @@ function getSelectedRelations() {
   
   return result;
 }
-function openProjectModal() {
+async function openProjectModal() {
   document.getElementById('project-input-title').value = '';
   document.getElementById('project-input-desc').value = '';
   document.getElementById('project-input-deadline').value = '';
@@ -2530,13 +2775,13 @@ function openProjectModal() {
   document.getElementById('project-progress-label').textContent = '0%';
   document.getElementById('project-input-startdate').value = '';
   document.getElementById('project-input-tags').value = '';
-  renderRelationCheckboxes([]);
+  await renderRelationCheckboxes([]);
   document.getElementById('project-modal').querySelector('h3').textContent = '📋 เพิ่มโปรเจกต์ใหม่';
   document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveProject;
   document.getElementById('project-modal').classList.add('show');
 }
 
-function confirmSaveProject() {
+async function confirmSaveProject() {
   const title = document.getElementById('project-input-title').value.trim();
   if (!title) { alert('กรุณาใส่ชื่อโปรเจกต์'); return; }
   
@@ -2556,17 +2801,17 @@ function confirmSaveProject() {
     ...relations,
     createdAt: new Date().toISOString()
   };
-  const items = getProjects();
+  const items = await getProjects();
   items.unshift(item);
-  saveProjects(items);
+  await saveProjects(items);
   closeModal('project-modal');
   renderProjects();
   renderDashboard();
   showToast('✅ เพิ่มโปรเจกต์สำเร็จ', 'success');
 }
 
-function cycleProjectStatus(id) {
-  const items = getProjects();
+async function cycleProjectStatus(id) {
+  const items = await getProjects();
   const item = items.find(i => i.id === id);
   if (!item) return;
   const idx = PROJECT_STATUS_ORDER.indexOf(item.status);
@@ -2577,28 +2822,31 @@ function cycleProjectStatus(id) {
   showToast(`📋 เปลี่ยนสถานะเป็น ${PROJECT_STATUS_LABELS[item.status]}`, 'info');
 }
 
-function deleteProject(id) {
+async function deleteProject(id) {
   if (!confirm('ลบโปรเจกต์นี้?')) return;
-  saveProjects(getProjects().filter(i => i.id !== id));
+  const items = await getProjects();
+  await saveProjects(items.filter(i => i.id !== id));
   renderProjects();
   renderDashboard();
   showToast('🗑️ ลบโปรเจกต์แล้ว', 'error');
 }
 
-function renderProjects() {
+async function renderProjects() {
   const list = document.getElementById('projects-list');
   const empty = document.getElementById('projects-empty');
   const statusFilter = document.getElementById('project-status-filter').value;
 
-  let items = getProjects();
+  const items = await getProjects();
   const priorityFilter = document.getElementById('project-priority-filter').value;
-  if (priorityFilter) items = items.filter(i => i.priority === priorityFilter);
-  if (statusFilter) items = items.filter(i => i.status === statusFilter);
+  
+  let filteredItems = items;
+  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
+  if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
 
   list.innerHTML = '';
-  empty.style.display = items.length === 0 ? 'block' : 'none';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
 
-  items.forEach(item => {
+  filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
     const statusLabel = PROJECT_STATUS_LABELS[item.status] || item.status;
@@ -2646,18 +2894,22 @@ function renderProjects() {
 }
 let detailProjectId = null;
 
-function openProjectDetail(id) {
-  const project = getProjects().find(p => p.id === id);
+async function openProjectDetail(id) {
+  const projects = await getProjects();  // ← เพิ่ม await
+  const project = projects.find(p => p.id === id);
   if (!project) { showToast('❌ ไม่พบโปรเจกต์', 'error'); return; }
   detailProjectId = id;
   
-  // ดึงข้อมูลที่เกี่ยวข้อง
-  const visions = getVisions().filter(v => (project.visionIds || []).includes(v.id));
-  const goals = getGoals().filter(g => (project.goalIds || []).includes(g.id));
-  const studies = getStudies().filter(s => (project.studyIds || []).includes(s.id));
-  const refs = getRefs().filter(r => (project.refIds || []).includes(r.id));
-  const finances = getFinances().filter(f => (project.financeIds || []).includes(f.id));
-  const wishes = getWishes().filter(w => (project.wishIds || []).includes(w.id));
+  const [visions, goals, studies, refs, finances, wishes] = await Promise.all([
+    getVisions(), getGoals(), getStudies(), getRefs(), getFinances(), getWishes()
+  ]);
+  
+  const filteredVisions = visions.filter(v => (project.visionIds || []).includes(v.id));
+  const filteredGoals = goals.filter(g => (project.goalIds || []).includes(g.id));
+  const filteredStudies = studies.filter(s => (project.studyIds || []).includes(s.id));
+  const filteredRefs = refs.filter(r => (project.refIds || []).includes(r.id));
+  const filteredFinances = finances.filter(f => (project.financeIds || []).includes(f.id));
+  const filteredWishes = wishes.filter(w => (project.wishIds || []).includes(w.id));
   
   const content = document.getElementById('project-detail-content');
   document.getElementById('project-detail-title').textContent = project.title;
@@ -2733,8 +2985,9 @@ function editProjectFromDetail() {
 }
 
 // Edit Project
-function editProject(id) {
-  const item = getProjects().find(i => i.id === id);
+async function editProject(id) {
+  const items = await getProjects();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
   document.getElementById('project-input-title').value = item.title;
   document.getElementById('project-input-desc').value = item.desc || '';
@@ -2745,7 +2998,7 @@ function editProject(id) {
   document.getElementById('project-progress-label').textContent = (item.progress || 0) + '%';
   document.getElementById('project-input-startdate').value = item.startDate || '';
   document.getElementById('project-input-tags').value = (item.tags || []).join(', ');
-  renderRelationCheckboxes({
+  await renderRelationCheckboxes({
     visionIds: item.visionIds || [],
     goalIds: item.goalIds || [],
     studyIds: item.studyIds || [],
@@ -2759,13 +3012,13 @@ function editProject(id) {
   document.getElementById('project-modal').classList.add('show');
 }
 
-function confirmEditProject() {
+async function confirmEditProject() {
   if (editingId === null) return;
   const title = document.getElementById('project-input-title').value.trim();
   if (!title) { alert('กรุณาใส่ชื่อโปรเจกต์'); return; }
   
   const relations = getSelectedRelations();
-  const items = getProjects();
+  const items = await getProjects();
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.title = title;
@@ -2809,9 +3062,19 @@ function resetProjectModal() {
 // ==========================================================
 // MODULE: Inbox
 // ==========================================================
-const INBOX_KEY = 'inbox_items';
-function getInbox() { return JSON.parse(localStorage.getItem(INBOX_KEY) || '[]'); }
-function saveInbox(items) { localStorage.setItem(INBOX_KEY, JSON.stringify(items)); }
+const inboxModule = createFirestoreModule('inbox');
+let inboxListeners = [];
+
+function getInbox() { return inboxModule.getItems(); }
+function saveInbox(items) { return inboxModule.saveItems(items); }
+function onInboxSnapshot(callback) {
+  const unsub = inboxModule.onSnapshot(callback);
+  inboxListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลเก่า
+inboxModule.migrateFromLocalStorage('inbox_items');
 
 function openInboxModal() {
   document.getElementById('inbox-input-text').value = '';
@@ -2820,7 +3083,7 @@ function openInboxModal() {
   setTimeout(() => document.getElementById('inbox-input-text').focus(), 100);
 }
 
-function confirmSaveInbox() {
+async function confirmSaveInbox() {
   const text = document.getElementById('inbox-input-text').value.trim();
   if (!text) { showToast('กรุณาพิมพ์ความคิด', 'error'); return; }
   const tags = document.getElementById('inbox-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
@@ -2832,9 +3095,9 @@ function confirmSaveInbox() {
     createdAt: new Date().toISOString(),
     processed: false
   };
-  const items = getInbox();
+  const items = await getInbox();
   items.unshift(item);
-  saveInbox(items);
+  await saveInbox(items);
   closeModal('inbox-modal');
   renderInbox();
   renderDashboard();
@@ -2842,17 +3105,19 @@ function confirmSaveInbox() {
   showToast('✅ บันทึก Inbox เรียบร้อย', 'success');
 }
 
-function deleteInbox(id) {
+async function deleteInbox(id) {
   if (!confirm('ลบข้อความนี้?')) return;
-  saveInbox(getInbox().filter(i => i.id !== id));
+  const items = await getInbox();  // ← เพิ่ม await
+  await saveInbox(items.filter(i => i.id !== id));  // ← เพิ่ม await
   renderInbox();
   renderDashboard();
   renderNav();
   showToast('🗑️ ลบ Inbox แล้ว', 'error');
 }
 
-function openConvertInbox(id) {
-  const item = getInbox().find(i => i.id === id);
+async function openConvertInbox(id) {
+  const items = await getInbox();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
   document.getElementById('inbox-convert-text').textContent = item.text;
   document.getElementById('inbox-convert-modal').dataset.inboxId = id;
@@ -2860,21 +3125,19 @@ function openConvertInbox(id) {
   document.getElementById('inbox-convert-modal').classList.add('show');
 }
 
-function confirmConvertInbox() {
+async function confirmConvertInbox() {
   const modal = document.getElementById('inbox-convert-modal');
   const id = parseInt(modal.dataset.inboxId);
   const target = document.getElementById('inbox-convert-target').value;
-  const item = getInbox().find(i => i.id === id);
+  const items = await getInbox();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
 
-  // เปิด modal ของ target พร้อม pre-fill
   const text = item.text;
   closeModal('inbox-convert-modal');
 
-  // ลบ Inbox ทันที
-  saveInbox(getInbox().filter(i => i.id !== id));
+  await saveInbox(items.filter(i => i.id !== id));  // ← เพิ่ม await
 
-  // เปิด modal ที่เกี่ยวข้อง
   if (target === 'vision') {
     document.getElementById('vision-input-title').value = text;
     document.getElementById('vision-input-desc').value = '';
@@ -2903,52 +3166,68 @@ function confirmConvertInbox() {
   showToast(`🔄 แปลง Inbox เป็น ${target} แล้ว`, 'success');
 }
 
-function renderInbox() {
+async function renderInbox() {
   const list = document.getElementById('inbox-list');
   const empty = document.getElementById('inbox-empty');
-  const items = getInbox().filter(i => !i.processed);
-  const subBadge = document.getElementById('inbox-badge-sub');
-  const count = items.length;
-  if (subBadge) {
-    if (count > 0) {
-      subBadge.textContent = count;
-      subBadge.style.display = 'inline';
-    } else {
-      subBadge.style.display = 'none';
+  
+  try {
+    const allItems = await getInbox();
+    const items = allItems.filter(i => !i.processed);
+    const subBadge = document.getElementById('inbox-badge-sub');
+    const count = items.length;
+    if (subBadge) {
+      if (count > 0) {
+        subBadge.textContent = count;
+        subBadge.style.display = 'inline';
+      } else {
+        subBadge.style.display = 'none';
+      }
     }
-  }
-  list.innerHTML = '';
-  empty.style.display = items.length === 0 ? 'block' : 'none';
+    list.innerHTML = '';
+    empty.style.display = items.length === 0 ? 'block' : 'none';
 
-  items.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'item-card inbox-item';
-    const timeAgo = getTimeAgo(item.createdAt);
-    card.innerHTML = `
-      <div class="item-top">
-        <div style="flex:1;">
-          <div style="font-size:13px;white-space:pre-wrap;word-break:break-word;">${item.text}</div>
-          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-            ${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}
-            <span style="font-size:10px;color:var(--muted);">${timeAgo}</span>
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'item-card inbox-item';
+      const timeAgo = getTimeAgo(item.createdAt);
+      card.innerHTML = `
+        <div class="item-top">
+          <div style="flex:1;">
+            <div style="font-size:13px;white-space:pre-wrap;word-break:break-word;">${item.text}</div>
+            <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+              ${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+              <span style="font-size:10px;color:var(--muted);">${timeAgo}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openConvertInbox(${item.id})">🔄 แปลง</button>
+            <button class="del-x" style="font-size:14px;" onclick="deleteInbox(${item.id})">✕</button>
           </div>
         </div>
-        <div style="display:flex;gap:4px;flex-shrink:0;">
-          <button class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openConvertInbox(${item.id})">🔄 แปลง</button>
-          <button class="del-x" style="font-size:14px;" onclick="deleteInbox(${item.id})">✕</button>
-        </div>
-      </div>
-    `;
-    list.appendChild(card);
-  });
+      `;
+      list.appendChild(card);
+    });
+  } catch (err) {
+    console.warn('⚠️ renderInbox error:', err);
+    list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">โหลดข้อมูลไม่สำเร็จ</div>';
+  }
 }
 // ==========================================================
-// MODULE: Daily Log
+// MODULE: Daily Log (Firestore)
 // ==========================================================
-const DAILY_KEY = 'daily_items';
-function getDaily() { return JSON.parse(localStorage.getItem(DAILY_KEY) || '[]'); }
-function saveDaily(items) { localStorage.setItem(DAILY_KEY, JSON.stringify(items)); }
+const dailyModule = createFirestoreModule('daily');
+let dailyListeners = [];
 
+function getDaily() { return dailyModule.getItems(); }
+function saveDaily(items) { return dailyModule.saveItems(items); }
+function onDailySnapshot(callback) {
+  const unsub = dailyModule.onSnapshot(callback);
+  dailyListeners.push(unsub);
+  return unsub;
+}
+
+// Migrate ข้อมูลเก่า
+dailyModule.migrateFromLocalStorage('daily_items');
 function openDailyModal(date) {
   document.getElementById('daily-input-date').value = date || new Date().toISOString().slice(0, 10);
   document.getElementById('daily-input-content').value = '';
@@ -2958,7 +3237,7 @@ function openDailyModal(date) {
   document.getElementById('daily-modal').classList.add('show');
 }
 
-function confirmSaveDaily() {
+async function confirmSaveDaily() {
   const content = document.getElementById('daily-input-content').value.trim();
   if (!content) { showToast('กรุณาใส่เนื้อหา', 'error'); return; }
   const item = {
@@ -2970,23 +3249,25 @@ function confirmSaveDaily() {
     image: document.getElementById('daily-input-image').value.trim() || null,
     createdAt: new Date().toISOString()
   };
-  const items = getDaily();
+  const items = await getDaily();
   items.unshift(item);
-  saveDaily(items);
+  await saveDaily(items);
   closeModal('daily-modal');
   renderDaily();
   showToast('✅ บันทึกประจำวันเรียบร้อย', 'success');
 }
 
-function deleteDaily(id) {
+async function deleteDaily(id) {
   if (!confirm('ลบบันทึกนี้?')) return;
-  saveDaily(getDaily().filter(i => i.id !== id));
+  const items = await getDaily();  // ← เพิ่ม await
+  await saveDaily(items.filter(i => i.id !== id));  // ← เพิ่ม await
   renderDaily();
   showToast('🗑️ ลบบันทึกแล้ว', 'error');
 }
 
-function editDaily(id) {
-  const item = getDaily().find(i => i.id === id);
+async function editDaily(id) {
+  const items = await getDaily();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
   document.getElementById('daily-input-date').value = item.date;
   document.getElementById('daily-input-content').value = item.content;
@@ -2999,11 +3280,11 @@ function editDaily(id) {
   document.getElementById('daily-modal').classList.add('show');
 }
 
-function confirmEditDaily() {
+async function confirmEditDaily() {
   if (editingId === null) return;
   const content = document.getElementById('daily-input-content').value.trim();
   if (!content) { alert('กรุณาใส่เนื้อหา'); return; }
-  const items = getDaily();
+  const items = await getDaily();  // ← เพิ่ม await
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.date = document.getElementById('daily-input-date').value || new Date().toISOString().slice(0, 10);
@@ -3011,7 +3292,7 @@ function confirmEditDaily() {
     item.mood = document.getElementById('daily-input-mood').value || null;
     item.tags = document.getElementById('daily-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
     item.image = document.getElementById('daily-input-image').value.trim() || null;
-    saveDaily(items);
+    await saveDaily(items);  // ← เพิ่ม await
   }
   closeModal('daily-modal');
   resetDailyModal();
@@ -3030,10 +3311,12 @@ function resetDailyModal() {
   document.getElementById('daily-input-image').value = '';
 }
 
-function renderDaily() {
+async function renderDaily() {
   const list = document.getElementById('daily-list');
   const empty = document.getElementById('daily-empty');
-  const items = getDaily();
+
+try {
+  const items = await getDaily();
 
   list.innerHTML = '';
   empty.style.display = items.length === 0 ? 'block' : 'none';
@@ -3069,6 +3352,10 @@ function renderDaily() {
     `;
     list.appendChild(card);
   });
+} catch (err) {
+    console.warn('⚠️ renderDaily error:', err);
+    list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">โหลดข้อมูลไม่สำเร็จ</div>';
+  }
 }
 // ==========================================================
 // JOURNAL (จด) — Sub-tabs
@@ -3090,19 +3377,19 @@ function switchJournalTab(tab) {
 // ==========================================================
 // EXPORT / IMPORT
 // ==========================================================
-function exportAll() {
+async function exportAll() {
   const data = {
     version: 1,
     exportedAt: new Date().toISOString(),
-    ref_library_items: getRefs(),
-    life_vision_items: getVisions(),
-    goals_items: getGoals(),
-    finance_items: getFinances(),
-    wishlist_items: getWishes(),
-    study_items: getStudies(),      // ← เพิ่ม
-    project_items: getProjects(),
-    inbox_items: getInbox(),
-daily_items: getDaily(),    // ← เพิ่ม
+    ref_library_items: await getRefs(),
+    life_vision_items: await getVisions(),
+    goals_items: await getGoals(),
+    finance_items: await getFinances(),
+    wishlist_items: await getWishes(),
+    study_items: await getStudies(),      // ← เพิ่ม
+    project_items: await getProjects(),
+    inbox_items: await getInbox(),
+    daily_items: await getDaily(),  // ← เพิ่ม
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -3113,7 +3400,7 @@ daily_items: getDaily(),    // ← เพิ่ม
   URL.revokeObjectURL(url);
 }
 
-function importAll(event) {
+async function importAll(event) {
   const file = event.target.files[0];
   if (!file) return;
   if (!confirm('⚠️ ข้อมูลเดิมทั้งหมดจะถูกลบและแทนที่ด้วยข้อมูลจากไฟล์\n\nดำเนินการต่อ?')) {
@@ -3121,19 +3408,29 @@ function importAll(event) {
     return;
   }
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {   // ← เพิ่ม async
     try {
       const data = JSON.parse(e.target.result);
-      if (data.ref_library_items) saveRefs(data.ref_library_items);
-      if (data.life_vision_items) saveVisions(data.life_vision_items);
-      if (data.goals_items) saveGoals(data.goals_items);
-      if (data.finance_items) saveFinances(data.finance_items);
-      if (data.wishlist_items) saveWishes(data.wishlist_items);
-      if (data.study_items) saveStudies(data.study_items);
-      if (data.project_items) saveProjects(data.project_items);
-      if (data.inbox_items) saveInbox(data.inbox_items);
-      if (data.daily_items) saveDaily(data.daily_items);
-      renderRef(); renderVision(); renderGoals(); renderFinanceAndWish(); renderDashboard(); renderFinanceSummary();   // ← แก้ไข
+      if (data.ref_library_items) await saveRefs(data.ref_library_items);
+      if (data.life_vision_items) await saveVisions(data.life_vision_items);
+      if (data.goals_items) await saveGoals(data.goals_items);
+      if (data.finance_items) await saveFinances(data.finance_items);
+      if (data.wishlist_items) await saveWishes(data.wishlist_items);
+      if (data.study_items) await saveStudies(data.study_items);
+      if (data.project_items) await saveProjects(data.project_items);
+      if (data.inbox_items) await saveInbox(data.inbox_items);
+      if (data.daily_items) await saveDaily(data.daily_items);
+      
+      // รอให้ render ทั้งหมดเสร็จ
+      await Promise.all([
+        renderRef(),
+        renderVision(),
+        renderGoals(),
+        renderFinanceAndWish(),
+        renderDashboard(),
+        renderFinanceSummary()
+      ]);
+      
       alert('✅ กู้คืนข้อมูลสำเร็จ');
     } catch (err) {
       alert('❌ ไฟล์ไม่ถูกต้อง: ' + err.message);
@@ -3157,10 +3454,11 @@ function clearEditMode() {
 }
 
 // --- Edit Vision ---
-function editVision(id) {
-  const item = getVisions().find(i => i.id === id);
+async function editVision(id) {
+  const items = await getVisions();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
-  document.getElementById('vision-input-category').value = item.category || 'career';  // ดึงค่าหมวดหมู่
+  document.getElementById('vision-input-category').value = item.category || 'career';
   document.getElementById('vision-input-title').value = item.title;
   document.getElementById('vision-input-desc').value = item.desc || '';
   document.getElementById('vision-modal').querySelector('h3').textContent = 'แก้ไขวิสัยทัศน์';
@@ -3170,11 +3468,11 @@ function editVision(id) {
   document.getElementById('vision-input-priority').value = item.priority || 'important';
 }
 
-function confirmEditVision() {
+async function confirmEditVision() {
   if (editingId === null) return;
   const title = document.getElementById('vision-input-title').value.trim();
   if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
-  const items = getVisions();
+  const items = await getVisions();
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.category = document.getElementById('vision-input-category').value;  // บันทึกหมวดหมู่
@@ -3199,12 +3497,12 @@ function resetVisionModal() {
   document.getElementById('vision-input-priority').value = 'important';
 }
 
-// --- Edit Goal ---
-function editGoal(id) {
-  const item = getGoals().find(i => i.id === id);
+async function editGoal(id) {
+  const items = await getGoals();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
   document.getElementById('goal-input-title').value = item.title;
-  document.getElementById('goal-input-category').value = item.category || 'career';  // ดึงค่าหมวดหมู่
+  document.getElementById('goal-input-category').value = item.category || 'career';
   document.getElementById('goal-input-date').value = item.deadline || '';
   document.getElementById('goal-input-note').value = item.note || '';
   document.getElementById('goal-modal').querySelector('h3').textContent = 'แก้ไขเป้าหมาย';
@@ -3214,11 +3512,11 @@ function editGoal(id) {
   document.getElementById('goal-input-priority').value = 'important';
 }
 
-function confirmEditGoal() {
+async function confirmEditGoal() {
   if (editingId === null) return;
   const title = document.getElementById('goal-input-title').value.trim();
   if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
-  const items = getGoals();
+  const items = await getGoals();
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.title = title;
@@ -3246,8 +3544,9 @@ function resetGoalModal() {
 }
 
 // --- Edit Finance ---
-function editFinance(id) {
-  const item = getFinances().find(i => i.id === id);
+async function editFinance(id) {
+  const items = await getFinances();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
   document.getElementById('finance-input-name').value = item.name;
   document.getElementById('finance-input-category').value = item.category || 'other';
@@ -3260,19 +3559,19 @@ function editFinance(id) {
   document.getElementById('finance-input-priority').value = item.priority || 'important';
 }
 
-function confirmEditFinance() {
+async function confirmEditFinance() {
   if (editingId === null) return;
   const name = document.getElementById('finance-input-name').value.trim();
   const target = parseFloat(document.getElementById('finance-input-target').value);
   if (!name || isNaN(target) || target <= 0) { alert('กรุณาใส่ชื่อและเป้าหมายที่ถูกต้อง'); return; }
-  const items = getFinances();
+  const items = await getFinances();  // ← เพิ่ม await
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.name = name;
     item.target = target;
     item.saved = parseFloat(document.getElementById('finance-input-saved').value) || 0;
     item.priority = document.getElementById('finance-input-priority').value;
-    saveFinances(items);
+    await saveFinances(items);  // ← เพิ่ม await
   }
   closeModal('finance-modal');
   resetFinanceModal();
@@ -3292,8 +3591,9 @@ function resetFinanceModal() {
 }
 
 // --- Edit Wishlist ---
-function editWish(id) {
-  const item = getWishes().find(i => i.id === id);
+async function editWish(id) {
+  const items = await getWishes();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
   document.getElementById('wish-input-name').value = item.name;
   document.getElementById('wish-input-category').value = item.category || 'other';
@@ -3306,12 +3606,11 @@ function editWish(id) {
   document.getElementById('wish-modal').classList.add('show');
   document.getElementById('wish-input-priority').value = item.priority || 'important';
 }
-
-function confirmEditWish() {
+async function confirmEditWish() {
   if (editingId === null) return;
   const name = document.getElementById('wish-input-name').value.trim();
   if (!name) { alert('กรุณาใส่ชื่อสิ่งของ'); return; }
-  const items = getWishes();
+  const items = await getWishes();
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.name = name;
@@ -3339,8 +3638,9 @@ function resetWishModal() {
 }
 
 // --- Edit Ref ---
-function editRef(id) {
-  const item = getRefs().find(i => i.id === id);
+async function editRef(id) {
+  const items = await getRefs();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
   if (!item) return;
   pendingUploadUrl = item.url;
   document.getElementById('ref-modal-preview').src = item.url;
@@ -3354,16 +3654,16 @@ function editRef(id) {
   document.getElementById('ref-modal').classList.add('show');
 }
 
-function confirmEditRef() {
+async function confirmEditRef() {
   if (editingId === null || !pendingUploadUrl) return;
-  const items = getRefs();
+  const items = await getRefs();  // ← เพิ่ม await
   const item = items.find(i => i.id === editingId);
   if (item) {
     item.category = document.getElementById('ref-input-category').value.trim();
     item.board = document.getElementById('ref-input-board').value.trim() || 'uncategorized';
     item.tags = document.getElementById('ref-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
     item.note = document.getElementById('ref-input-note').value.trim();
-    saveRefs(items);
+    await saveRefs(items);  // ← เพิ่ม await
   }
   closeModal('ref-modal');
   resetRefModal();
@@ -3401,7 +3701,7 @@ function showToast(message, type = 'info', duration = 2500) {
 // ==========================================================
 let calendarDate = new Date();
 
-function renderCalendar() {
+async function renderCalendar() {
   const year = calendarDate.getFullYear();
   const month = calendarDate.getMonth();
   
@@ -3417,7 +3717,8 @@ function renderCalendar() {
   const todayStr = today.toISOString().slice(0, 10);
   
   // Get goals with deadlines
-  const goals = getGoals().filter(g => g.deadline);
+  const allGoals = await getGoals();  // ← เพิ่ม await
+  const goals = allGoals.filter(g => g.deadline);
   
   // Build grid
   const grid = document.getElementById('calendar-grid');
@@ -3495,18 +3796,47 @@ function toggleCalendar() {
   localStorage.setItem('calendar_collapsed', calendarCollapsed);
 }
 
+
 // ---------- Init ----------
-function initApp() {
+async function initApp() {
   renderNav();
+
+  // รอ Firestore พร้อม
+  await waitForFirestore();
+
+  // Migrate ข้อมูลเก่าทั้งหมด
+  await Promise.all([
+    refModule.migrateFromLocalStorage('ref_library_items'),
+    visionModule.migrateFromLocalStorage('life_vision_items'),
+    goalsModule.migrateFromLocalStorage('goals_items'),
+    financeModule.migrateFromLocalStorage('finance_items'),
+    wishModule.migrateFromLocalStorage('wishlist_items'),
+    studyModule.migrateFromLocalStorage('study_items'),
+    projectModule.migrateFromLocalStorage('project_items'),
+    inboxModule.migrateFromLocalStorage('inbox_items'),
+    dailyModule.migrateFromLocalStorage('daily_items')
+  ]);
+
+  onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); });
+  onDailySnapshot(() => { renderDaily(); renderDashboard(); renderNav(); });
+  onRefsSnapshot(() => { renderRef(); renderDashboard(); renderNav(); });
+  onFinancesSnapshot(() => { renderFinanceAndWish(); renderDashboard(); renderNav(); });
+  onWishesSnapshot(() => { renderFinanceAndWish(); renderDashboard(); renderNav(); });
+  onVisionsSnapshot(() => { renderVision(); renderDashboard(); renderNav(); });
+  onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); });
+  onProjectsSnapshot(() => { renderProjects(); renderDashboard(); renderNav(); });
+  onStudiesSnapshot(() => { renderStudy(); renderDashboard(); renderNav(); });
+
   let lastPage = localStorage.getItem('last_active_page') || 'journal';
   const validPages = PAGES.map(p => p.id);
-  if (!validPages.includes(lastPage)) {
-    lastPage = 'dashboard';
-  }
+  if (!validPages.includes(lastPage)) lastPage = 'journal';
+
   switchPage(lastPage);
   renderRef();
   renderVision();
   renderGoals();
+  renderStudy();
+  renderProjects();
   renderFinanceAndWish();
   renderDashboard();
   renderCalendar();
