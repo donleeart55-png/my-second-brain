@@ -383,6 +383,81 @@
   transform: scale(1.05);
   border-color: var(--accent);
 }
+/* ===== Inbox / Daily ===== */
+.inbox-item {
+  border-left: 3px solid var(--accent);
+}
+.inbox-item.processed {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+.daily-item {
+  border-left: 3px solid var(--accent2);
+}
+.inbox-tag {
+  display: inline-block;
+  background: rgba(124,110,245,.12);
+  color: var(--accent);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 9px;
+  margin: 2px 2px 2px 0;
+}
+.daily-mood {
+  font-size: 18px;
+  margin-right: 4px;
+}
+.daily-image-thumb {
+  max-width: 100%;
+  max-height: 150px;
+  border-radius: 8px;
+  margin-top: 6px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+/* ===== Primary Nav Button ===== */
+.nav-btn.primary {
+  background: var(--accent);
+  color: white;
+  font-size: 15px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(124,110,245,.3);
+}
+.nav-btn.primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(124,110,245,.4);
+}
+.nav-btn.primary.active {
+  background: var(--accent2);
+  color: #0e0e12;
+}
+/* ===== Sub Navigation (Journal) ===== */
+.sub-nav-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  border: none;
+  background: transparent;
+  transition: all 0.2s;
+}
+.sub-nav-btn.active {
+  background: var(--accent);
+  color: white;
+}
+.sub-nav-btn:hover:not(.active) {
+  background: var(--surface2);
+}
+.journal-tab {
+  display: none;
+}
+.journal-tab.active {
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -460,6 +535,34 @@
   <!-- Recent Activity - คลิกไปที่โมดูลนั้นๆ -->
   <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📋 กิจกรรมล่าสุด</h3>
   <div id="dash-recent"></div>
+</div>
+<!-- ============ PAGE: Journal (จด) ============ -->
+<div class="page" id="page-journal">
+  <!-- Sub Navigation -->
+  <div style="display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:10px;margin-bottom:16px;overflow-x:auto;">
+    <button class="sub-nav-btn active" id="sub-inbox" onclick="switchJournalTab('inbox')">📥 Inbox <span id="inbox-badge-sub" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:4px;display:none;">0</span></button>
+    <button class="sub-nav-btn" id="sub-daily" onclick="switchJournalTab('daily')">📖 Daily Log</button>
+  </div>
+
+  <!-- Inbox Content -->
+  <div id="journal-inbox" class="journal-tab active">
+    <div class="toolbar" style="justify-content:space-between;">
+      <span style="font-size:14px;font-weight:600;">📥 Inbox</span>
+      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openInboxModal()">+ พิมพ์ความคิด</button>
+    </div>
+    <div id="inbox-list"></div>
+    <div class="empty" id="inbox-empty" style="display:none;">🎉 ไม่มี Inbox ค้าง!</div>
+  </div>
+
+  <!-- Daily Log Content -->
+  <div id="journal-daily" class="journal-tab">
+    <div class="toolbar" style="justify-content:space-between;">
+      <span style="font-size:14px;font-weight:600;">📖 Daily Log</span>
+      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openDailyModal()">+ บันทึกวันนี้</button>
+    </div>
+    <div id="daily-list"></div>
+    <div class="empty" id="daily-empty" style="display:none;">ยังไม่มีบันทึก</div>
+  </div>
 </div>
   <!-- ============ PAGE: Ref Library ============ -->
 <div class="page" id="page-ref">
@@ -995,6 +1098,84 @@
   max-width: 90%;
 "></div>
 </div>
+<!-- Inbox Modal -->
+<div class="modal-overlay" id="inbox-modal">
+  <div class="modal" style="max-width:500px;">
+    <h3>💡 พิมพ์ความคิดของคุณ</h3>
+    <div class="field">
+      <label>ความคิด</label>
+      <textarea class="input" id="inbox-input-text" placeholder="คิดอะไรอยู่? พิมพ์เลย..." style="height:80px;resize:vertical;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();confirmSaveInbox();}"></textarea>
+    </div>
+    <div class="field">
+      <label>🏷️ แท็ก (คั่นด้วยจุลภาค) — <span style="color:var(--muted);font-weight:normal;">auto: #quick-idea</span></label>
+      <input class="input" id="inbox-input-tags" placeholder="#quick-idea, #inspiration">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('inbox-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveInbox()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+<!-- Daily Log Modal -->
+<div class="modal-overlay" id="daily-modal">
+  <div class="modal" style="max-width:500px;">
+    <h3>📖 บันทึกประจำวัน</h3>
+    <div class="field">
+      <label>📅 วันที่</label>
+      <input class="input" type="date" id="daily-input-date">
+    </div>
+    <div class="field">
+      <label>เนื้อหา</label>
+      <textarea class="input" id="daily-input-content" placeholder="วันนี้เกิดอะไรขึ้นบ้าง..." style="height:80px;resize:vertical;"></textarea>
+    </div>
+    <div class="field">
+      <label>😊 อารมณ์</label>
+      <select class="input" id="daily-input-mood">
+        <option value="">ไม่ระบุ</option>
+        <option value="happy">😊 Happy</option>
+        <option value="ok">😐 OK</option>
+        <option value="tired">😫 Tired</option>
+        <option value="sad">😢 Sad</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
+      <input class="input" id="daily-input-tags" placeholder="#work, #personal">
+    </div>
+    <div class="field">
+      <label>📷 รูป (URL)</label>
+      <input class="input" id="daily-input-image" placeholder="https://... หรือลากจาก Cloudinary">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('daily-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveDaily()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+<!-- Convert Inbox Modal -->
+<div class="modal-overlay" id="inbox-convert-modal">
+  <div class="modal" style="max-width:450px;">
+    <h3>🔄 แปลง Inbox</h3>
+    <div class="field">
+      <label>ข้อความ</label>
+      <div id="inbox-convert-text" style="padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:13px;color:var(--text);word-break:break-word;"></div>
+    </div>
+    <div class="field">
+      <label>แปลงเป็น...</label>
+      <select class="input" id="inbox-convert-target">
+        <option value="vision">🗺️ Vision</option>
+        <option value="goal">🎯 Goal</option>
+        <option value="project">📋 Project</option>
+        <option value="study">📚 Study</option>
+        <option value="wish">🛍️ Wishlist</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('inbox-convert-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmConvertInbox()">แปลง + ลบ Inbox</button>
+    </div>
+  </div>
+</div>
 <script>
 // ==========================================================
 // สถาปัตยกรรม: แต่ละโมดูลมี store ของตัวเอง แยกขาดจากกัน
@@ -1018,6 +1199,7 @@ function closeModal(id) {
 
 // ---------- Navigation ----------
 const PAGES = [
+  { id: 'journal', label: '📝 จด', primary: true },
   { id: 'dashboard', label: '📊 Dashboard' },
   { id: 'ref', label: '📁 Ref' },
   { id: 'vision', label: '🗺️ Life Map' },
@@ -1030,9 +1212,16 @@ const PAGES = [
 
 function renderNav() {
   const nav = document.getElementById('nav');
-  nav.innerHTML = PAGES.map(p =>
-    `<button class="nav-btn" id="nav-${p.id}" onclick="switchPage('${p.id}')">${p.label}</button>`
-  ).join('');
+  nav.innerHTML = PAGES.map(p => {
+    let badge = '';
+    if (p.id === 'journal') {
+      const inbox = getInbox();
+      const count = inbox.filter(i => !i.processed).length;
+      if (count > 0) badge = ` <span style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:2px;">${count}</span>`;
+    }
+    const isPrimary = p.primary ? 'primary' : '';
+    return `<button class="nav-btn ${isPrimary}" id="nav-${p.id}" onclick="switchPage('${p.id}')">${p.label}${badge}</button>`;
+  }).join('');
 }
 
 function switchPage(pageId) {
@@ -1102,7 +1291,16 @@ function renderDashboard() {
   document.getElementById('dash-project-count').textContent = projects.length;
   document.getElementById('dash-finance-count').textContent = finances.length;
   document.getElementById('dash-wish-count').textContent = wishes.length;
-
+// ===== Inbox Quick Entry =====
+const inboxCount = getInbox().filter(i => !i.processed).length;
+// ปุ่มด่วน + badge แสดงอยู่ที่ HTML แล้ว ใช้ JS อัพเดต badge แทน
+document.querySelector('#page-dashboard .sub')?.insertAdjacentHTML('afterend', `
+  <div style="display:flex;gap:8px;align-items:center;margin:12px 0;padding:12px 16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">
+    <span style="font-size:14px;">💡</span>
+    <span style="flex:1;font-size:13px;color:var(--muted);">${inboxCount > 0 ? `📥 มี Inbox ค้าง ${inboxCount} รายการ` : 'ไม่มี Inbox ค้าง 🎉'}</span>
+    <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openInboxModal()">+ พิมพ์ความคิด</button>
+  </div>
+`);
   // ===== สถิติความสำคัญ (Priority) =====
 function countPriority(items) {
   const counts = { critical: 0, important: 0, urgent: 0, low: 0 };
@@ -1424,6 +1622,13 @@ function confirmSaveRef() {
 
 function deleteRef(id) {
   if (!confirm('ลบรูปนี้ออกจากคลัง? (รูปจริงบน Cloudinary จะยังอยู่)')) return;
+
+  const projects = getProjects();
+  projects.forEach(p => {
+    if (p.refIds) p.refIds = p.refIds.filter(rid => rid !== id);
+  });
+  saveProjects(projects);
+
   saveRefs(getRefs().filter(i => i.id !== id));
   renderRef();
   renderDashboard();
@@ -1559,9 +1764,16 @@ function confirmSaveVision() {
 
 function deleteVision(id) {
   if (!confirm('ลบรายการนี้?')) return;
+
+  const projects = getProjects();
+  projects.forEach(p => {
+    if (p.visionIds) p.visionIds = p.visionIds.filter(vid => vid !== id);
+  });
+  saveProjects(projects);
+
   saveVisions(getVisions().filter(i => i.id !== id));
   renderVision();
-  renderDashboard();  // ← เพิ่ม
+  renderDashboard();
   showToast('🗑️ ลบวิสัยทัศน์แล้ว', 'error');
 }
 
@@ -1662,9 +1874,16 @@ function cycleGoalStatus(id) {
 
 function deleteGoal(id) {
   if (!confirm('ลบเป้าหมายนี้?')) return;
+
+  const projects = getProjects();
+  projects.forEach(p => {
+    if (p.goalIds) p.goalIds = p.goalIds.filter(gid => gid !== id);
+  });
+  saveProjects(projects);
+
   saveGoals(getGoals().filter(i => i.id !== id));
   renderGoals();
-  renderDashboard();  // ← เพิ่ม
+  renderDashboard();
   showToast('🗑️ ลบเป้าหมายแล้ว', 'error');
 }
 
@@ -1781,9 +2000,17 @@ function confirmUpdateFinance() {
 
 function deleteFinance(id) {
   if (!confirm('ลบเป้าหมายการเงินนี้?')) return;
+
+  const projects = getProjects();
+  projects.forEach(p => {
+    if (p.financeIds) p.financeIds = p.financeIds.filter(fid => fid !== id);
+  });
+  saveProjects(projects);
+
   saveFinances(getFinances().filter(i => i.id !== id));
   renderFinanceAndWish();
-  renderDashboard();  // ← เพิ่ม
+  renderDashboard();
+  showToast('🗑️ ลบเป้าหมายการเงินแล้ว', 'error');
 }
 
 function renderFinance() {
@@ -1902,9 +2129,17 @@ function toggleBought(id) {
 
 function deleteWish(id) {
   if (!confirm('ลบรายการนี้?')) return;
+
+  const projects = getProjects();
+  projects.forEach(p => {
+    if (p.wishIds) p.wishIds = p.wishIds.filter(wid => wid !== id);
+  });
+  saveProjects(projects);
+
   saveWishes(getWishes().filter(i => i.id !== id));
   renderFinanceAndWish();
-  renderDashboard();  // ← เพิ่ม
+  renderDashboard();
+  showToast('🗑️ ลบรายการ Wishlist แล้ว', 'error');
 }
 function renderFinanceAndWish() {
   const list = document.getElementById('finance-list');
@@ -2061,8 +2296,16 @@ function cycleStudyStatus(id) {
 
 function deleteStudy(id) {
   if (!confirm('ลบแผนเรียนนี้?')) return;
+
+  const projects = getProjects();
+  projects.forEach(p => {
+    if (p.studyIds) p.studyIds = p.studyIds.filter(sid => sid !== id);
+  });
+  saveProjects(projects);
+
   saveStudies(getStudies().filter(i => i.id !== id));
   renderStudy();
+  renderDashboard();
   showToast('🗑️ ลบแผนเรียนแล้ว', 'error');
 }
 
@@ -2181,7 +2424,6 @@ const PRIORITY_LABELS = {
   urgent: '⭐ เร่งด่วน (ไม่สำคัญ)',
   low: '☆ ทิ้ง/เลื่อน'
 };
-const PRIORITY_ORDER = ['critical', 'important', 'urgent', 'low'];
 
 const PROJECT_STATUS_ORDER = ['planning', 'active', 'review', 'done'];
 function renderRelationCheckboxes(selectedIds = {}) {
@@ -2423,7 +2665,7 @@ function openProjectDetail(id) {
   let html = `
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
       <span class="status-badge ${project.status === 'done' ? 'status-done' : project.status === 'active' ? 'status-in_progress' : 'status-not_started'}">${PROJECT_STATUS_LABELS[project.status]}</span>
-      <span class="status-badge" style="background:rgba(124,110,245,.12);color:var(--accent);">${PROJECT_PRIORITY_LABELS[project.priority] || '🟡 ปานกลาง'}</span>
+      <span class="status-badge" style="background:rgba(124,110,245,.12);color:var(--accent);">${PRIORITY_LABELS[project.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)'}</span>
       ${(project.tags || []).map(t => `<span class="tag" style="background:rgba(200,169,110,.12);color:var(--accent2);padding:2px 8px;border-radius:10px;font-size:9px;">#${t}</span>`).join('')}
     </div>
     
@@ -2564,6 +2806,286 @@ function resetProjectModal() {
   document.getElementById('project-input-tags').value = '';
   document.getElementById('project-relations-container').innerHTML = '';
 }
+// ==========================================================
+// MODULE: Inbox
+// ==========================================================
+const INBOX_KEY = 'inbox_items';
+function getInbox() { return JSON.parse(localStorage.getItem(INBOX_KEY) || '[]'); }
+function saveInbox(items) { localStorage.setItem(INBOX_KEY, JSON.stringify(items)); }
+
+function openInboxModal() {
+  document.getElementById('inbox-input-text').value = '';
+  document.getElementById('inbox-input-tags').value = '#quick-idea';
+  document.getElementById('inbox-modal').classList.add('show');
+  setTimeout(() => document.getElementById('inbox-input-text').focus(), 100);
+}
+
+function confirmSaveInbox() {
+  const text = document.getElementById('inbox-input-text').value.trim();
+  if (!text) { showToast('กรุณาพิมพ์ความคิด', 'error'); return; }
+  const tags = document.getElementById('inbox-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  if (!tags.length) tags.push('#quick-idea');
+  const item = {
+    id: Date.now(),
+    text,
+    tags,
+    createdAt: new Date().toISOString(),
+    processed: false
+  };
+  const items = getInbox();
+  items.unshift(item);
+  saveInbox(items);
+  closeModal('inbox-modal');
+  renderInbox();
+  renderDashboard();
+  renderNav();
+  showToast('✅ บันทึก Inbox เรียบร้อย', 'success');
+}
+
+function deleteInbox(id) {
+  if (!confirm('ลบข้อความนี้?')) return;
+  saveInbox(getInbox().filter(i => i.id !== id));
+  renderInbox();
+  renderDashboard();
+  renderNav();
+  showToast('🗑️ ลบ Inbox แล้ว', 'error');
+}
+
+function openConvertInbox(id) {
+  const item = getInbox().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('inbox-convert-text').textContent = item.text;
+  document.getElementById('inbox-convert-modal').dataset.inboxId = id;
+  document.getElementById('inbox-convert-target').value = 'goal';
+  document.getElementById('inbox-convert-modal').classList.add('show');
+}
+
+function confirmConvertInbox() {
+  const modal = document.getElementById('inbox-convert-modal');
+  const id = parseInt(modal.dataset.inboxId);
+  const target = document.getElementById('inbox-convert-target').value;
+  const item = getInbox().find(i => i.id === id);
+  if (!item) return;
+
+  // เปิด modal ของ target พร้อม pre-fill
+  const text = item.text;
+  closeModal('inbox-convert-modal');
+
+  // ลบ Inbox ทันที
+  saveInbox(getInbox().filter(i => i.id !== id));
+
+  // เปิด modal ที่เกี่ยวข้อง
+  if (target === 'vision') {
+    document.getElementById('vision-input-title').value = text;
+    document.getElementById('vision-input-desc').value = '';
+    document.getElementById('vision-modal').classList.add('show');
+  } else if (target === 'goal') {
+    document.getElementById('goal-input-title').value = text;
+    document.getElementById('goal-input-note').value = '';
+    document.getElementById('goal-modal').classList.add('show');
+  } else if (target === 'project') {
+    document.getElementById('project-input-title').value = text;
+    document.getElementById('project-input-desc').value = '';
+    document.getElementById('project-modal').classList.add('show');
+  } else if (target === 'study') {
+    document.getElementById('study-input-title').value = text;
+    document.getElementById('study-input-goal').value = '';
+    document.getElementById('study-modal').classList.add('show');
+  } else if (target === 'wish') {
+    document.getElementById('wish-input-name').value = text;
+    document.getElementById('wish-input-price').value = '';
+    document.getElementById('wish-modal').classList.add('show');
+  }
+
+  renderInbox();
+  renderDashboard();
+  renderNav();
+  showToast(`🔄 แปลง Inbox เป็น ${target} แล้ว`, 'success');
+}
+
+function renderInbox() {
+  const list = document.getElementById('inbox-list');
+  const empty = document.getElementById('inbox-empty');
+  const items = getInbox().filter(i => !i.processed);
+  const subBadge = document.getElementById('inbox-badge-sub');
+  const count = items.length;
+  if (subBadge) {
+    if (count > 0) {
+      subBadge.textContent = count;
+      subBadge.style.display = 'inline';
+    } else {
+      subBadge.style.display = 'none';
+    }
+  }
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card inbox-item';
+    const timeAgo = getTimeAgo(item.createdAt);
+    card.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;">
+          <div style="font-size:13px;white-space:pre-wrap;word-break:break-word;">${item.text}</div>
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+            ${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            <span style="font-size:10px;color:var(--muted);">${timeAgo}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openConvertInbox(${item.id})">🔄 แปลง</button>
+          <button class="del-x" style="font-size:14px;" onclick="deleteInbox(${item.id})">✕</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+// ==========================================================
+// MODULE: Daily Log
+// ==========================================================
+const DAILY_KEY = 'daily_items';
+function getDaily() { return JSON.parse(localStorage.getItem(DAILY_KEY) || '[]'); }
+function saveDaily(items) { localStorage.setItem(DAILY_KEY, JSON.stringify(items)); }
+
+function openDailyModal(date) {
+  document.getElementById('daily-input-date').value = date || new Date().toISOString().slice(0, 10);
+  document.getElementById('daily-input-content').value = '';
+  document.getElementById('daily-input-mood').value = '';
+  document.getElementById('daily-input-tags').value = '';
+  document.getElementById('daily-input-image').value = '';
+  document.getElementById('daily-modal').classList.add('show');
+}
+
+function confirmSaveDaily() {
+  const content = document.getElementById('daily-input-content').value.trim();
+  if (!content) { showToast('กรุณาใส่เนื้อหา', 'error'); return; }
+  const item = {
+    id: Date.now(),
+    date: document.getElementById('daily-input-date').value || new Date().toISOString().slice(0, 10),
+    content,
+    mood: document.getElementById('daily-input-mood').value || null,
+    tags: document.getElementById('daily-input-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+    image: document.getElementById('daily-input-image').value.trim() || null,
+    createdAt: new Date().toISOString()
+  };
+  const items = getDaily();
+  items.unshift(item);
+  saveDaily(items);
+  closeModal('daily-modal');
+  renderDaily();
+  showToast('✅ บันทึกประจำวันเรียบร้อย', 'success');
+}
+
+function deleteDaily(id) {
+  if (!confirm('ลบบันทึกนี้?')) return;
+  saveDaily(getDaily().filter(i => i.id !== id));
+  renderDaily();
+  showToast('🗑️ ลบบันทึกแล้ว', 'error');
+}
+
+function editDaily(id) {
+  const item = getDaily().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('daily-input-date').value = item.date;
+  document.getElementById('daily-input-content').value = item.content;
+  document.getElementById('daily-input-mood').value = item.mood || '';
+  document.getElementById('daily-input-tags').value = (item.tags || []).join(', ');
+  document.getElementById('daily-input-image').value = item.image || '';
+  document.getElementById('daily-modal').querySelector('h3').textContent = '✎ แก้ไขบันทึก';
+  document.getElementById('daily-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditDaily;
+  setEditMode('daily', id);
+  document.getElementById('daily-modal').classList.add('show');
+}
+
+function confirmEditDaily() {
+  if (editingId === null) return;
+  const content = document.getElementById('daily-input-content').value.trim();
+  if (!content) { alert('กรุณาใส่เนื้อหา'); return; }
+  const items = getDaily();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.date = document.getElementById('daily-input-date').value || new Date().toISOString().slice(0, 10);
+    item.content = content;
+    item.mood = document.getElementById('daily-input-mood').value || null;
+    item.tags = document.getElementById('daily-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    item.image = document.getElementById('daily-input-image').value.trim() || null;
+    saveDaily(items);
+  }
+  closeModal('daily-modal');
+  resetDailyModal();
+  clearEditMode();
+  renderDaily();
+  showToast('✅ แก้ไขบันทึกสำเร็จ', 'success');
+}
+
+function resetDailyModal() {
+  document.getElementById('daily-modal').querySelector('h3').textContent = '📖 บันทึกประจำวัน';
+  document.getElementById('daily-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveDaily;
+  document.getElementById('daily-input-date').value = '';
+  document.getElementById('daily-input-content').value = '';
+  document.getElementById('daily-input-mood').value = '';
+  document.getElementById('daily-input-tags').value = '';
+  document.getElementById('daily-input-image').value = '';
+}
+
+function renderDaily() {
+  const list = document.getElementById('daily-list');
+  const empty = document.getElementById('daily-empty');
+  const items = getDaily();
+
+  list.innerHTML = '';
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+
+  // เรียงตามวันที่ (ใหม่สุดก่อน)
+  items.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+
+  const moodEmojis = { happy: '😊', ok: '😐', tired: '😫', sad: '😢' };
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card daily-item';
+    const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const moodEmoji = item.mood ? moodEmojis[item.mood] || '' : '';
+    card.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
+            ${moodEmoji ? `<span class="daily-mood">${moodEmoji}</span>` : ''}
+          </div>
+          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content}</div>
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+          </div>
+          ${item.image ? `<img src="${item.image}" class="daily-image-thumb" onclick="openLightbox('${item.image}')">` : ''}
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="editDaily(${item.id})">✎</button>
+          <button class="del-x" style="font-size:14px;" onclick="deleteDaily(${item.id})">✕</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+// ==========================================================
+// JOURNAL (จด) — Sub-tabs
+// ==========================================================
+function switchJournalTab(tab) {
+  // Sub-nav buttons
+  document.querySelectorAll('.sub-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`sub-${tab}`).classList.add('active');
+
+  // Content
+  document.querySelectorAll('.journal-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`journal-${tab}`).classList.add('active');
+
+  // Render ตาม tab ที่เปิด
+  if (tab === 'inbox') renderInbox();
+  else if (tab === 'daily') renderDaily();
+}
 
 // ==========================================================
 // EXPORT / IMPORT
@@ -2578,7 +3100,9 @@ function exportAll() {
     finance_items: getFinances(),
     wishlist_items: getWishes(),
     study_items: getStudies(),      // ← เพิ่ม
-    project_items: getProjects()    // ← เพิ่ม
+    project_items: getProjects(),
+    inbox_items: getInbox(),
+daily_items: getDaily(),    // ← เพิ่ม
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -2607,6 +3131,8 @@ function importAll(event) {
       if (data.wishlist_items) saveWishes(data.wishlist_items);
       if (data.study_items) saveStudies(data.study_items);
       if (data.project_items) saveProjects(data.project_items);
+      if (data.inbox_items) saveInbox(data.inbox_items);
+      if (data.daily_items) saveDaily(data.daily_items);
       renderRef(); renderVision(); renderGoals(); renderFinanceAndWish(); renderDashboard(); renderFinanceSummary();   // ← แก้ไข
       alert('✅ กู้คืนข้อมูลสำเร็จ');
     } catch (err) {
@@ -2685,7 +3211,7 @@ function editGoal(id) {
   document.getElementById('goal-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditGoal;
   setEditMode('goal', id);
   document.getElementById('goal-modal').classList.add('show');
-  document.getElementById('goal-input-priority').value = item.priority || 'important';
+  document.getElementById('goal-input-priority').value = 'important';
 }
 
 function confirmEditGoal() {
@@ -2716,7 +3242,7 @@ function resetGoalModal() {
   document.getElementById('goal-input-category').value = 'career';  // default
   document.getElementById('goal-input-date').value = '';
   document.getElementById('goal-input-note').value = '';
-  document.getElementById('goal-input-priority').value = item.priority || 'important';
+  document.getElementById('goal-input-priority').value = 'important';
 }
 
 // --- Edit Finance ---
@@ -2972,7 +3498,7 @@ function toggleCalendar() {
 // ---------- Init ----------
 function initApp() {
   renderNav();
-  let lastPage = localStorage.getItem('last_active_page') || 'dashboard';
+  let lastPage = localStorage.getItem('last_active_page') || 'journal';
   const validPages = PAGES.map(p => p.id);
   if (!validPages.includes(lastPage)) {
     lastPage = 'dashboard';
@@ -2984,6 +3510,8 @@ function initApp() {
   renderFinanceAndWish();
   renderDashboard();
   renderCalendar();
+  renderInbox();
+  renderDaily();
 
   const savedState = localStorage.getItem('calendar_collapsed');
   if (savedState === 'true') {
