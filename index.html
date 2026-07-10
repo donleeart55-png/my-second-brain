@@ -1010,28 +1010,54 @@ firebase.auth().signInAnonymously().catch(err => {
   </div>
 </div>
 
-  <!-- Quick Actions -->
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openUploadWidget()">📁 + เพิ่มรูป</button>
-  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openVisionModal()">🗺️ + วิสัยทัศน์</button>
-  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openGoalModal()">🎯 + เป้าหมาย</button>
-  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openStudyModal()">📚 + แผนเรียน</button>
-  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openProjectModal()">📋 + โปรเจกต์</button>
-  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openFinanceModal()">💰 + การเงิน</button>
-  <button class="btn" style="font-size:12px;padding:6px 14px;" onclick="openWishModal()">🛍️ + Wishlist</button>
+  <!-- Quick Actions (Dropdown) -->
+<div style="position:relative;margin-bottom:16px;">
+<button class="btn" onclick="toggleQuickActions()" style="font-size:13px;padding:8px 16px;">
+✨ + เพิ่ม...
+</button>
+<div id="quick-actions-menu" style="
+display:none;position:absolute;top:100%;left:0;margin-top:8px;
+background:var(--surface);border:1px solid var(--border);
+border-radius:10px;padding:8px;z-index:50;min-width:220px;
+box-shadow:0 8px 30px rgba(0,0,0,.4);
+">
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openUploadWidget();toggleQuickActions()"> เพิ่มรูป</button>
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openVisionModal();toggleQuickActions()">🗺️ วิสัยทัศน์</button>
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openGoalModal();toggleQuickActions()">🎯 เป้าหมาย</button>
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openStudyModal();toggleQuickActions()">📚 แผนเรียน</button>
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openProjectModal();toggleQuickActions()"> โปรเจกต์</button>
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openFinanceModal();toggleQuickActions()">💰 การเงิน</button>
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openWishModal();toggleQuickActions()">🛍️ Wishlist</button>
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openTransactionModal();toggleQuickActions()">💸 รายการเงิน</button>
+<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openInboxModal();toggleQuickActions()">📥 Inbox</button>
+<button class="btn secondary" style="width:100%;text-align:left;font-size:12px;" onclick="openDailyModal();toggleQuickActions()">📖 Daily Log</button>
+</div>
 </div>
 
   <!-- Goal Status - คลิกไปที่ Goals พร้อม filter -->
   <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📊 สถานะเป้าหมาย</h3>
   <div id="dash-goal-status" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
-  <!-- Priority Stats -->
+  <!-- Focus This Week -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">🎯 Focus This Week (7 วัน)</h3>
+  <div id="dash-focus-week"></div>
+
+  <!-- Overdue Goals -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">⚠️ Overdue Goals</h3>
+  <div id="dash-overdue"></div>
+  <!-- Finance Snapshot -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">💰 Finance Snapshot</h3>
+  <div id="finance-snapshot" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px;">
+  <!-- จะ render ด้วย JavaScript -->
+</div>
+<!-- Priority Stats -->
 <h3 style="font-size:12px;color:var(--muted);margin:10px 0 6px;">⭐ สถิติความสำคัญ</h3>
 <div id="dash-priority-stats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
-
-  <!-- Recent Activity - คลิกไปที่โมดูลนั้นๆ -->
-  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📋 กิจกรรมล่าสุด</h3>
-  <div id="dash-recent"></div>
+<!-- Recent Activity -->
+<h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📋 กิจกรรมล่าสุด</h3>
+<div id="dash-recent"></div>
 </div>
+<!-- ============ PAGE: Journal (จด) ============ -->
+
 <!-- ============ PAGE: Journal (จด) ============ -->
 <div class="page" id="page-journal">
   <!-- Sub Navigation -->
@@ -2351,111 +2377,131 @@ async function renderDashboard() {
     `;
   }
   
-  // ===== กิจกรรมล่าสุด =====
-  const recent = [];
-  
-  refs.slice(0, 5).forEach(i => recent.push({ 
-    type: '📁', 
-    label: 'Ref', 
-    title: i.note || 'รูปอ้างอิง', 
-    detail: i.board || 'uncategorized',
-    time: i.createdAt, 
-    module: 'ref', 
-    id: i.id 
-  }));
-  
-  visions.slice(0, 5).forEach(i => recent.push({ 
-    type: '🗺️', 
-    label: 'Vision', 
-    title: i.title, 
-    detail: VISION_CAT_LABELS[i.category] || i.category,
-    time: i.createdAt, 
-    module: 'vision', 
-    id: i.id 
-  }));
-  
-  goals.slice(0, 5).forEach(i => recent.push({ 
-    type: '🎯', 
-    label: 'Goal', 
-    title: i.title, 
-    detail: STATUS_LABELS[i.status] || i.status,
-    time: i.createdAt, 
-    module: 'goals', 
-    id: i.id 
-  }));
-  
-  studies.slice(0, 5).forEach(i => recent.push({ 
-    type: '📚', 
-    label: 'Study', 
-    title: i.title, 
-    detail: STUDY_STATUS_LABELS[i.status] || i.status,
-    time: i.createdAt, 
-    module: 'study', 
-    id: i.id 
-  }));
-  
-  projects.slice(0, 5).forEach(i => recent.push({ 
-    type: '📋', 
-    label: 'Project', 
-    title: i.title, 
-    detail: PROJECT_STATUS_LABELS[i.status] || i.status,
-    time: i.createdAt, 
-    module: 'projects', 
-    id: i.id 
-  }));
-  
-  finances.slice(0, 5).forEach(i => recent.push({ 
-    type: '💰', 
-    label: 'Finance', 
-    title: i.name, 
-    detail: FINANCE_CAT_LABELS[i.category] || i.category || 'อื่นๆ',
-    time: i.createdAt, 
-    module: 'finance', 
-    filter: 'finance',
-    id: i.id 
-  }));
-  
-  wishes.slice(0, 5).forEach(i => recent.push({ 
-    type: '🛍️', 
-    label: 'Wish', 
-    title: i.name, 
-    detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ',
-    time: i.createdAt, 
-    module: 'finance', 
-    filter: 'wishlist',
-    id: i.id 
-  }));
-  
-  // เรียงตามเวลา
-  recent.sort((a, b) => b.time.localeCompare(a.time));
-  const topRecent = recent.slice(0, 10);
-  
-  const recentDiv = document.getElementById('dash-recent');
-  if (topRecent.length === 0) {
-    recentDiv.innerHTML = `
-      <div class="empty" style="padding:20px 0;">
-        ยังไม่มีกิจกรรม
-        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openUploadWidget()">📁 เพิ่มรูปแรก</button>
-          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openVisionModal()">🗺️ เพิ่มวิสัยทัศน์แรก</button>
-          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">🎯 เพิ่มเป้าหมายแรก</button>
-          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openStudyModal()">📚 เพิ่มแผนเรียนแรก</button>
-          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openProjectModal()">📋 เพิ่มโปรเจกต์แรก</button>
-        </div>
-      </div>
-    `;
-  } else {
-    recentDiv.innerHTML = topRecent.map(r => `
-      <div class="dash-recent-item" onclick="${r.filter ? `switchPageWithFilter('${r.module}', '${r.filter}')` : `switchPage('${r.module}')`}">
-        <span style="font-size:12px;font-weight:600;">${r.type}</span>
-        <span style="font-size:12px;margin-left:4px;">${r.title}</span>
-        <span style="font-size:10px;color:var(--muted);margin-left:6px;">· ${r.detail}</span>
-        <span style="font-size:10px;color:var(--muted);float:right;">${getTimeAgo(r.time)}</span>
-      </div>
-    `).join('');
-  }
-}
+  // ===== กิจกรรมล่าสุด (รวมทุกโมดูล) =====
+const [transactions, budgets, inboxItems, dailyLogs] = await Promise.all([
+  getTransactions(),
+  getBudgets(),
+  getInbox(),
+  getDaily()
+]);
 
+const recent = [];
+
+refs.slice(0, 5).forEach(i => recent.push({ 
+  type: '📁', label: 'Ref', 
+  title: i.note || 'รูปอ้างอิง', 
+  detail: i.board || 'uncategorized',
+  time: i.createdAt, module: 'ref'
+}));
+
+visions.slice(0, 5).forEach(i => recent.push({ 
+  type: '🗺️', label: 'Vision', 
+  title: i.title, 
+  detail: VISION_CAT_LABELS[i.category] || i.category,
+  time: i.createdAt, module: 'vision'
+}));
+
+goals.slice(0, 5).forEach(i => recent.push({ 
+  type: '🎯', label: 'Goal', 
+  title: i.title, 
+  detail: STATUS_LABELS[i.status] || i.status,
+  time: i.createdAt, module: 'goals'
+}));
+
+studies.slice(0, 5).forEach(i => recent.push({ 
+  type: '📚', label: 'Study', 
+  title: i.title, 
+  detail: STUDY_STATUS_LABELS[i.status] || i.status,
+  time: i.createdAt, module: 'study'
+}));
+
+projects.slice(0, 5).forEach(i => recent.push({ 
+  type: '📋', label: 'Project', 
+  title: i.title, 
+  detail: PROJECT_STATUS_LABELS[i.status] || i.status,
+  time: i.createdAt, module: 'projects'
+}));
+
+finances.slice(0, 3).forEach(i => recent.push({ 
+  type: '💰', label: 'Finance', 
+  title: i.name, 
+  detail: FINANCE_CAT_LABELS[i.category] || i.category || 'อื่นๆ',
+  time: i.createdAt, module: 'finance', filter: 'finance'
+}));
+
+wishes.slice(0, 3).forEach(i => recent.push({ 
+  type: '🛍️', label: 'Wish', 
+  title: i.name, 
+  detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ',
+  time: i.createdAt, module: 'finance', filter: 'wishlist'
+}));
+
+// ===== เพิ่มโมดูลใหม่ =====
+transactions.slice(0, 5).forEach(i => {
+  const amountDisplay = i.type === 'income' ? `+${i.amount.toLocaleString()}` : `-${i.amount.toLocaleString()}`;
+  recent.push({ 
+    type: i.type === 'income' ? '💵' : '💸', 
+    label: i.type === 'income' ? 'รายรับ' : 'รายจ่าย', 
+    title: i.note || TRANSACTION_CAT_LABELS[i.category] || i.category,
+    detail: `${amountDisplay} บาท`,
+    time: i.createdAt, module: 'finance', filter: 'transactions'
+  });
+});
+
+budgets.slice(0, 3).forEach(i => {
+  const catInfo = getAllBudgetCategories().find(c => c.key === i.category);
+  recent.push({ 
+    type: '📊', label: 'Budget', 
+    title: catInfo ? catInfo.label : i.category,
+    detail: `${i.limit.toLocaleString()} บาท (${i.month})`,
+    time: i.createdAt, module: 'finance', filter: 'budgets'
+  });
+});
+
+inboxItems.filter(i => !i.processed).slice(0, 3).forEach(i => {
+  recent.push({ 
+    type: '📥', label: 'Inbox', 
+    title: i.text.substring(0, 40) + (i.text.length > 40 ? '...' : ''),
+    detail: (i.tags && i.tags[0]) || '#quick-idea',
+    time: i.createdAt, module: 'journal'
+  });
+});
+
+dailyLogs.slice(0, 3).forEach(i => {
+  recent.push({ 
+    type: '📖', label: 'Daily', 
+    title: `บันทึก ${new Date(i.date).toLocaleDateString('th-TH')}`,
+    detail: i.content.substring(0, 30) + (i.content.length > 30 ? '...' : ''),
+    time: i.createdAt, module: 'journal'
+  });
+});
+
+// เรียงตามเวลา (ใหม่สุดก่อน)
+recent.sort((a, b) => b.time.localeCompare(a.time));
+const topRecent = recent.slice(0, 15);
+
+const recentDiv = document.getElementById('dash-recent');
+if (topRecent.length === 0) {
+  recentDiv.innerHTML = `
+    <div class="empty" style="padding:20px 0;">
+      ยังไม่มีกิจกรรม
+      <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openUploadWidget()">📁 เพิ่มรูปแรก</button>
+        <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">🎯 เพิ่มเป้าหมายแรก</button>
+      </div>
+    </div>
+  `;
+} else {
+  recentDiv.innerHTML = topRecent.map(r => `
+    <div class="dash-recent-item" onclick="${r.filter ? `switchPageWithFilter('${r.module}', '${r.filter}')` : `switchPage('${r.module}')`}">
+      <span style="font-size:12px;font-weight:600;">${r.type}</span>
+      <span style="font-size:12px;margin-left:4px;">${r.title}</span>
+      <span style="font-size:10px;color:var(--muted);margin-left:6px;">· ${r.detail}</span>
+      <span style="font-size:10px;color:var(--muted);float:right;">${getTimeAgo(r.time)}</span>
+    </div>
+  `).join('');
+}
+}
 // ===== Helper: แสดงเวลาผ่านไป =====
 function getTimeAgo(dateString) {
   const now = new Date();
@@ -2470,6 +2516,188 @@ function getTimeAgo(dateString) {
   if (diffHours < 24) return `${diffHours} ชั่วโมงที่แล้ว`;
   if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
   return past.toLocaleDateString('th-TH');
+}
+// ===== Focus This Week =====
+async function renderFocusThisWeek() {
+  const container = document.getElementById('dash-focus-week');
+  if (!container) return;
+
+  const goals = await getGoals();
+  const today = new Date();
+  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const focus = goals
+    .filter(g => g.deadline && g.status !== 'done')
+    .filter(g => {
+      const d = new Date(g.deadline);
+      return d >= today && d <= nextWeek;
+    })
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+    .slice(0, 5);
+
+  if (focus.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0;">ไม่มีเป้าหมายในสัปดาห์นี้ 🎉</div>';
+    return;
+  }
+
+  container.innerHTML = focus.map(g => {
+    const daysLeft = Math.ceil((new Date(g.deadline) - today) / (1000 * 60 * 60 * 24));
+    const urgent = daysLeft <= 2 ? 'color:var(--red);font-weight:600;' : '';
+    return `
+      <div class="dash-recent-item" onclick="switchPage('goals')">
+        <span style="font-size:12px;">🎯</span>
+        <span style="font-size:12px;margin-left:6px;flex:1;">${g.title}</span>
+        <span style="${urgent}">D-${daysLeft}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== Overdue Goals =====
+async function renderOverdueGoals() {
+  const container = document.getElementById('dash-overdue');
+  if (!container) return;
+
+  const goals = await getGoals();
+  const today = new Date();
+
+  const overdue = goals
+    .filter(g => g.deadline && g.status !== 'done')
+    .filter(g => new Date(g.deadline) < today)
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+    .slice(0, 5);
+
+  if (overdue.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0;">ไม่มีเป้าหมายเกินกำหนด ✅</div>';
+    return;
+  }
+
+  container.innerHTML = overdue.map(g => {
+    const daysOver = Math.floor((today - new Date(g.deadline)) / (1000 * 60 * 60 * 24));
+    return `
+      <div class="dash-recent-item" onclick="switchPage('goals')" style="border-left:3px solid var(--red);">
+        <span style="font-size:12px;">⚠️</span>
+        <span style="font-size:12px;margin-left:6px;flex:1;">${g.title}</span>
+        <span style="color:var(--red);font-weight:600;">+${daysOver} วัน</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== Recent Activity (แยกจาก renderDashboard) =====
+async function renderRecentActivity() {
+  const container = document.getElementById('dash-recent');
+  if (!container) return;
+
+  const [refs, visions, goals, finances, wishes, studies, projects, inbox, daily, transactions, budgets] = await Promise.all([
+    getRefs(), getVisions(), getGoals(), getFinances(), getWishes(),
+    getStudies(), getProjects(), getInbox(), getDaily(),
+    getTransactions(), getBudgets()
+  ]);
+
+  const recent = [];
+
+  refs.slice(0, 3).forEach(i => recent.push({ type: '📁', title: i.note || 'รูป', detail: i.board || '', time: i.createdAt, module: 'ref' }));
+  visions.slice(0, 3).forEach(i => recent.push({ type: '🗺️', title: i.title, detail: VISION_CAT_LABELS[i.category] || i.category, time: i.createdAt, module: 'vision' }));
+  goals.slice(0, 3).forEach(i => recent.push({ type: '🎯', title: i.title, detail: STATUS_LABELS[i.status] || i.status, time: i.createdAt, module: 'goals' }));
+  studies.slice(0, 3).forEach(i => recent.push({ type: '📚', title: i.title, detail: STUDY_STATUS_LABELS[i.status] || i.status, time: i.createdAt, module: 'study' }));
+  projects.slice(0, 3).forEach(i => recent.push({ type: '📋', title: i.title, detail: PROJECT_STATUS_LABELS[i.status] || i.status, time: i.createdAt, module: 'projects' }));
+  finances.slice(0, 2).forEach(i => recent.push({ type: '💰', title: i.name, detail: FINANCE_CAT_LABELS[i.category] || i.category, time: i.createdAt, module: 'finance' }));
+  wishes.slice(0, 2).forEach(i => recent.push({ type: '️', title: i.name, detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ', time: i.createdAt, module: 'finance' }));
+  transactions.slice(0, 3).forEach(i => {
+    const amt = i.type === 'income' ? `+${i.amount.toLocaleString()}` : `-${i.amount.toLocaleString()}`;
+    recent.push({ type: i.type === 'income' ? '💵' : '💸', title: i.note || TRANSACTION_CAT_LABELS[i.category] || i.category, detail: `${amt} บาท`, time: i.createdAt, module: 'finance' });
+  });
+  budgets.slice(0, 2).forEach(i => recent.push({ type: '📊', title: BUDGET_CATEGORIES.find(c => c.key === i.category)?.label || i.category, detail: `${i.limit.toLocaleString()} บาท (${i.month})`, time: i.createdAt, module: 'finance' }));
+  inbox.filter(i => !i.processed).slice(0, 2).forEach(i => recent.push({ type: '📥', title: i.text.substring(0, 30) + (i.text.length > 30 ? '...' : ''), detail: (i.tags?.[0]) || '#idea', time: i.createdAt, module: 'journal' }));
+  daily.slice(0, 2).forEach(i => recent.push({ type: '📖', title: `บันทึก ${new Date(i.date).toLocaleDateString('th-TH')}`, detail: i.content.substring(0, 25) + (i.content.length > 25 ? '...' : ''), time: i.createdAt, module: 'journal' }));
+
+  recent.sort((a, b) => b.time.localeCompare(a.time));
+  const top = recent.slice(0, 10);
+
+  if (top.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0;">ยังไม่มีกิจกรรม</div>';
+    return;
+  }
+
+  container.innerHTML = top.map(r => `
+    <div class="dash-recent-item" onclick="switchPage('${r.module}')">
+      <span style="font-size:12px;font-weight:600;">${r.type}</span>
+      <span style="font-size:12px;margin-left:6px;flex:1;">${r.title}</span>
+      <span style="font-size:10px;color:var(--muted);margin-left:6px;">· ${r.detail}</span>
+      <span style="font-size:10px;color:var(--muted);float:right;">${getTimeAgo(r.time)}</span>
+    </div>
+  `).join('');
+}
+
+// ===== Finance Snapshot =====
+async function renderFinanceSnapshot() {
+  const container = document.getElementById('finance-snapshot');
+  if (!container) return;
+
+  const [transactions, budgets, finances, wishes] = await Promise.all([
+    getTransactions(), getBudgets(), getFinances(), getWishes()
+  ]);
+
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const monthTx = transactions.filter(t => t.date.startsWith(currentMonth));
+  const income = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const expense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const balance = income - expense;
+
+  const overBudget = budgets.filter(b => {
+    if (b.month !== currentMonth) return false;
+    const spent = monthTx.filter(t => t.type === 'expense' && t.category === b.category).reduce((s, t) => s + t.amount, 0);
+    return spent > b.limit;
+  }).length;
+
+  const nearGoals = [...finances, ...wishes]
+    .filter(i => {
+      const target = i.target || i.price || 0;
+      const saved = i.saved || 0;
+      const pct = target > 0 ? (saved / target) * 100 : 0;
+      return pct >= 70 && pct < 100 && !i.bought;
+    })
+    .slice(0, 3);
+
+  let html = `
+    <div class="dash-card" style="border-color:var(--green);padding:10px;">
+      <div style="font-size:16px;font-weight:700;color:var(--green);">+${income.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">รายรับ</div>
+    </div>
+    <div class="dash-card" style="border-color:var(--red);padding:10px;">
+      <div style="font-size:16px;font-weight:700;color:var(--red);">-${expense.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">รายจ่าย</div>
+    </div>
+    <div class="dash-card" style="border-color:var(--accent);padding:10px;">
+      <div style="font-size:16px;font-weight:700;color:var(--accent);">${balance >= 0 ? '+' : ''}${balance.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">คงเหลือ</div>
+    </div>
+  `;
+
+  if (overBudget > 0) {
+    html += `
+      <div class="dash-card" style="border-color:var(--red);padding:10px;">
+        <div style="font-size:16px;font-weight:700;color:var(--red);">⚠️ ${overBudget}</div>
+        <div style="color:var(--muted);font-size:10px;">เกินงบ</div>
+      </div>
+    `;
+  }
+
+  if (nearGoals.length > 0) {
+    html += `
+      <div class="dash-card" style="grid-column:1/-1;text-align:left;padding:10px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">🎯 ใกล้สำเร็จ</div>
+        ${nearGoals.map(g => {
+          const target = g.target || g.price || 0;
+          const pct = target > 0 ? Math.round((g.saved / target) * 100) : 0;
+          return `<div style="font-size:12px;">${g.name}: ${pct}%</div>`;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
 }
 // ==========================================================
 // GLOBAL SEARCH
@@ -3053,6 +3281,92 @@ async function deleteFinance(id) {
   renderDashboard();
   showToast('🗑️ ลบเป้าหมายการเงินแล้ว', 'error');
 }
+async function renderFinanceSnapshot() {
+  const container = document.getElementById('finance-snapshot');
+  if (!container) return;
+  
+  const [transactions, budgets, finances, wishes] = await Promise.all([
+    getTransactions(),
+    getBudgets(),
+    getFinances(),
+    getWishes()
+  ]);
+  
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
+  
+  // 1. สรุปเดือนนี้
+  const income = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const expense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const balance = income - expense;
+  
+  // 2. Budget Status
+  const monthBudgets = budgets.filter(b => b.month === currentMonth);
+  const overBudgetCount = monthBudgets.filter(b => {
+    const spent = monthTransactions
+      .filter(t => t.type === 'expense' && t.category === b.category)
+      .reduce((sum, t) => sum + t.amount, 0);
+    return spent > b.limit;
+  }).length;
+  
+  // 3. เป้าหมายใกล้สำเร็จ (>70%)
+  const nearGoalFinances = finances.filter(f => {
+    const pct = (f.saved / f.target) * 100;
+    return pct >= 70 && pct < 100;
+  }).slice(0, 3);
+  
+  const nearGoalWishes = wishes.filter(w => {
+    const pct = w.price > 0 ? (w.saved / w.price) * 100 : 0;
+    return pct >= 70 && pct < 100 && !w.bought;
+  }).slice(0, 3);
+  
+  // Render HTML
+  let html = `
+    <div class="dash-card" style="border-color:var(--green);">
+      <div style="font-size:20px;">💰</div>
+      <div style="font-size:16px;font-weight:700;color:var(--green);">+${income.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">รายรับเดือนนี้</div>
+    </div>
+    <div class="dash-card" style="border-color:var(--red);">
+      <div style="font-size:20px;">💸</div>
+      <div style="font-size:16px;font-weight:700;color:var(--red);">-${expense.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">รายจ่ายเดือนนี้</div>
+    </div>
+    <div class="dash-card" style="border-color:var(--accent);">
+      <div style="font-size:20px;">💵</div>
+      <div style="font-size:16px;font-weight:700;color:var(--accent);">${balance >= 0 ? '+' : ''}${balance.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">คงเหลือ</div>
+    </div>
+  `;
+  
+  if (overBudgetCount > 0) {
+    html += `
+      <div class="dash-card" style="border-color:var(--red);">
+        <div style="font-size:20px;">⚠️</div>
+        <div style="font-size:16px;font-weight:700;color:var(--red);">${overBudgetCount}</div>
+        <div style="color:var(--muted);font-size:10px;">หมวดเกินงบ</div>
+      </div>
+    `;
+  }
+  
+  if (nearGoalFinances.length > 0 || nearGoalWishes.length > 0) {
+    html += `
+      <div class="dash-card" style="grid-column:1/-1;text-align:left;padding:12px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">🎯 เป้าหมายใกล้สำเร็จ</div>
+        ${nearGoalFinances.map(f => {
+          const pct = Math.round((f.saved / f.target) * 100);
+          return `<div style="font-size:12px;margin-bottom:4px;">${f.name}: ${pct}%</div>`;
+        }).join('')}
+        ${nearGoalWishes.map(w => {
+          const pct = Math.round((w.saved / w.price) * 100);
+          return `<div style="font-size:12px;margin-bottom:4px;">${w.name}: ${pct}%</div>`;
+        }).join('')}
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html;
+}
 
 // ==========================================================
 // MODULE 6: Finance Transactions
@@ -3133,8 +3447,10 @@ function saveCustomCategories(items) {
 }
 
 function getAllBudgetCategories() {
-  const custom = getCustomCategories();
-  return [...BUDGET_CATEGORIES, ...custom];
+  try {
+    const custom = JSON.parse(localStorage.getItem('budget_custom_categories') || '[]');
+    return [...BUDGET_CATEGORIES, ...custom];
+  } catch { return BUDGET_CATEGORIES; }
 }
 
 function addCustomCategory(label, defaultAmount) {
@@ -5566,15 +5882,14 @@ async function initApp() {
   onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); });
   onDailySnapshot(() => { renderDaily(); renderDashboard(); renderNav(); });
   onRefsSnapshot(() => { renderRef(); renderDashboard(); renderNav(); });
-  onFinancesSnapshot(() => { renderFinanceGoals(); renderDashboard(); renderNav(); });
-  onWishesSnapshot(() => { renderWishlist(); renderDashboard(); renderNav(); });
+  onFinancesSnapshot(() => { renderFinanceGoals(); renderDashboard(); renderNav(); renderFinanceSnapshot(); });
+  onWishesSnapshot(() => { renderWishlist(); renderDashboard(); renderNav(); renderFinanceSnapshot(); });
   onBudgetsSnapshot(() => { renderBudgets(); renderFinanceOverview(); renderDashboard(); });
-  onTransactionsSnapshot(() => { renderFinanceTransactions(); renderFinanceOverview(); });
-  onPresetsSnapshot(() => { renderPresets(); });
+  onTransactionsSnapshot(() => { renderFinanceTransactions(); renderFinanceOverview(); });  onPresetsSnapshot(() => { renderPresets(); });
   onVisionsSnapshot(() => { renderVision(); renderDashboard(); renderNav(); });
-  onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); });
-  onProjectsSnapshot(() => { renderProjects(); renderDashboard(); renderNav(); });
+  onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); });  onProjectsSnapshot(() => { renderProjects(); renderDashboard(); renderNav(); });
   onStudiesSnapshot(() => { renderStudy(); renderDashboard(); renderNav(); });
+  
 
   let lastPage = localStorage.getItem('last_active_page') || 'journal';
   const validPages = PAGES.map(p => p.id);
@@ -5589,15 +5904,17 @@ async function initApp() {
   renderFinanceGoals();
   renderWishlist();
   renderDashboard();
-  renderCalendar();
+  renderFocusThisWeek();
+  renderOverdueGoals();
+  renderRecentActivity();
+  await renderCalendar();
   renderInbox();
   renderDaily();
   renderFinanceTransactions();
   renderBudgets();
   renderPresets();
   renderFinanceOverview();
-  renderFinanceGoals();
-  renderWishlist();
+  renderFinanceSnapshot();
 
   const savedState = localStorage.getItem('calendar_collapsed');
   if (savedState === 'true') {
