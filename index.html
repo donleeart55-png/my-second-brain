@@ -704,27 +704,27 @@ firebase.auth().signInAnonymously().catch(err => {
 <div class="page" id="page-finance">
   <!-- Finance Summary -->
   <div id="finance-summary" style="
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px; margin-bottom: 14px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 4px; margin-bottom: 10px;
   ">
-    <div class="item-card" style="text-align:center;padding:10px;border-color:var(--green);">
-      <div style="font-size:18px;">💰</div>
-      <div style="font-size:16px;font-weight:700;color:var(--green);" id="finance-total-target">0</div>
+    <div class="item-card" style="text-align:center;padding:4px 6px;border-color:var(--green);">
+      <div style="font-size:14px;">💰</div>
+      <div style="font-size:13px;font-weight:700;color:var(--green);" id="finance-total-target">0</div>
       <div style="color:var(--muted);font-size:10px;">เป้าหมายรวม</div>
     </div>
-    <div class="item-card" style="text-align:center;padding:10px;border-color:var(--accent);">
-      <div style="font-size:18px;">📈</div>
-      <div style="font-size:16px;font-weight:700;color:var(--accent);" id="finance-total-saved">0</div>
+    <div class="item-card" style="text-align:center;padding:4px 6px;border-color:var(--accent);">
+      <div style="font-size:14px;">📈</div>
+      <div style="font-size:13px;font-weight:700;color:var(--accent);" id="finance-total-saved">0</div>
       <div style="color:var(--muted);font-size:10px;">เก็บได้แล้ว</div>
     </div>
-    <div class="item-card" style="text-align:center;padding:10px;border-color:var(--accent2);">
-      <div style="font-size:18px;">🎯</div>
-      <div style="font-size:16px;font-weight:700;color:var(--accent2);" id="finance-avg-progress">0%</div>
+    <div class="item-card" style="text-align:center;padding:4px 6px;border-color:var(--accent2);">
+      <div style="font-size:14px;">🎯</div>
+      <div style="font-size:13px;font-weight:700;color:var(--accent2);" id="finance-avg-progress">0%</div>
       <div style="color:var(--muted);font-size:10px;">ความคืบหน้าเฉลี่ย</div>
     </div>
-    <div class="item-card" style="text-align:center;padding:10px;border-color:var(--green);">
-      <div style="font-size:18px;">🏆</div>
-      <div style="font-size:16px;font-weight:700;color:var(--green);" id="finance-completed">0</div>
+    <div class="item-card" style="text-align:center;padding:4px 6px;border-color:var(--green);">
+      <div style="font-size:14px;">🏆</div>
+      <div style="font-size:13px;font-weight:700;color:var(--green);" id="finance-completed">0</div>
       <div style="color:var(--muted);font-size:10px;">สำเร็จแล้ว</div>
     </div>
   </div>
@@ -1081,6 +1081,9 @@ firebase.auth().signInAnonymously().catch(err => {
     <div class="field"><label>ราคา (บาท)</label>
       <input class="input" type="number" id="wish-input-price" placeholder="25000">
     </div>
+    <div class="field"><label>เก็บได้แล้ว (บาท)</label>
+      <input class="input" type="number" id="wish-input-saved" placeholder="0">
+    </div>
     <div class="field"><label>ความสำคัญ</label>
       <select class="input" id="wish-input-priority">
         <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
@@ -1114,6 +1117,20 @@ firebase.auth().signInAnonymously().catch(err => {
   </div>
   <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
     <img id="lightbox-img" src="">
+</div>
+<!-- Wish update modal -->
+<div class="modal-overlay" id="wish-update-modal">
+  <div class="modal">
+    <h3>อัพเดตยอดเงินเก็บ</h3>
+    <div class="field">
+      <label>ยอดที่เก็บได้แล้ว (บาท)</label>
+      <input class="input" type="number" id="wish-update-amount" placeholder="0">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('wish-update-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmUpdateWish()">บันทึก</button>
+    </div>
+  </div>
 </div>
 
 <!-- Toast Notification -->
@@ -1224,6 +1241,10 @@ function closeModal(id) {
     pendingFinanceId = null;
     document.getElementById('finance-update-amount').value = '';
   }
+  if (id === 'wish-update-modal') {
+  pendingWishId = null;
+  document.getElementById('wish-update-amount').value = '';
+}
   clearEditMode();
 }
 
@@ -1234,10 +1255,10 @@ const PAGES = [
   { id: 'ref', label: '📁 Ref' },
   { id: 'vision', label: '🗺️ Life Map' },
   { id: 'goals', label: '🎯 Goals' },
-  { id: 'study', label: '📚 Study' },  // ← เพิ่ม
+  { id: 'study', label: '📚 Study' },
   { id: 'projects', label: '📋 Projects' },
   { id: 'finance', label: '💰 Finance & Wishlist' },
-  { id: 'settings', label: '⚙️ ตั้งค่า' }  // ← เพิ่มบรรทัดนี้
+  { id: 'settings', label: '⚙️ ตั้งค่า' }
 ];
 
 function renderNav() {
@@ -2314,6 +2335,7 @@ function openWishModal() {
   document.getElementById('wish-input-link').value = '';
   document.getElementById('wish-modal').classList.add('show');
   document.getElementById('wish-input-priority').value = 'important';
+  document.getElementById('wish-input-saved').value = '';
 }
 
 async function confirmSaveWish() {
@@ -2324,6 +2346,7 @@ async function confirmSaveWish() {
     name,
     category: document.getElementById('wish-input-category').value,
     price: parseFloat(document.getElementById('wish-input-price').value) || 0,
+    saved: parseFloat(document.getElementById('wish-input-saved').value) || 0,
     priority: document.getElementById('wish-input-priority').value,
     link: document.getElementById('wish-input-link').value.trim(),
     bought: false,
@@ -2402,25 +2425,35 @@ async function renderFinanceAndWish() {
     renderFinanceSummary();  // ← เพิ่มตอนท้าย
   }
 
-  // เตรียมข้อมูล Wishlist
-  if (filter === 'all' || filter === 'wishlist') {
-    wishItems.forEach(item => {
-      combined.push({
-        type: 'wishlist',
-        id: item.id,
-        title: item.name + (item.bought ? ' ✅' : ''),
-        detail: `${WISH_CAT_LABELS[item.category] || item.category || 'อื่นๆ'} · ${item.price ? item.price.toLocaleString() + ' บาท' : 'ไม่มีราคา'} · ${PRIORITY_LABELS[item.priority]}`,
-        progress: item.bought ? 100 : 0,
-        raw: item,
-        html: `
-          <div class="item-footer">
-            ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ดูลิงก์</a>` : '<span></span>'}
-            <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="toggleBought(${item.id})">${item.bought ? '↩ ยังไม่ได้ซื้อ' : '✓ ซื้อแล้ว'}</button>
-          </div>
-        `
-      });
+// เตรียมข้อมูล Wishlist
+if (filter === 'all' || filter === 'wishlist') {
+  wishItems.forEach(item => {
+    // ใช้ค่าเริ่มต้นถ้าไม่มี saved
+    const saved = item.saved || 0;
+    const price = item.price || 0;
+    const pct = price > 0 ? Math.min(100, (saved / price) * 100) : 0;
+    
+    combined.push({
+      type: 'wishlist',
+      id: item.id,
+      title: item.name + (item.bought ? ' ✅' : ''),
+      detail: `${WISH_CAT_LABELS[item.category] || item.category || 'อื่นๆ'} · ${price ? price.toLocaleString() + ' บาท' : 'ไม่มีราคา'} · ${PRIORITY_LABELS[item.priority]}`,
+      progress: pct,
+      raw: item,
+      html: `
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-label">${saved.toLocaleString()} / ${price.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
+        <div class="item-footer">
+  ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ดูลิงก์</a>` : '<span></span>'}
+  <div style="display:flex;gap:4px;margin-left:auto;">
+    <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateWishSaved(${item.id})">อัพเดตยอด</button>
+    <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="toggleBought(${item.id})">${item.bought ? '↩ ยังไม่ได้ซื้อ' : '✓ ซื้อแล้ว'}</button>
+  </div>
+</div>
+      `
     });
-  }
+  });
+}
 
   // เรียงลำดับตาม createdAt (ใหม่สุดขึ้นก่อน)
   combined.sort((a, b) => b.raw.createdAt.localeCompare(a.raw.createdAt));
@@ -2452,6 +2485,30 @@ async function renderFinanceAndWish() {
     `;
     list.appendChild(card);
   });
+}
+async function updateWishSaved(id) {  // ← เพิ่ม async
+  pendingWishId = id;
+  const items = await getWishes();  // ← เพิ่ม await
+  const item = items.find(i => i.id === id);
+  document.getElementById('wish-update-amount').value = item ? item.saved : 0;
+  document.getElementById('wish-update-modal').classList.add('show');
+}
+
+async function confirmUpdateWish() {  // ← เพิ่ม async
+  if (pendingWishId === null) return;
+  const val = parseFloat(document.getElementById('wish-update-amount').value);
+  if (isNaN(val) || val < 0) { alert('กรุณาใส่ตัวเลขที่ถูกต้อง'); return; }
+  const items = await getWishes();  // ← เพิ่ม await
+  const item = items.find(i => i.id === pendingWishId);
+  if (item) {
+    item.saved = val;
+    await saveWishes(items);  // ← เพิ่ม await
+    renderFinanceAndWish();
+    renderDashboard();
+    showToast('✅ อัพเดตยอดเงินเรียบร้อย', 'success');
+  }
+  closeModal('wish-update-modal');
+  pendingWishId = null;
 }
 // ==========================================================
 // MODULE: Study Plan
@@ -3598,6 +3655,7 @@ async function editWish(id) {
   document.getElementById('wish-input-name').value = item.name;
   document.getElementById('wish-input-category').value = item.category || 'other';
   document.getElementById('wish-input-price').value = item.price || '';
+  document.getElementById('wish-input-saved').value = item.saved || 0;
   document.getElementById('wish-input-priority').value = item.priority;
   document.getElementById('wish-input-link').value = item.link || '';
   document.getElementById('wish-modal').querySelector('h3').textContent = 'แก้ไขของที่อยากได้';
@@ -3615,6 +3673,7 @@ async function confirmEditWish() {
   if (item) {
     item.name = name;
     item.price = parseFloat(document.getElementById('wish-input-price').value) || 0;
+    item.saved = parseFloat(document.getElementById('wish-input-saved').value) || 0;
     item.priority = document.getElementById('wish-input-priority').value;
     item.link = document.getElementById('wish-input-link').value.trim();
     saveWishes(items);
@@ -3635,6 +3694,7 @@ function resetWishModal() {
   document.getElementById('wish-input-priority').value = 'medium';
   document.getElementById('wish-input-link').value = '';
   document.getElementById('wish-input-priority').value = 'important';
+  document.getElementById('wish-input-saved').value = '';
 }
 
 // --- Edit Ref ---
