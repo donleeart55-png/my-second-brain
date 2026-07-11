@@ -43,24 +43,39 @@ firebase.auth().signInAnonymously().catch(err => {
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif;
-    padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 60px;
-  }
+background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif;
+padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
+}
   h1 { font-size: 19px; margin-bottom: 4px; }
   .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
 
   /* ===== Navigation ===== */
   .nav {
     display: flex; gap: 4px; background: var(--surface); padding: 4px;
-    border-radius: 10px; margin-bottom: 18px; overflow-x: auto;
+    border-radius: 10px; margin-bottom: 18px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
   }
+  .nav::-webkit-scrollbar {
+  display: none;                   /* Chrome/Safari/Opera */
+}
+.nav {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;  /* iOS momentum scroll */
+}
   .nav-btn {
-    flex-shrink: 0; padding: 9px 14px; border-radius: 7px; cursor: pointer;
+    flex-shrink: 0; padding: 8px 12px;  border-radius: 7px; cursor: pointer;
     font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap;
-    border: none; background: transparent;
-  }
-  .nav-btn.active { background: var(--accent); color: white; }
-
+    border: none; background: transparent; transition: all 0.2s ease; position: relative;
+}
+.nav-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+  .nav-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(124, 110, 245, 0.3); }
+.nav-btn.active:hover {
+  background: var(--accent);
+  transform: none;
+}
   .page { display: none; }
   .page.active { display: block; }
 
@@ -116,7 +131,7 @@ firebase.auth().signInAnonymously().catch(err => {
   .progress-label { font-size: 10px; color: var(--muted); margin-top: 4px; font-family: monospace; }
 
   /* ===== Modal (shared structure, content swapped per module) ===== */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); align-items: center; justify-content: center; z-index: 100; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); align-items: center; justify-content: center; z-index: 150; }
   .modal-overlay.show { display: flex; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; }
   .modal h3 { font-size: 15px; margin-bottom: 14px; }
@@ -128,8 +143,7 @@ firebase.auth().signInAnonymously().catch(err => {
   .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
   .modal-actions .btn { flex: 1; }
 
-  .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.9); align-items: center; justify-content: center; z-index: 200; cursor: zoom-out; }
-  .lightbox-overlay.show { display: flex; }
+  .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.9); align-items: center; justify-content: center; z-index: 250; cursor: zoom-out; }  .lightbox-overlay.show { display: flex; }
   .lightbox-overlay img { max-width: 90%; max-height: 90%; border-radius: 8px; }
   /* ===== Responsive ===== */
 @media (max-width: 600px) {
@@ -500,7 +514,7 @@ firebase.auth().signInAnonymously().catch(err => {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  z-index: 100;
+  z-index: 90;
   transition: transform 0.3s ease;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
 }
@@ -954,6 +968,187 @@ firebase.auth().signInAnonymously().catch(err => {
   max-width: 520px;
   overflow-x: hidden;
 }
+/* ===== Multi-upload Preview ===== */
+.upload-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 6px;
+  margin-bottom: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.upload-preview-item {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.upload-preview-item img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+}
+.upload-preview-item .remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(0,0,0,.7);
+  color: var(--red);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.upload-status {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  padding: 6px;
+}
+/* ===== Ref Selection Mode ===== */
+.ref-card.selected {
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.ref-card .select-check {
+  display: none;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+.ref-card.selected .select-check {
+  display: flex;
+}
+.batch-action-bar {
+  position: fixed;
+  bottom: 70px; /* อยู่เหนือ bottom tab bar */
+  left: 16px;
+  right: 16px;
+  max-width: 868px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.5);
+  z-index: 99;
+  animation: slideIn 0.3s ease;
+}
+.batch-action-bar .batch-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.batch-action-bar .batch-row:last-child {
+  margin-bottom: 0;
+}
+.batch-action-bar label {
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 70px;
+}
+.batch-action-bar .input {
+  flex: 1;
+  min-width: 100px;
+}
+.batch-action-bar .batch-info {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-right: auto;
+}
+/* Body padding ตลอดเวลา (เผื่อ bottom bar + batch bar) */
+body {
+  padding-bottom: 80px;
+}
+/* Scroll hint — fade out ที่ขอบขวาเมื่อมี content ซ่อนอยู่ */
+.nav-wrapper {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.nav-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(to right, transparent, var(--bg));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 0 10px 10px 0;
+}
+
+.nav-wrapper.has-overflow::after {
+  opacity: 1;
+}
+
+/* ย้าย margin-bottom จาก .nav ไปที่ wrapper */
+.nav-wrapper .nav {
+  margin-bottom: 0;
+}
+/* Ref Category Input */
+.ref-category-input {
+  position: relative;
+}
+.ref-category-input input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 11px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.ref-category-input input:focus {
+  border-color: var(--accent);
+}
+.ref-category-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+.ref-category-suggestions.show {
+  display: block;
+}
+.ref-category-suggestion {
+  padding: 8px 11px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.ref-category-suggestion:hover {
+  background: var(--surface2);
+}
 </style>
 </head>
 <body>
@@ -961,7 +1156,9 @@ firebase.auth().signInAnonymously().catch(err => {
   <h1>🧠 My Second Brain</h1>
   <div class="sub">คลัง Ref + แผนที่ชีวิต + เป้าหมาย + การเงิน + Wishlist — ทุกอย่างที่เป็นตัวเรา</div>
 
+<div class="nav-wrapper" id="nav-wrapper">
   <div class="nav" id="nav"></div>
+</div>
 
 <!-- ============ PAGE: Dashboard ============ -->
 <div class="page" id="page-dashboard">
@@ -1037,6 +1234,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Goal Status - คลิกไปที่ Goals พร้อม filter -->
   <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📊 สถานะเป้าหมาย</h3>
   <div id="dash-goal-status" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+  <!-- ลบส่วนนี้ออก เพราะซ้ำกับด้านบน -->
   <!-- Focus This Week -->
   <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">🎯 Focus This Week (7 วัน)</h3>
   <div id="dash-focus-week"></div>
@@ -1044,19 +1242,19 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Overdue Goals -->
   <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">⚠️ Overdue Goals</h3>
   <div id="dash-overdue"></div>
+
   <!-- Finance Snapshot -->
   <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">💰 Finance Snapshot</h3>
-  <div id="finance-snapshot" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px;">
-  <!-- จะ render ด้วย JavaScript -->
+  <div id="finance-snapshot" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:16px;"></div>
+
+  <!-- Priority Stats -->
+  <h3 style="font-size:12px;color:var(--muted);margin:10px 0 6px;">⭐ สถิติความสำคัญ</h3>
+  <div id="dash-priority-stats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
+
+  <!-- Recent Activity -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📋 กิจกรรมล่าสุด</h3>
+  <div id="dash-recent"></div>
 </div>
-<!-- Priority Stats -->
-<h3 style="font-size:12px;color:var(--muted);margin:10px 0 6px;">⭐ สถิติความสำคัญ</h3>
-<div id="dash-priority-stats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
-<!-- Recent Activity -->
-<h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📋 กิจกรรมล่าสุด</h3>
-<div id="dash-recent"></div>
-</div>
-<!-- ============ PAGE: Journal (จด) ============ -->
 
 <!-- ============ PAGE: Journal (จด) ============ -->
 <div class="page" id="page-journal">
@@ -1088,32 +1286,58 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 </div>
   <!-- ============ PAGE: Ref Library ============ -->
 <div class="page" id="page-ref">
-  <div class="toolbar">
-    <button class="btn" onclick="openUploadWidget()">+ เพิ่มรูปใหม่</button>
-    <input class="input" id="ref-search" placeholder="🔍 ค้นหา..." style="flex:1;min-width:120px;" oninput="renderRef()">
-    <select class="input" id="ref-cat-filter" onchange="renderRef()">
-      <option value="">📂 หมวดหมู่</option>
-      <option value="anatomy">Anatomy</option>
-      <option value="face">หน้า/สีหน้า</option>
-      <option value="hand">มือ</option>
-      <option value="pose">ท่าทาง</option>
-      <option value="artist">ผลงานศิลปิน</option>
-      <option value="other">อื่นๆ</option>
-    </select>
-    <select class="input" id="ref-board-filter" onchange="renderRef()">
-      <option value="">📁 ทุก Board</option>
-    </select>
-    <select class="input" id="ref-sort" onchange="renderRef()" style="max-width:120px;">
-      <option value="newest">ใหม่สุด</option>
-      <option value="oldest">เก่าสุด</option>
-      <option value="az">ชื่อ A-Z</option>
-      <option value="za">ชื่อ Z-A</option>
-    </select>
-  </div>
+<div class="toolbar">
+  <button class="btn" onclick="openUploadWidget()">+ เพิ่มรูปใหม่</button>
+  <button class="btn secondary" id="ref-select-btn" onclick="toggleRefSelection()">✏️ Select</Select></button>
+  <button class="btn secondary" id="ref-select-all-btn" onclick="toggleSelectAll()" style="display:none;">SelectAll</button>
+  <input class="input" id="ref-search" placeholder="🔍 ค้นหา..." style="flex:1;min-width:120px;" oninput="renderRef()">
+  <input class="input" id="ref-cat-filter" placeholder="📂 หมวดหมู่" 
+       list="ref-cat-filter-suggestions" style="max-width:150px;" 
+       oninput="renderRef()" onchange="renderRef()">
+  <datalist id="ref-cat-filter-suggestions"></datalist>
+  <input class="input" id="ref-board-filter" placeholder="📁 Board" 
+       list="ref-board-filter-suggestions" style="max-width:150px;" 
+       oninput="renderRef()" onchange="renderRef()">
+<datalist id="ref-board-filter-suggestions"></datalist>
+  <select class="input" id="ref-sort" onchange="renderRef()" style="max-width:120px;">
+    <option value="newest">ใหม่สุด</option>
+    <option value="oldest">เก่าสุด</option>
+    <option value="az">ชื่อ A-Z</option>
+    <option value="za">ชื่อ Z-A</option>
+  </select>
+</div>
   <div id="ref-board-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
   <div class="grid" id="ref-grid"></div>
   <div class="empty" id="ref-empty" style="display:none;">ยังไม่มีรูปในคลัง</div>
 </div>
+  <!-- Batch Action Bar (ซ่อนโดย default) -->
+  <div id="batch-action-bar" class="batch-action-bar" style="display:none;">
+    <div class="batch-row">
+      <span class="batch-info" id="batch-info">เลือก 0 รูป</span>
+      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="clearRefSelection()">ยกเลิกเลือก</button>
+    </div>
+    <div class="batch-row">
+      <label>หมวดหมู่:</label>
+      <input class="input" id="batch-category" placeholder="ไม่เปลี่ยน" list="ref-category-suggestions" style="flex:1;min-width:100px;">
+      <button class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" onclick="addNewRefCategory()">+ เพิ่มหมวดหมู่ใหม่</button>
+    
+      <label>Board:</label>
+      <input class="input" id="batch-board" placeholder="ไม่เปลี่ยน" list="board-suggestions" style="flex:1;min-width:100px;">
+      <button class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" onclick="addNewRefBoard()">+ เพิ่ม Board</button>
+    </div>
+    <div class="batch-row">
+      <label>Tags (แทนที่):</label>
+      <input class="input" id="batch-tags" placeholder="เช่น มือ, ท่านั่ง (เว้นว่าง=ไม่เปลี่ยน)" 
+           list="ref-tag-suggestions" style="flex:1;" oninput="handleBatchTagInput(this)">
+      <datalist id="ref-tag-suggestions"></datalist>
+    </div>
+    <div class="batch-row">
+      <button class="btn" onclick="applyBatchEdit()">✅ ใช้กับทุกรูปที่เลือก</button>
+      <button class="btn danger" onclick="deleteSelectedRefs()">🗑️ ลบทุกรูปที่เลือก</button>
+    </div>
+  </div>
+</div>
+  
 
 <!-- ============ PAGE: Life Map ============ -->
 <div class="page" id="page-vision">
@@ -1450,37 +1674,43 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 
 <!-- ============ MODALS ============ -->
 
-  <!-- Ref metadata modal -->
-  <div class="modal-overlay" id="ref-modal">
-    <div class="modal">
-      <h3>เพิ่มรายละเอียดรูป</h3>
-      <img id="ref-modal-preview" class="modal-preview" src="">
-      <div class="field"><label>หมวดหมู่</label>
-  <select class="input" id="ref-input-category">
-    <option value="anatomy">Anatomy</option>
-    <option value="face">หน้า/สีหน้า</option>
-    <option value="hand">มือ</option>
-    <option value="pose">ท่าทาง</option>
-    <option value="artist">ผลงานศิลปิน</option>
-    <option value="other" selected>อื่นๆ</option>
-  </select>
-</div>
-      <div class="field"><label>Board (กลุ่มรูป)</label>
-        <input class="input" id="ref-input-board" placeholder="เช่น inspiration, study, commission-ref" list="board-suggestions">
-        <datalist id="board-suggestions"></datalist>
+<!-- Ref metadata modal -->
+<div class="modal-overlay" id="ref-modal">
+  <div class="modal" style="max-width:500px;">
+    <h3>เพิ่มรายละเอียดรูป</h3>
+    <div id="upload-preview-grid" class="upload-preview-grid"></div>
+    <div id="upload-status" class="upload-status"></div>
+    <div class="field">
+      <label>หมวดหมู่</label>
+      <input class="input" id="ref-input-category" placeholder="พิมพ์หรือเลือกหมวดหมู่" list="ref-category-suggestions">
+      <datalist id="ref-category-suggestions"></datalist>
+      <button class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" 
+          onclick="addNewRefCategory()">+ เพิ่มหมวดหมู่ใหม่</button>
+    </div>
+    <div class="field">
+      <label>Board (กลุ่มรูป)</label>
+      <input class="input" id="ref-input-board" placeholder="เช่น inspiration, study, commission-ref" 
+        list="board-suggestions">
+      <datalist id="board-suggestions"></datalist>
+      <button class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" 
+          onclick="addNewRefBoard()">+ เพิ่ม Board ใหม่</button>
+    </div>
+    <div class="field">
+      <label>Tags (คั่นด้วยจุลภาค)</label>
+      <input class="input" id="ref-input-tags" placeholder="เช่น มือ, ท่านั่ง" 
+          list="ref-tag-suggestions" oninput="handleTagInput(this)">
+        <datalist id="ref-tag-suggestions"></datalist>
       </div>
-      <div class="field"><label>Tags (คั่นด้วยจุลภาค)</label>
-        <input class="input" id="ref-input-tags" placeholder="เช่น มือ, ท่านั่ง">
-      </div>
-      <div class="field"><label>โน้ต</label>
-        <textarea class="input" id="ref-input-note"></textarea>
-      </div>
-      <div class="modal-actions">
-        <button class="btn secondary" onclick="closeModal('ref-modal')">ยกเลิก</button>
-        <button class="btn" onclick="confirmSaveRef()">บันทึก</button>
-      </div>
+    <div class="field">
+      <label>โน้ต</label>
+      <textarea class="input" id="ref-input-note"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('ref-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveMultiRef()">💾 บันทึก</button>
     </div>
   </div>
+</div>
 
   <!-- Life Map modal -->
   <div class="modal-overlay" id="vision-modal">
@@ -2004,10 +2234,10 @@ const PAGES = [
   { id: 'dashboard', label: '📊 Dashboard' },
   { id: 'ref', label: '📁 Ref' },
   { id: 'vision', label: '🗺️ Life Map' },
+  { id: 'projects', label: '📋 Projects' },
   { id: 'goals', label: '🎯 Goals' },
   { id: 'study', label: '📚 Study' },
-  { id: 'projects', label: '📋 Projects' },
-  { id: 'finance', label: '💰 Finance & Wishlist' },
+  { id: 'finance', label: '💰 Finance' },
   { id: 'settings', label: '⚙️ ตั้งค่า' }
 ];
 
@@ -2034,6 +2264,35 @@ function renderNav() {
     const isPrimary = p.primary ? 'primary' : '';
     return `<button class="nav-btn ${isPrimary}" id="nav-${p.id}" onclick="switchPage('${p.id}')">${p.label}${badge}</button>`;
   }).join('');
+  // เรียกหลัง render nav เสร็จ
+setTimeout(() => {
+  updateNavOverflow();
+  scrollToActiveNav();
+}, 100);
+}
+// ตรวจจับว่ามีเมนูเกินจนต้อง scroll หรือไม่ → แสดง fade hint
+function updateNavOverflow() {
+  const nav = document.getElementById('nav');
+  const wrapper = document.getElementById('nav-wrapper');
+  if (!nav || !wrapper) return;
+  
+  const hasOverflow = nav.scrollWidth > nav.clientWidth;
+  wrapper.classList.toggle('has-overflow', hasOverflow);
+}
+
+// เรียกเมื่อ render nav + เมื่อ resize window
+window.addEventListener('resize', updateNavOverflow);
+
+// Auto-scroll ไปที่ปุ่มที่ active เมื่อเปิดหน้า
+function scrollToActiveNav() {
+  const activeBtn = document.querySelector('.nav-btn.active');
+  if (activeBtn) {
+    activeBtn.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'nearest', 
+      inline: 'center' 
+    });
+  }
 }
 
 function switchPage(pageId) {
@@ -2048,6 +2307,7 @@ function switchPage(pageId) {
   if (pageEl) pageEl.classList.add('active');
   if (navEl) navEl.classList.add('active');
   localStorage.setItem('last_active_page', pageId);
+  setTimeout(scrollToActiveNav, 100);
 }
 // ===== เปลี่ยนหน้า + ตั้งค่า filter =====
 function switchPageWithFilter(pageId, filterValue) {
@@ -2774,7 +3034,10 @@ async function globalSearch() {  // ← เพิ่ม async
 // ==========================================================
 const refModule = createFirestoreModule('refs');
 let refListeners = [];
-let pendingUploadUrl = null; let pendingFinanceId = null;
+let pendingUploadUrls = []; let refSelectionMode = false;
+let selectedRefIds = new Set(); // array ของ URLs ที่ upload แล้ว
+let pendingUploadTotal = 0; // จำนวนรูปทั้งหมดที่เลือก
+let pendingUploadCount = 0; // จำนวนที่ upload เสร็จแล้ว let pendingFinanceId = null;
 let pendingTransactionId = null;
 let pendingBudgetId = null;
 let editingId = null;
@@ -2798,41 +3061,308 @@ function onRefsSnapshot(callback) {
 // Migrate ข้อมูลเก่า
 refModule.migrateFromLocalStorage('ref_items');
 
+// ===== Ref Categories (แก้ไขได้) =====
+const DEFAULT_REF_CATEGORIES = [
+  { key: 'anatomy', label: 'Anatomy' },
+  { key: 'face', label: 'หน้า/สีหน้า' },
+  { key: 'hand', label: 'มือ' },
+  { key: 'pose', label: 'ท่าทาง' },
+  { key: 'artist', label: 'ผลงานศิลปิน' },
+  { key: 'other', label: 'อื่นๆ' }
+];
+
+function getRefCustomCategories() {
+  try {
+    return JSON.parse(localStorage.getItem('ref_custom_categories') || '[]');
+  } catch { return []; }
+}
+
+function saveRefCustomCategories(items) {
+  localStorage.setItem('ref_custom_categories', JSON.stringify(items));
+}
+
+function getAllRefCategories() {
+  const custom = getRefCustomCategories();
+  return [...DEFAULT_REF_CATEGORIES, ...custom];
+}
+
+function addRefCustomCategory(label) {
+  const custom = getRefCustomCategories();
+  const key = 'custom_' + Date.now();
+  custom.push({ key, label: label || 'หมวดใหม่' });
+  saveRefCustomCategories(custom);
+  return key;
+}
+
+function updateRefCategorySuggestions() {
+  const datalist = document.getElementById('ref-category-suggestions');
+  if (!datalist) return;
+  const categories = getAllRefCategories();
+  datalist.innerHTML = categories.map(c => `<option value="${c.label}">`).join('');
+}
+
+function updateCategoryFilterSuggestions() {
+  const datalist = document.getElementById('ref-cat-filter-suggestions');
+  if (!datalist) return;
+  const categories = getAllRefCategories();
+  datalist.innerHTML = categories.map(c => `<option value="${c.label}">`).join('');
+}
+
+function addNewRefCategory() {
+  const label = prompt('ชื่อหมวดหมู่ใหม่:');
+  if (!label || !label.trim()) return;
+  addRefCustomCategory(label.trim());
+  document.getElementById('ref-input-category').value = label.trim();
+  updateRefCategorySuggestions();
+  updateCategoryFilterSuggestions();
+  showToast('✅ เพิ่มหมวดหมู่ "' + label.trim() + '" แล้ว', 'success');
+}
+
+// ==========================================================
+// Ref Boards (แก้ไขได้)
+// ==========================================================
+const DEFAULT_REF_BOARDS = ['uncategorized', 'inspiration', 'study', 'commission-ref'];
+
+function getRefCustomBoards() {
+  try {
+    return JSON.parse(localStorage.getItem('ref_custom_boards') || '[]');
+  } catch { return []; }
+}
+
+function saveRefCustomBoards(items) {
+  localStorage.setItem('ref_custom_boards', JSON.stringify(items));
+}
+
+function getAllRefBoards() {
+  const custom = getRefCustomBoards();
+  return [...DEFAULT_REF_BOARDS, ...custom];
+}
+
+function addRefCustomBoard(label) {
+  const custom = getRefCustomBoards();
+  custom.push(label.trim());
+  saveRefCustomBoards(custom);
+  return label.trim();
+}
+
+function updateBoardSuggestions() {
+  const datalist = document.getElementById('board-suggestions');
+  if (!datalist) return;
+  const boards = getAllRefBoards();
+  datalist.innerHTML = boards.map(b => `<option value="${b}">`).join('');
+}
+
+function updateBoardFilterSuggestions() {
+  const datalist = document.getElementById('ref-board-filter-suggestions');
+  if (!datalist) return;
+  const boards = getAllRefBoards();
+  datalist.innerHTML = boards.map(b => `<option value="${b}">`).join('');
+}
+
+function addNewRefBoard() {
+  const label = prompt('ชื่อ Board ใหม่:');
+  if (!label || !label.trim()) return;
+  addRefCustomBoard(label.trim());
+  document.getElementById('ref-input-board').value = label.trim();
+  updateBoardSuggestions();
+  updateBoardFilterSuggestions();
+  showToast('✅ เพิ่ม Board "' + label.trim() + '" แล้ว', 'success');
+}
+
+// ==========================================================
+// Ref Tags (autocomplete)
+// ==========================================================
+function getRefTagSuggestions() {
+  try {
+    const data = JSON.parse(localStorage.getItem('ref_tag_suggestions') || '[]');
+    console.log('📋 Tags from localStorage:', data);  // ← เพิ่ม debug
+    return data;
+  } catch { return []; }
+}
+
+function saveRefTagSuggestions(tags) {
+  localStorage.setItem('ref_tag_suggestions', JSON.stringify(tags));
+}
+
+function updateTagSuggestions() {
+  const datalist = document.getElementById('ref-tag-suggestions');
+  if (!datalist) return;
+  const tags = getRefTagSuggestions();
+  datalist.innerHTML = tags.map(t => `<option value="${t}">`).join('');
+  console.log('✅ Tags updated:', tags);  // ← เพิ่มเพื่อ debug
+}
+
+function addTagSuggestion(tag) {
+  const tags = getRefTagSuggestions();
+  const trimmed = tag.trim();
+  if (!tags.includes(trimmed)) {
+    tags.push(trimmed);
+    saveRefTagSuggestions(tags);
+    updateTagSuggestions();
+  }
+}
+
+// ==========================================================
+// เรียกเมื่อโหลดหน้า (รอให้ DOM พร้อม)
+// ==========================================================
+// เรียกใน initApp() แทนที่จะเรียกตรงนี้ เพื่อป้องกัน error
+// updateRefCategorySuggestions();
+// updateCategoryFilterSuggestions();
+// updateBoardSuggestions();
+// updateBoardFilterSuggestions();
+// updateTagSuggestions();
 function openUploadWidget() {
+  // รีเซ็ต state
+  pendingUploadUrls = [];
+  pendingUploadTotal = 0;
+  pendingUploadCount = 0;
+  
   const widget = cloudinary.createUploadWidget({
     cloud_name: 'und7u8m5',
     upload_preset: 'zafp2wv4',
     sources: ['local', 'url', 'camera'],
-    multiple: false,
+    multiple: true, // ← เปลี่ยนเป็น true
     maxFileSize: 10000000,
   }, (error, result) => {
-    if (!error && result.event === 'success') {
-      pendingUploadUrl = result.info.secure_url;
-      document.getElementById('ref-modal-preview').src = pendingUploadUrl;
-      document.getElementById('ref-input-category').value = 'other';
-      document.getElementById('ref-input-tags').value = '';
-      document.getElementById('ref-input-note').value = '';
-      document.getElementById('ref-input-board').value = '';
-      document.getElementById('ref-modal').classList.add('show');
+    if (error) {
+      console.warn('⚠️ Upload error:', error);
+      return;
+    }
+    if (result.event === 'success') {
+      pendingUploadUrls.push(result.info.secure_url);
+      pendingUploadCount++;
+      
+      // อัพเดตสถานะ
+      const statusEl = document.getElementById('upload-status');
+      if (statusEl) {
+        statusEl.textContent = `⏳ อัพโหลด ${pendingUploadCount} / ${pendingUploadTotal} รูป...`;
+      }
+      
+      // ถ้าครบทุกรูปแล้ว → เปิด modal
+      if (pendingUploadCount >= pendingUploadTotal) {
+        openRefModalWithPreview();
+      }
+    } else if (result.event === 'queues-end') {
+      // Cloudinary ส่ง event นี้เมื่อ upload ทุกตัวเสร็จ
+      if (pendingUploadTotal === 0 && pendingUploadUrls.length > 0) {
+        // กรณีเลือกแค่รูปเดียว
+        pendingUploadTotal = pendingUploadUrls.length;
+        openRefModalWithPreview();
+      }
     }
   });
+  
   widget.open();
 }
+function openRefModalWithPreview() {
+  // แสดง preview grid
+  const previewContainer = document.getElementById('upload-preview-grid');
+  if (previewContainer) {
+    previewContainer.innerHTML = pendingUploadUrls.map((url, idx) => `
+      <div class="upload-preview-item">
+        <img src="${url}">
+        <button class="remove-btn" onclick="removePendingUpload(${idx})">✕</button>
+      </div>
+    `).join('');
+  }
+  
+  // อัพเดต status
+  const statusEl = document.getElementById('upload-status');
+  if (statusEl) {
+    statusEl.textContent = `✅ อัพโหลดเสร็จ ${pendingUploadUrls.length} รูป`;
+  }
+  
+  // รีเซ็ต field metadata
+  document.getElementById('ref-input-category').value = 'other';
+  document.getElementById('ref-input-tags').value = '';
+  document.getElementById('ref-input-note').value = '';
+  document.getElementById('ref-input-board').value = '';
+  
+  // เปลี่ยน title modal
+  document.getElementById('ref-modal').querySelector('h3').textContent = 
+    `เพิ่มรายละเอียดรูป (${pendingUploadUrls.length} รูป)`;
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').textContent = 
+    `💾 บันทึก ${pendingUploadUrls.length} รูป`;
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveMultiRef;
+  
+  document.getElementById('ref-modal').classList.add('show');
+}
+function removePendingUpload(idx) {
+  pendingUploadUrls.splice(idx, 1);
+  if (pendingUploadUrls.length === 0) {
+    closeModal('ref-modal');
+    showToast('❌ ไม่มีรูปเหลือ', 'error');
+    return;
+  }
+  openRefModalWithPreview(); // re-render
+}
+async function confirmSaveMultiRef() {
+  if (pendingUploadUrls.length === 0) {
+    showToast('❌ ไม่มีรูป', 'error');
+    return;
+  }
+  
+  const catLabel = document.getElementById('ref-input-category').value.trim();
+  const allCats = getAllRefCategories();
+  const catObj = allCats.find(c => c.label === catLabel);
+  const category = catObj ? catObj.key : catLabel;
+  
+  const board = document.getElementById('ref-input-board').value.trim() || 'uncategorized';
+  const tags = document.getElementById('ref-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  const note = document.getElementById('ref-input-note').value.trim();
+  
+  const items = await getRefs();
+  let count = 0;
+  
+  // ✅ แก้ไข: ใช้ url: url (จาก loop) ไม่ใช่ pendingUploadUrl
+  for (const url of pendingUploadUrls) {
+    const item = {
+      id: Date.now() + count,
+      url: url,  // ← ใช้ url จาก loop
+      category,
+      board,
+      tags,
+      note,
+      createdAt: new Date().toISOString()
+    };
+    items.unshift(item);
+    count++;
+  }
+  collectTagSuggestionsFromInput('ref-input-tags');
+  
+  await saveRefs(items);
+  
+  closeModal('ref-modal');
+  pendingUploadUrls = [];
+  renderRef();
+  renderDashboard();
+  showToast(`✅ เพิ่มรูปอ้างอิง ${count} รูปสำเร็จ`, 'success');
+}
 
+// ฟังก์ชันเดิมสำหรับรูปเดียว (ยังเก็บไว้เผื่อใช้)
 async function confirmSaveRef() {
   if (!pendingUploadUrl) return;
-    const item = {
+  
+  // แปลง category label → key
+  const catLabel = document.getElementById('ref-input-category').value.trim();
+  const allCats = getAllRefCategories();
+  const catObj = allCats.find(c => c.label === catLabel);
+  const category = catObj ? catObj.key : catLabel; // ถ้าไม่เจอ → ใช้ label เป็น key (custom)
+  
+  const item = {
     id: Date.now(),
-    url: pendingUploadUrl,
-    category: document.getElementById('ref-input-category').value,
+    url: url,
+    category,  // ← ใช้ key ที่แปลงแล้ว
     board: document.getElementById('ref-input-board').value.trim() || 'uncategorized',
     tags: document.getElementById('ref-input-tags').value.split(',').map(t => t.trim()).filter(Boolean),
     note: document.getElementById('ref-input-note').value.trim(),
     createdAt: new Date().toISOString()
   };
+  
   const items = await getRefs();
   items.unshift(item);
   await saveRefs(items);
+  
   closeModal('ref-modal');
   pendingUploadUrl = null;
   renderRef();
@@ -2866,25 +3396,36 @@ async function renderRef() {
   const grid = document.getElementById('ref-grid');
   const empty = document.getElementById('ref-empty');
   const search = document.getElementById('ref-search').value.toLowerCase();
-  const catFilter = document.getElementById('ref-cat-filter').value;
-  const boardFilter = document.getElementById('ref-board-filter').value;
+  const catFilter = document.getElementById('ref-cat-filter').value.toLowerCase().trim();
+  const boardFilter = document.getElementById('ref-board-filter').value.toLowerCase().trim();
   const sortBy = document.getElementById('ref-sort').value;
 
-  let items = await getRefs();  // ← เพิ่ม await
-  
-  // กรองตามหมวดหมู่
-  if (catFilter) items = items.filter(i => i.category === catFilter);
-  
-  // กรองตาม board
-  if (boardFilter) items = items.filter(i => (i.board || 'uncategorized') === boardFilter);
-  
-  // ค้นหา
-  if (search) items = items.filter(i =>
-    i.tags.some(t => t.toLowerCase().includes(search)) || 
-    i.note.toLowerCase().includes(search) ||
-    (i.board || '').toLowerCase().includes(search)
-  );
-  
+  let items = await getRefs();
+
+  // ค้นหา (case-insensitive)
+  if (search) {
+    const searchLower = search.toLowerCase();
+    items = items.filter(i =>
+      i.tags.some(t => t.toLowerCase().includes(searchLower)) ||
+      i.note.toLowerCase().includes(searchLower) ||
+      (i.board || '').toLowerCase().includes(searchLower)
+    );
+  }
+
+  // กรองตามหมวดหมู่ (case-insensitive)
+  if (catFilter) {
+    const allCats = getAllRefCategories();
+    const matchedKeys = allCats
+      .filter(c => c.label.toLowerCase().includes(catFilter))
+      .map(c => c.key);
+    items = items.filter(i => matchedKeys.includes(i.category));
+  }
+
+  // กรองตาม board (case-insensitive)
+  if (boardFilter) {
+    items = items.filter(i => (i.board || 'uncategorized').toLowerCase().includes(boardFilter));
+  }
+
   // เรียงลำดับ
   if (sortBy === 'newest') items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   else if (sortBy === 'oldest') items.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
@@ -2896,21 +3437,36 @@ async function renderRef() {
 
   items.forEach(item => {
     const card = document.createElement('div');
-    card.className = 'ref-card';
+    const isSelected = selectedRefIds.has(item.id);
+    card.className = 'ref-card' + (isSelected ? ' selected' : '');
     card.style.animation = 'fadeIn 0.3s ease';
+
+    if (refSelectionMode) {
+      card.onclick = (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'IMG') return;
+        toggleRefSelect(item.id);
+      };
+    }
+
+    // แสดง category label แทน key
+    const allCats = getAllRefCategories();
+    const catObj = allCats.find(c => c.key === item.category);
+    const catLabel = catObj ? catObj.label : item.category;
+
     card.innerHTML = `
-      <button class="del-x" style="position:absolute;top:4px;right:30px;background:rgba(0,0,0,.6);border-radius:5px;color:var(--accent);" onclick="editRef(${item.id})">✎</button>
-      <button class="del-x" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);border-radius:5px;" onclick="deleteRef(${item.id})">✕</button>
-      <img src="${item.url}" loading="lazy" onclick="openLightbox('${item.url}')">
+      <div class="select-check" style="display:${isSelected ? 'flex' : 'none'};position:absolute;top:4px;left:4px;width:24px;height:24px;background:var(--accent);color:white;border-radius:50%;font-size:14px;align-items:center;justify-content:center;z-index:5;">✓</div>
+      <button class="del-x" style="position:absolute;top:4px;right:30px;background:rgba(0,0,0,.6);border-radius:5px;color:var(--accent);z-index:5;" onclick="event.stopPropagation();editRef(${item.id})">✎</button>
+      <button class="del-x" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);border-radius:5px;z-index:5;" onclick="event.stopPropagation();deleteRef(${item.id})">✕</button>
+      <img src="${item.url}" loading="lazy" onclick="event.stopPropagation();openLightbox('${item.url}')">
       <div class="meta">
         <div style="color:var(--accent2);font-weight:600;">📁 ${item.board || 'uncategorized'}</div>
         <div>${item.note || '<i>ไม่มีโน้ต</i>'}</div>
-        <div class="tags"><span class="tag">${item.category}</span>${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-      </div>`;
+        <div class="tags"><span class="tag">${catLabel}</span>${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+    `;
     grid.appendChild(card);
   });
 
-  // อัพเดต board tabs และ filter
   updateBoardTabs();
   updateBoardFilter();
 }
@@ -2937,6 +3493,172 @@ async function updateBoardFilter() {
   const currentValue = select.value;
   select.innerHTML = `<option value="">📁 ทุก Board</option>` + 
     boards.map(b => `<option value="${b}" ${b === currentValue ? 'selected' : ''}>📁 ${b}</option>`).join('');
+}
+// ===== Ref Selection Mode =====
+function toggleRefSelection() {
+  refSelectionMode = !refSelectionMode;
+  const btn = document.getElementById('ref-select-btn');
+  const selectAllBtn = document.getElementById('ref-select-all-btn');
+  const bar = document.getElementById('batch-action-bar');
+  
+  if (refSelectionMode) {
+    btn.textContent = '✕ cancel';
+    btn.style.background = 'var(--red)';
+    selectAllBtn.style.display = 'inline-block';
+    bar.style.display = 'block';
+  } else {
+    btn.textContent = '✏️ Select';
+    btn.style.background = '';
+    selectAllBtn.style.display = 'none';
+    bar.style.display = 'none';
+    selectedRefIds.clear();
+  }
+  renderRef();
+  updateBatchInfo();
+}
+
+function toggleRefSelect(id) {
+  if (selectedRefIds.has(id)) {
+    selectedRefIds.delete(id);
+  } else {
+    selectedRefIds.add(id);
+  }
+  renderRef();
+  updateBatchInfo();
+}
+function toggleSelectAll() {
+  getRefs().then(items => {
+    if (selectedRefIds.size === items.length) {
+      // deselect all
+      selectedRefIds.clear();
+    } else {
+      // select all
+      items.forEach(i => selectedRefIds.add(i.id));
+    }
+    renderRef();
+    updateBatchInfo();
+  });
+}
+
+function clearRefSelection() {
+  selectedRefIds.clear();
+  renderRef();
+  updateBatchInfo();
+}
+
+function updateBatchInfo() {
+  const info = document.getElementById('batch-info');
+  if (info) info.textContent = `เลือก ${selectedRefIds.size} รูป`;
+  
+  // อัพเดตปุ่ม Select All
+  const selectAllBtn = document.getElementById('ref-select-all-btn');
+  if (selectAllBtn && refSelectionMode) {
+    getRefs().then(items => {
+      if (selectedRefIds.size === items.length && items.length > 0) {
+        selectAllBtn.textContent = 'cancel selection';
+      } else {
+        selectAllBtn.textContent = 'select all';
+      }
+    });
+  }
+}
+
+async function applyBatchEdit() {
+  if (selectedRefIds.size === 0) {
+    showToast('กรุณาเลือกรูปอย่างน้อย 1 รูป', 'error');
+    return;
+  }
+  
+  const newCat = document.getElementById('batch-category').value.trim();
+  const newBoard = document.getElementById('batch-board').value.trim();
+  const newTagsStr = document.getElementById('batch-tags').value;
+  const hasTags = newTagsStr.trim() !== '';
+  const newTags = hasTags ? newTagsStr.split(',').map(t => t.trim()).filter(Boolean) : null;
+  
+  // ✅ เก็บ tag suggestions
+  if (hasTags) {
+    newTags.forEach(t => addTagSuggestion(t));
+  }
+  
+  const items = await getRefs();
+  let count = 0;
+  
+  items.forEach(item => {
+    if (selectedRefIds.has(item.id)) {
+      if (newCat) {
+        const allCats = getAllRefCategories();
+        const catObj = allCats.find(c => c.label === newCat);
+        item.category = catObj ? catObj.key : newCat;
+      }
+      if (newBoard) {
+        // ✅ เพิ่ม board ใหม่เข้า suggestion ถ้ายังไม่มี
+        const boards = getAllRefBoards();
+        if (!boards.includes(newBoard)) {
+          addRefCustomBoard(newBoard);
+        }
+        item.board = newBoard;
+      }
+      if (hasTags) item.tags = newTags;
+      count++;
+    }
+  });
+  
+  await saveRefs(items);
+  collectTagSuggestionsFromInput('batch-tags');
+  // รีเซ็ต state + UI
+  refSelectionMode = false;
+  selectedRefIds.clear();
+  document.getElementById('ref-select-btn').textContent = '✏️ เลือก';
+  document.getElementById('ref-select-btn').style.background = '';
+  document.getElementById('batch-action-bar').style.display = 'none';
+  document.getElementById('batch-category').value = '';
+  document.getElementById('batch-board').value = '';
+  document.getElementById('batch-tags').value = '';
+  
+  // ✅ อัพเดต suggestions
+  updateBoardSuggestions();
+  updateBoardFilterSuggestions();
+  updateTagSuggestions();
+  
+  renderRef();
+  renderDashboard();
+  showToast(`✅ อัพเดต ${count} รูปสำเร็จ`, 'success');
+}
+
+async function deleteSelectedRefs() {
+  if (selectedRefIds.size === 0) {
+    showToast('กรุณาเลือกรูปอย่างน้อย 1 รูป', 'error');
+    return;
+  }
+  if (!confirm(`ลบ ${selectedRefIds.size} รูปที่เลือก? (รูปจริงบน Cloudinary จะยังอยู่)`)) return;
+  
+  const projects = await getProjects();
+  projects.forEach(p => {
+    if (p.refIds) p.refIds = p.refIds.filter(rid => !selectedRefIds.has(rid));
+  });
+  await saveProjects(projects);
+  
+  const items = await getRefs();
+  const filtered = items.filter(i => !selectedRefIds.has(i.id));
+  await saveRefs(filtered);
+  
+  const count = selectedRefIds.size;
+  
+  refSelectionMode = false;
+  selectedRefIds.clear();
+  document.getElementById('ref-select-btn').textContent = '✏️ เลือก';
+  document.getElementById('ref-select-btn').style.background = '';
+  document.getElementById('ref-select-all-btn').style.display = 'none';
+  document.getElementById('batch-action-bar').style.display = 'none';
+  
+  // ✅ อัพเดต suggestions
+  updateBoardSuggestions();
+  updateBoardFilterSuggestions();
+  updateTagSuggestions();
+  
+  renderRef();
+  renderDashboard();
+  showToast(`🗑️ ลบ ${count} รูปแล้ว`, 'error');
 }
 
 // ==========================================================
@@ -3429,7 +4151,7 @@ budgetModule.migrateFromLocalStorage('finance_budgets');
 const DEFAULT_BUDGET_CATEGORIES = [
   { key: 'food', label: '🍜 อาหาร', default: 3000 },
   { key: 'transport', label: '🚗 เดินทาง', default: 1500 },
-  { key: 'entertainment', label: ' บันเทิง', default: 1000 },
+  { key: 'entertainment', label: '🎬 บันเทิง', default: 1000 },
   { key: 'shopping', label: '🛍️ ช้อปปิ้ง', default: 1000 },
   { key: 'health', label: '💊 สุขภาพ', default: 500 },
   { key: 'bills', label: '📄 บิล/ค่าครองชีพ', default: 1500 },
@@ -3447,10 +4169,8 @@ function saveCustomCategories(items) {
 }
 
 function getAllBudgetCategories() {
-  try {
-    const custom = JSON.parse(localStorage.getItem('budget_custom_categories') || '[]');
-    return [...BUDGET_CATEGORIES, ...custom];
-  } catch { return BUDGET_CATEGORIES; }
+  const custom = getCustomCategories();
+  return [...DEFAULT_BUDGET_CATEGORIES, ...custom];
 }
 
 function addCustomCategory(label, defaultAmount) {
@@ -3461,18 +4181,51 @@ function addCustomCategory(label, defaultAmount) {
   return key;
 }
 
-function updateCustomCategory(key, label) {
-  const custom = getCustomCategories();
-  const item = custom.find(c => c.key === key);
-  if (item) {
-    item.label = label;
-    saveCustomCategories(custom);
+function updateCategoryLabel(key, label) {
+  if (!label || !label.trim()) return;
+  const trimmed = label.trim();
+  
+  // เก็บ custom label ใน localStorage (แยกจาก default)
+  let customLabels = {};
+  try {
+    customLabels = JSON.parse(localStorage.getItem('budget_custom_labels') || '{}');
+  } catch {}
+  
+  customLabels[key] = trimmed;
+  localStorage.setItem('budget_custom_labels', JSON.stringify(customLabels));
+}
+
+// ฟังก์ชันดึง label ที่可能被 override
+function getBudgetLabel(key) {
+  let customLabels = {};
+  try {
+    customLabels = JSON.parse(localStorage.getItem('budget_custom_labels') || '{}');
+  } catch {}
+  
+  // ตรวจสอบ custom categories ก่อน
+  const custom = getCustomCategories().find(c => c.key === key);
+  if (custom) return custom.label;
+  
+  // ตรวจสอบ default categories
+  const defaultCat = DEFAULT_BUDGET_CATEGORIES.find(c => c.key === key);
+  if (defaultCat) {
+    return customLabels[key] || defaultCat.label;
   }
+  
+  return key;
 }
 
 function deleteCustomCategory(key) {
+  // ลบ default category ไม่ได้
+  const isDefault = DEFAULT_BUDGET_CATEGORIES.find(c => c.key === key);
+  if (isDefault) {
+    showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error');
+    return false;
+  }
+  // ลบ custom category
   const custom = getCustomCategories().filter(c => c.key !== key);
   saveCustomCategories(custom);
+  return true;
 }
 
 // Override BUDGET_CAT_LABELS ให้รวม custom ด้วย
@@ -3688,28 +4441,28 @@ function renderBudgetCategoryCheckboxes() {
   const categories = getAllBudgetCategories();
   
   group.innerHTML = categories.map(cat => {
-    const isCustom = cat.key.startsWith('custom_');
+    const label = getBudgetLabel(cat.key);
+    const isDefault = DEFAULT_BUDGET_CATEGORIES.find(c => c.key === cat.key);
     return `
       <div class="budget-checkbox-item" data-key="${cat.key}">
         <input type="checkbox" id="budget-cat-${cat.key}" checked onchange="updateBudgetTotal()">
-        <label for="budget-cat-${cat.key}">${cat.label}</label>
+        <input type="text" id="budget-label-${cat.key}" value="${label}"
+               onchange="onCategoryLabelChange('${cat.key}', this.value)"
+               style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px;font-size:12px;">
         <input type="number" id="budget-limit-${cat.key}" value="${cat.default}" min="0" onchange="updateBudgetTotal()">
-        ${isCustom ? `<button class="del-x" style="font-size:12px;" onclick="onRemoveCategory('${cat.key}')">✕</button>` : ''}
+        ${!isDefault ? `<button class="del-x" style="font-size:12px;" onclick="onRemoveCategory('${cat.key}')"></button>` : ''}
       </div>
     `;
   }).join('') + `
     <button class="budget-add-cat-btn" onclick="onAddCategory()">+ เพิ่มหมวดหมู่ใหม่</button>
   `;
-  
   updateBudgetTotal();
 }
+
 function onCategoryLabelChange(key, value) {
-  if (key.startsWith('custom_')) {
-    updateCustomCategory(key, value);
-  }
+  if (!value.trim()) return;
+  updateCategoryLabel(key, value.trim());
 }
-
-
 function updateBudgetTotal() {
   let total = 0;
   document.querySelectorAll('#budget-category-group .budget-checkbox-item').forEach(row => {
@@ -5701,48 +6454,90 @@ function resetWishModal() {
 
 // --- Edit Ref ---
 async function editRef(id) {
-  const items = await getRefs();  // ← เพิ่ม await
+  const items = await getRefs();
   const item = items.find(i => i.id === id);
   if (!item) return;
-  pendingUploadUrl = item.url;
-  document.getElementById('ref-modal-preview').src = item.url;
-  document.getElementById('ref-input-category').value = item.category;
+  
+  // แสดง preview รูปเดียว
+  const previewContainer = document.getElementById('upload-preview-grid');
+  if (previewContainer) {
+    previewContainer.innerHTML = `
+      <div class="upload-preview-item">
+        <img src="${item.url}">
+      </div>
+    `;
+  }
+  const statusEl = document.getElementById('upload-status');
+  if (statusEl) statusEl.textContent = 'แก้ไขรูปเดิม (ไม่เปลี่ยนรูป)';
+  
+  const allCats = getAllRefCategories();
+  const catObj = allCats.find(c => c.key === item.category);
+  const categoryLabel = catObj ? catObj.label : item.category;
+  
+  document.getElementById('ref-input-category').value = categoryLabel;
   document.getElementById('ref-input-board').value = item.board || '';
   document.getElementById('ref-input-tags').value = (item.tags || []).join(', ');
   document.getElementById('ref-input-note').value = item.note || '';
+  
+  // ✅ เก็บ pendingUploadUrls ให้มี 1 รูป (เพื่อให้ confirmEditRef ทำงาน)
+  pendingUploadUrls = [item.url];
+  
   document.getElementById('ref-modal').querySelector('h3').textContent = 'แก้ไขรายละเอียดรูป';
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').textContent = '💾 บันทึก';
   document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditRef;
+  
+  // ✅ ลบ setEditMode ที่ซ้ำ
   setEditMode('ref', id);
   document.getElementById('ref-modal').classList.add('show');
 }
 
 async function confirmEditRef() {
-  if (editingId === null || !pendingUploadUrl) return;
-  const items = await getRefs();  // ← เพิ่ม await
+  // ✅ แก้ไข: ใช้ pendingUploadUrls.length === 0
+  if (editingId === null || pendingUploadUrls.length === 0) return;
+  
+  const catLabel = document.getElementById('ref-input-category').value.trim();
+  const allCats = getAllRefCategories();
+  const catObj = allCats.find(c => c.label === catLabel);
+  const category = catObj ? catObj.key : catLabel;
+  
+  const items = await getRefs();
   const item = items.find(i => i.id === editingId);
   if (item) {
-    item.category = document.getElementById('ref-input-category').value.trim();
+    item.category = category;
     item.board = document.getElementById('ref-input-board').value.trim() || 'uncategorized';
     item.tags = document.getElementById('ref-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
     item.note = document.getElementById('ref-input-note').value.trim();
-    await saveRefs(items);  // ← เพิ่ม await
+    await saveRefs(items);
   }
+  collectTagSuggestionsFromInput('ref-input-tags');
+  
   closeModal('ref-modal');
   resetRefModal();
   clearEditMode();
   renderRef();
   renderDashboard();
+  showToast('✅ แก้ไขรายละเอียดรูปสำเร็จ', 'success');
 }
 
 function resetRefModal() {
   document.getElementById('ref-modal').querySelector('h3').textContent = 'เพิ่มรายละเอียดรูป';
-  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveRef;
-  document.getElementById('ref-modal-preview').src = '';
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').textContent = ' บันทึก';
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveMultiRef;
+  
+  const previewContainer = document.getElementById('upload-preview-grid');
+  if (previewContainer) previewContainer.innerHTML = '';
+  
+  const statusEl = document.getElementById('upload-status');
+  if (statusEl) statusEl.textContent = '';
+  
   document.getElementById('ref-input-category').value = 'other';
   document.getElementById('ref-input-board').value = '';
   document.getElementById('ref-input-tags').value = '';
   document.getElementById('ref-input-note').value = '';
-  pendingUploadUrl = null;
+  
+  pendingUploadUrls = [];
+  pendingUploadTotal = 0;
+  pendingUploadCount = 0;
 }
 // ==========================================================
 // TOAST NOTIFICATIONS
@@ -5857,11 +6652,48 @@ function toggleCalendar() {
   }
   localStorage.setItem('calendar_collapsed', calendarCollapsed);
 }
+function handleTagInput(input) {
+  // เมื่อพิมพ์เสร็จ (กด comma หรือ space) ให้เพิ่ม tag suggestion
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim()).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addTagSuggestion(lastTag);
+    }
+  }
+}
 
+// เรียกเมื่อบันทึก/แก้ไข เพื่อเก็บ tag ใหม่
+function collectTagSuggestionsFromInput() {
+  const input = document.getElementById('ref-input-tags');
+  const tags = input.value.split(',').map(t => t.trim()).filter(Boolean);
+  tags.forEach(t => addTagSuggestion(t));
+}
+function handleBatchTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim()).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addTagSuggestion(lastTag);
+    }
+  }
+}
 
+// แก้ไข confirmSaveMultiRef() และ confirmEditRef() ให้เรียก collectTagSuggestionsFromInput()
+// ก่อนบันทึก
 // ---------- Init ----------
 async function initApp() {
   renderNav();
+  // ใน initApp() เพิ่ม:
+  updateRefCategorySuggestions();
+  updateCategoryFilterSuggestions();
+  updateBoardSuggestions();
+  updateBoardFilterSuggestions();
+  updateTagSuggestions();
 
   // รอ Firestore พร้อม
   await waitForFirestore();
@@ -5881,16 +6713,15 @@ async function initApp() {
 
   onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); });
   onDailySnapshot(() => { renderDaily(); renderDashboard(); renderNav(); });
-  onRefsSnapshot(() => { renderRef(); renderDashboard(); renderNav(); });
+  onRefsSnapshot(() => { renderRef(); renderDashboard(); renderNav(); updateRefCategorySuggestions(); });
   onFinancesSnapshot(() => { renderFinanceGoals(); renderDashboard(); renderNav(); renderFinanceSnapshot(); });
   onWishesSnapshot(() => { renderWishlist(); renderDashboard(); renderNav(); renderFinanceSnapshot(); });
   onBudgetsSnapshot(() => { renderBudgets(); renderFinanceOverview(); renderDashboard(); });
   onTransactionsSnapshot(() => { renderFinanceTransactions(); renderFinanceOverview(); });  onPresetsSnapshot(() => { renderPresets(); });
   onVisionsSnapshot(() => { renderVision(); renderDashboard(); renderNav(); });
-  onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); });  onProjectsSnapshot(() => { renderProjects(); renderDashboard(); renderNav(); });
+  onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); });
   onStudiesSnapshot(() => { renderStudy(); renderDashboard(); renderNav(); });
   
-
   let lastPage = localStorage.getItem('last_active_page') || 'journal';
   const validPages = PAGES.map(p => p.id);
   if (!validPages.includes(lastPage)) lastPage = 'journal';
@@ -5927,7 +6758,6 @@ async function initApp() {
     if (arrow) arrow.textContent = '▶';
   }
 }
-
 
 initApp();
 
