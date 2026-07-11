@@ -207,6 +207,10 @@ padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
   transform: scale(1.02);
   box-shadow: 0 4px 20px rgba(0,0,0,.3);
 }
+.ref-card.selected:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 2px var(--accent), 0 4px 20px rgba(124,110,245,.2);
+}
 
 .btn {
   transition: all 0.2s ease;
@@ -1035,41 +1039,56 @@ padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
   display: flex;
 }
 .batch-action-bar {
-  position: fixed;
-  bottom: 70px; /* อยู่เหนือ bottom tab bar */
-  left: 16px;
-  right: 16px;
+  position: sticky;          /* ← เลื่อนตาม content */
+  bottom: 0;                 /* ← ติดขอบล่าง */
+  left: 0;
+  right: 0;
   max-width: 868px;
   margin: 0 auto;
   background: var(--surface);
   border: 1px solid var(--accent);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 10px 10px 0 0;  /* ← มุมบนโค้ง */
+  padding: 8px 12px;         /* ← ลด padding */
   box-shadow: 0 -4px 20px rgba(0,0,0,.5);
   z-index: 99;
   animation: slideIn 0.3s ease;
 }
-.batch-action-bar .batch-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
+/* Batch Row — Cat, Board, Tags อยู่แถวเดียวกัน */
+@media (min-width: 600px) {
+  .batch-action-bar .batch-row .input {
+    min-width: 60px;
+  }
+  .batch-action-bar .batch-row {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Batch Row — บนมือถือให้ wrap */
+@media (max-width: 600px) {
+  .batch-action-bar .batch-row {
+    flex-wrap: wrap;
+  }
 }
 .batch-action-bar .batch-row:last-child {
   margin-bottom: 0;
 }
 .batch-action-bar label {
-  font-size: 11px;
+  font-size: 10px;           /* ← เล็กลง */
   color: var(--muted);
-  min-width: 70px;
+  min-width: 50px;           /* ← เล็กลง */
 }
 .batch-action-bar .input {
   flex: 1;
-  min-width: 100px;
+  min-width: 80px;           /* ← เล็กลง */
+  padding: 4px 8px;          /* ← เล็กลง */
+  font-size: 11px;           /* ← เล็กลง */
+}
+.batch-action-bar .btn {
+  font-size: 10px;           /* ← เล็กลง */
+  padding: 4px 10px;         /* ← เล็กลง */
 }
 .batch-action-bar .batch-info {
-  font-size: 12px;
+  font-size: 11px;           /* ← เล็กลง */
   color: var(--accent);
   font-weight: 600;
   margin-right: auto;
@@ -1148,6 +1167,19 @@ body {
 }
 .ref-category-suggestion:hover {
   background: var(--surface2);
+}
+.ref-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.1s ease, box-shadow 0.1s ease; /* ← เพิ่ม transition เฉพาะ border */
+  will-change: transform; /* ← ป้องกัน repaint */
+}
+.ref-card.selected {
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 </style>
 </head>
@@ -1285,55 +1317,61 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   </div>
 </div>
   <!-- ============ PAGE: Ref Library ============ -->
+<!-- ============ PAGE: Ref Library ============ -->
 <div class="page" id="page-ref">
-<div class="toolbar">
-  <button class="btn" onclick="openUploadWidget()">+ เพิ่มรูปใหม่</button>
-  <button class="btn secondary" id="ref-select-btn" onclick="toggleRefSelection()">✏️ Select</Select></button>
-  <button class="btn secondary" id="ref-select-all-btn" onclick="toggleSelectAll()" style="display:none;">SelectAll</button>
-  <input class="input" id="ref-search" placeholder="🔍 ค้นหา..." style="flex:1;min-width:120px;" oninput="renderRef()">
-  <input class="input" id="ref-cat-filter" placeholder="📂 หมวดหมู่" 
-       list="ref-cat-filter-suggestions" style="max-width:150px;" 
-       oninput="renderRef()" onchange="renderRef()">
-  <datalist id="ref-cat-filter-suggestions"></datalist>
-  <input class="input" id="ref-board-filter" placeholder="📁 Board" 
-       list="ref-board-filter-suggestions" style="max-width:150px;" 
-       oninput="renderRef()" onchange="renderRef()">
-<datalist id="ref-board-filter-suggestions"></datalist>
-  <select class="input" id="ref-sort" onchange="renderRef()" style="max-width:120px;">
-    <option value="newest">ใหม่สุด</option>
-    <option value="oldest">เก่าสุด</option>
-    <option value="az">ชื่อ A-Z</option>
-    <option value="za">ชื่อ Z-A</option>
-  </select>
-</div>
-  <div id="ref-board-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
-  <div class="grid" id="ref-grid"></div>
-  <div class="empty" id="ref-empty" style="display:none;">ยังไม่มีรูปในคลัง</div>
-</div>
-  <!-- Batch Action Bar (ซ่อนโดย default) -->
-  <div id="batch-action-bar" class="batch-action-bar" style="display:none;">
-    <div class="batch-row">
-      <span class="batch-info" id="batch-info">เลือก 0 รูป</span>
-      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="clearRefSelection()">ยกเลิกเลือก</button>
+  <div style="min-height: calc(100vh - 200px); display: flex; flex-direction: column;">
+    <div style="flex:1;">
+      <div class="toolbar">
+        <button class="btn" onclick="openUploadWidget()">+ เพิ่มรูปใหม่</button>
+        <button class="btn secondary" id="ref-select-btn" onclick="toggleRefSelection()">✏️ Select</button>
+        <button class="btn secondary" id="ref-select-all-btn" onclick="toggleSelectAll()" style="display:none;">SelectAll</button>
+        <input class="input" id="ref-search" placeholder="🔍 ค้นหา..." style="flex:1;min-width:120px;" oninput="renderRef()">
+        <input class="input" id="ref-cat-filter" placeholder="📂 หมวดหมู่" 
+               list="ref-cat-filter-suggestions" style="max-width:150px;" 
+               oninput="renderRef()" onchange="renderRef()">
+        <datalist id="ref-cat-filter-suggestions"></datalist>
+        <input class="input" id="ref-board-filter" placeholder="📁 Board" 
+               list="ref-board-filter-suggestions" style="max-width:150px;" 
+               oninput="renderRef()" onchange="renderRef()">
+        <datalist id="ref-board-filter-suggestions"></datalist>
+        <select class="input" id="ref-sort" onchange="renderRef()" style="max-width:120px;">
+          <option value="newest">ใหม่สุด</option>
+          <option value="oldest">เก่าสุด</option>
+          <option value="az">ชื่อ A-Z</option>
+          <option value="za">ชื่อ Z-A</option>
+        </select>
+      </div>
+      <div id="ref-board-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
+      <div class="grid" id="ref-grid"></div>
+      <div class="empty" id="ref-empty" style="display:none;">ยังไม่มีรูปในคลัง</div>
     </div>
-    <div class="batch-row">
-      <label>หมวดหมู่:</label>
-      <input class="input" id="batch-category" placeholder="ไม่เปลี่ยน" list="ref-category-suggestions" style="flex:1;min-width:100px;">
-      <button class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" onclick="addNewRefCategory()">+ เพิ่มหมวดหมู่ใหม่</button>
     
-      <label>Board:</label>
-      <input class="input" id="batch-board" placeholder="ไม่เปลี่ยน" list="board-suggestions" style="flex:1;min-width:100px;">
-      <button class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" onclick="addNewRefBoard()">+ เพิ่ม Board</button>
-    </div>
-    <div class="batch-row">
-      <label>Tags (แทนที่):</label>
-      <input class="input" id="batch-tags" placeholder="เช่น มือ, ท่านั่ง (เว้นว่าง=ไม่เปลี่ยน)" 
-           list="ref-tag-suggestions" style="flex:1;" oninput="handleBatchTagInput(this)">
-      <datalist id="ref-tag-suggestions"></datalist>
-    </div>
-    <div class="batch-row">
-      <button class="btn" onclick="applyBatchEdit()">✅ ใช้กับทุกรูปที่เลือก</button>
-      <button class="btn danger" onclick="deleteSelectedRefs()">🗑️ ลบทุกรูปที่เลือก</button>
+    <!-- Batch Action Bar (ซ่อนโดย default) -->
+    <div id="batch-action-bar" class="batch-action-bar" style="display:none;">
+      <div class="batch-row">
+        <span class="batch-info" id="batch-info">เลือก 0 รูป</span>
+        <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="clearRefSelection()">ยกเลิกเลือก</button>
+      </div>
+      <div class="batch-row" style="flex-wrap:nowrap;">
+        <label style="font-size:10px;min-width:45px;">หมวด:</label>
+        <input class="input" id="batch-category" placeholder="ไม่เปลี่ยน" list="ref-category-suggestions" style="flex:1;min-width:60px;padding:4px 6px;font-size:11px;">
+        <button class="btn secondary" style="font-size:9px;padding:2px 6px;" onclick="addNewRefCategory()">+</button>
+      
+        <label style="font-size:10px;min-width:40px;">Board:</label>
+        <input class="input" id="batch-board" placeholder="ไม่เปลี่ยน" list="board-suggestions" style="flex:1;min-width:60px;padding:4px 6px;font-size:11px;">
+        <button class="btn secondary" style="font-size:9px;padding:2px 6px;" onclick="addNewRefBoard()">+</button>
+      
+        <label style="font-size:10px;min-width:35px;">Tags:</label>
+        <input class="input" id="batch-tags" placeholder="แทนที่" 
+               list="ref-tag-suggestions" style="flex:1;min-width:60px;padding:4px 6px;font-size:11px;" oninput="handleBatchTagInput(this)">
+        <datalist id="ref-tag-suggestions"></datalist>
+      </div>
+      <div class="batch-row" style="margin-top:4px;">
+        <button class="btn" style="font-size:10px;padding:4px 10px;" onclick="applyBatchEdit()">✅ ใช้</button>
+        <button class="btn danger" style="font-size:10px;padding:4px 10px;" onclick="deleteSelectedRefs()">🗑️ ลบ</button>
+        <span style="flex:1;"></span>
+        <button class="btn secondary" style="font-size:10px;padding:4px 10px;" onclick="clearRefSelection()">✕ ยกเลิก</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3439,7 +3477,8 @@ async function renderRef() {
     const card = document.createElement('div');
     const isSelected = selectedRefIds.has(item.id);
     card.className = 'ref-card' + (isSelected ? ' selected' : '');
-    card.style.animation = 'fadeIn 0.3s ease';
+    // ไม่ใส่ animation ตอน selection mode (ป้องกันการกระพริบ)
+    
 
     if (refSelectionMode) {
       card.onclick = (e) => {
@@ -3454,18 +3493,18 @@ async function renderRef() {
     const catLabel = catObj ? catObj.label : item.category;
 
     card.innerHTML = `
-      <div class="select-check" style="display:${isSelected ? 'flex' : 'none'};position:absolute;top:4px;left:4px;width:24px;height:24px;background:var(--accent);color:white;border-radius:50%;font-size:14px;align-items:center;justify-content:center;z-index:5;">✓</div>
-      <button class="del-x" style="position:absolute;top:4px;right:30px;background:rgba(0,0,0,.6);border-radius:5px;color:var(--accent);z-index:5;" onclick="event.stopPropagation();editRef(${item.id})">✎</button>
-      <button class="del-x" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);border-radius:5px;z-index:5;" onclick="event.stopPropagation();deleteRef(${item.id})">✕</button>
-      <img src="${item.url}" loading="lazy" onclick="event.stopPropagation();openLightbox('${item.url}')">
-      <div class="meta">
-        <div style="color:var(--accent2);font-weight:600;">📁 ${item.board || 'uncategorized'}</div>
-        <div>${item.note || '<i>ไม่มีโน้ต</i>'}</div>
-        <div class="tags"><span class="tag">${catLabel}</span>${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
+    <div class="select-check" style="display:${isSelected ? 'flex' : 'none'};position:absolute;top:4px;left:4px;width:24px;height:24px;background:var(--accent);color:white;border-radius:50%;font-size:14px;align-items:center;justify-content:center;z-index:5;">✓</div>
+    <button class="del-x" style="position:absolute;top:4px;right:30px;background:rgba(0,0,0,.6);border-radius:5px;color:var(--accent);z-index:5;" onclick="event.stopPropagation();editRef(${item.id})">✎</button>
+    <button class="del-x" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);border-radius:5px;z-index:5;" onclick="event.stopPropagation();deleteRef(${item.id})">✕</button>
+    <img src="${item.url}" loading="lazy" onclick="event.stopPropagation();openLightbox('${item.url}')">
+    <div class="meta">
+      <div style="color:var(--accent2);font-weight:600;">📁 ${item.board || 'uncategorized'}</div>
+      <div>${item.note || '<i>ไม่มีโน้ต</i>'}</div>
+      <div class="tags"><span class="tag">${catLabel}</span>${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+  `;
+  grid.appendChild(card);
+});
 
   updateBoardTabs();
   updateBoardFilter();
