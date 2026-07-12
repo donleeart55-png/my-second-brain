@@ -1325,7 +1325,10 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <button class="btn" onclick="openUploadWidget()">+ เพิ่มรูปใหม่</button>
         <button class="btn secondary" id="ref-select-btn" onclick="toggleRefSelection()">✏️ Select</button>
         <button class="btn secondary" id="ref-select-all-btn" onclick="toggleSelectAll()" style="display:none;">SelectAll</button>
-        <input class="input" id="ref-search" placeholder="🔍 ค้นหา..." style="flex:1;min-width:120px;" oninput="renderRef()">
+        <input class="input" id="ref-search" placeholder="🔍 ค้นหาทุกอย่าง (หมวด, board, tags, note)" 
+                list="ref-search-suggestions" style="flex:1;min-width:120px;" 
+                oninput="renderRef()" onchange="renderRef()">
+        <datalist id="ref-search-suggestions"></datalist>
         <input class="input" id="ref-cat-filter" placeholder="📂 หมวดหมู่" 
                list="ref-cat-filter-suggestions" style="max-width:150px;" 
                oninput="renderRef()" onchange="renderRef()">
@@ -3240,6 +3243,35 @@ function addTagSuggestion(tag) {
   }
 }
 
+function updateSearchSuggestions() {
+  const datalist = document.getElementById('ref-search-suggestions');
+  if (!datalist) return;
+  
+  getRefs().then(items => {
+    const suggestions = new Set();
+    
+    items.forEach(item => {
+      // หมวดหมู่
+      const allCats = getAllRefCategories();
+      const catObj = allCats.find(c => c.key === item.category);
+      if (catObj) suggestions.add(catObj.label);
+      
+      // Board
+      if (item.board) suggestions.add(item.board);
+      
+      // Tags
+      if (item.tags) item.tags.forEach(t => suggestions.add(t));
+      
+      // Note (เอาแค่ 3 คำแรก)
+      if (item.note) {
+        const words = item.note.split(' ').slice(0, 3).join(' ');
+        if (words.length > 3) suggestions.add(words);
+      }
+    });
+    
+    datalist.innerHTML = [...suggestions].map(s => `<option value="${s}">`).join('');
+  });
+}
 // ==========================================================
 // เรียกเมื่อโหลดหน้า (รอให้ DOM พร้อม)
 // ==========================================================
@@ -3374,6 +3406,7 @@ async function confirmSaveMultiRef() {
   pendingUploadUrls = [];
   renderRef();
   renderDashboard();
+  updateSearchSuggestions();
   showToast(`✅ เพิ่มรูปอ้างอิง ${count} รูปสำเร็จ`, 'success');
 }
 
@@ -3421,6 +3454,7 @@ async function deleteRef(id) {
   await saveRefs(refs.filter(i => i.id !== id));  // ← เพิ่ม await
   renderRef();
   renderDashboard();
+  updateSearchSuggestions();
   showToast('🗑️ ลบรูปอ้างอิงแล้ว', 'error');
 }
 
@@ -3440,14 +3474,28 @@ async function renderRef() {
 
   let items = await getRefs();
 
-  // ค้นหา (case-insensitive)
+  // ค้นหา (case-insensitive) — ทุกอย่าง
   if (search) {
     const searchLower = search.toLowerCase();
-    items = items.filter(i =>
-      i.tags.some(t => t.toLowerCase().includes(searchLower)) ||
-      i.note.toLowerCase().includes(searchLower) ||
-      (i.board || '').toLowerCase().includes(searchLower)
-    );
+    const allCats = getAllRefCategories();
+  
+    items = items.filter(i => {
+      // 1. หมวดหมู่ (label)
+      const catObj = allCats.find(c => c.key === i.category);
+      const catLabel = catObj ? catObj.label : i.category;
+      if (catLabel.toLowerCase().includes(searchLower)) return true;
+    
+      // 2. Board
+      if ((i.board || '').toLowerCase().includes(searchLower)) return true;
+    
+      // 3. Tags
+      if (i.tags.some(t => t.toLowerCase().includes(searchLower))) return true;
+    
+      // 4. Note
+      if (i.note.toLowerCase().includes(searchLower)) return true;
+    
+      return false;
+    });
   }
 
   // กรองตามหมวดหมู่ (case-insensitive)
@@ -3658,6 +3706,7 @@ async function applyBatchEdit() {
   updateBoardSuggestions();
   updateBoardFilterSuggestions();
   updateTagSuggestions();
+  updateSearchSuggestions();
   
   renderRef();
   renderDashboard();
@@ -3694,7 +3743,7 @@ async function deleteSelectedRefs() {
   updateBoardSuggestions();
   updateBoardFilterSuggestions();
   updateTagSuggestions();
-  
+  updateSearchSuggestions();
   renderRef();
   renderDashboard();
   showToast(`🗑️ ลบ ${count} รูปแล้ว`, 'error');
@@ -6555,6 +6604,7 @@ async function confirmEditRef() {
   clearEditMode();
   renderRef();
   renderDashboard();
+  updateSearchSuggestions();
   showToast('✅ แก้ไขรายละเอียดรูปสำเร็จ', 'success');
 }
 
@@ -6733,6 +6783,7 @@ async function initApp() {
   updateBoardSuggestions();
   updateBoardFilterSuggestions();
   updateTagSuggestions();
+  updateSearchSuggestions();
 
   // รอ Firestore พร้อม
   await waitForFirestore();
