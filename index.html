@@ -1960,15 +1960,19 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 </div>
 <!-- Inbox Modal -->
 <div class="modal-overlay" id="inbox-modal">
-  <div class="modal" style="max-width:500px;">
+  <div class="modal" style="max-width:600px; padding:24px;">
     <h3>💡 พิมพ์ความคิดของคุณ</h3>
     <div class="field">
       <label>ความคิด</label>
-      <textarea class="input" id="inbox-input-text" placeholder="คิดอะไรอยู่? พิมพ์เลย..." style="height:80px;resize:vertical;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();confirmSaveInbox();}"></textarea>
+      <textarea class="input" id="inbox-input-text" placeholder="คิดอะไรอยู่? พิมพ์เลย..." 
+                style="height:120px; min-height:100px; resize:vertical; font-size:14px; line-height:1.6;" 
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();confirmSaveInbox();}"></textarea>
     </div>
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค) — <span style="color:var(--muted);font-weight:normal;">auto: #quick-idea</span></label>
-      <input class="input" id="inbox-input-tags" placeholder="#quick-idea, #inspiration">
+      <input class="input" id="inbox-input-tags" placeholder="#quick-idea, #inspiration" 
+             list="global-tag-suggestions" oninput="handleInboxTagInput(this)">
+      <datalist id="global-tag-suggestions"></datalist>
     </div>
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('inbox-modal')">ยกเลิก</button>
@@ -1978,7 +1982,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 </div>
 <!-- Daily Log Modal -->
 <div class="modal-overlay" id="daily-modal">
-  <div class="modal" style="max-width:500px;">
+  <div class="modal" style="max-width:600px; padding:24px;">
     <h3>📖 บันทึกประจำวัน</h3>
     <div class="field">
       <label>📅 วันที่</label>
@@ -1986,7 +1990,8 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     </div>
     <div class="field">
       <label>เนื้อหา</label>
-      <textarea class="input" id="daily-input-content" placeholder="วันนี้เกิดอะไรขึ้นบ้าง..." style="height:80px;resize:vertical;"></textarea>
+      <textarea class="input" id="daily-input-content" placeholder="วันนี้เกิดอะไรขึ้นบ้าง..." 
+                style="height:150px; min-height:120px; resize:vertical; font-size:14px; line-height:1.6;"></textarea>
     </div>
     <div class="field">
       <label>😊 อารมณ์</label>
@@ -2000,7 +2005,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     </div>
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
-      <input class="input" id="daily-input-tags" placeholder="#work, #personal">
+      <input class="input" id="daily-input-tags" placeholder="#work, #personal" 
+             list="global-tag-suggestions" oninput="handleDailyTagInput(this)">
+      <datalist id="global-tag-suggestions"></datalist>
     </div>
     <div class="field">
       <label>📷 รูป (URL)</label>
@@ -2028,6 +2035,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <option value="project">📋 Project</option>
         <option value="study">📚 Study</option>
         <option value="wish">🛍️ Wishlist</option>
+        <option value="daily">📖 Daily Log</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -3748,7 +3756,51 @@ async function deleteSelectedRefs() {
   renderDashboard();
   showToast(`🗑️ ลบ ${count} รูปแล้ว`, 'error');
 }
+// ==========================================================
+// GLOBAL TAG SUGGESTIONS (Inbox + Daily)
+// ==========================================================
+function getGlobalTagSuggestions() {
+  try {
+    return JSON.parse(localStorage.getItem('global_tag_suggestions') || '[]');
+  } catch { return []; }
+}
 
+function saveGlobalTagSuggestions(tags) {
+  localStorage.setItem('global_tag_suggestions', JSON.stringify(tags));
+}
+
+function updateGlobalTagSuggestions() {
+  const datalist = document.getElementById('global-tag-suggestions');
+  if (!datalist) return;
+  const tags = getGlobalTagSuggestions();
+  datalist.innerHTML = tags.map(t => `<option value="${t}">`).join('');
+}
+
+function addGlobalTagSuggestion(tag) {
+  const tags = getGlobalTagSuggestions();
+  const trimmed = tag.trim();
+  if (!tags.includes(trimmed)) {
+    tags.push(trimmed);
+    saveGlobalTagSuggestions(tags);
+    updateGlobalTagSuggestions();
+  }
+}
+
+function handleInboxTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim()).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addGlobalTagSuggestion(lastTag);
+    }
+  }
+}
+
+function handleDailyTagInput(input) {
+  handleInboxTagInput(input);
+}
 // ==========================================================
 // MODULE: Vision (Firestore)
 // ==========================================================
@@ -5976,6 +6028,10 @@ async function confirmSaveInbox() {
   if (!text) { showToast('กรุณาพิมพ์ความคิด', 'error'); return; }
   const tags = document.getElementById('inbox-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
   if (!tags.length) tags.push('#quick-idea');
+  
+  // ✅ เก็บ tags
+  tags.forEach(t => addGlobalTagSuggestion(t));
+  
   const item = {
     id: Date.now(),
     text,
@@ -6017,14 +6073,13 @@ async function confirmConvertInbox() {
   const modal = document.getElementById('inbox-convert-modal');
   const id = parseInt(modal.dataset.inboxId);
   const target = document.getElementById('inbox-convert-target').value;
-  const items = await getInbox();  // ← เพิ่ม await
+  const items = await getInbox();
   const item = items.find(i => i.id === id);
   if (!item) return;
 
   const text = item.text;
   closeModal('inbox-convert-modal');
-
-  await saveInbox(items.filter(i => i.id !== id));  // ← เพิ่ม await
+  await saveInbox(items.filter(i => i.id !== id));
 
   if (target === 'vision') {
     document.getElementById('vision-input-title').value = text;
@@ -6046,6 +6101,11 @@ async function confirmConvertInbox() {
     document.getElementById('wish-input-name').value = text;
     document.getElementById('wish-input-price').value = '';
     document.getElementById('wish-modal').classList.add('show');
+  } else if (target === 'daily') {
+    // ✅ แปลงเป็น Daily Log
+    document.getElementById('daily-input-content').value = text;
+    document.getElementById('daily-input-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('daily-modal').classList.add('show');
   }
 
   renderInbox();
@@ -6128,12 +6188,17 @@ function openDailyModal(date) {
 async function confirmSaveDaily() {
   const content = document.getElementById('daily-input-content').value.trim();
   if (!content) { showToast('กรุณาใส่เนื้อหา', 'error'); return; }
+  const tags = document.getElementById('daily-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  
+  // ✅ เก็บ tags
+  tags.forEach(t => addGlobalTagSuggestion(t));
+  
   const item = {
     id: Date.now(),
     date: document.getElementById('daily-input-date').value || new Date().toISOString().slice(0, 10),
     content,
     mood: document.getElementById('daily-input-mood').value || null,
-    tags: document.getElementById('daily-input-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+    tags,
     image: document.getElementById('daily-input-image').value.trim() || null,
     createdAt: new Date().toISOString()
   };
@@ -6784,6 +6849,7 @@ async function initApp() {
   updateBoardFilterSuggestions();
   updateTagSuggestions();
   updateSearchSuggestions();
+  updateGlobalTagSuggestions();
 
   // รอ Firestore พร้อม
   await waitForFirestore();
