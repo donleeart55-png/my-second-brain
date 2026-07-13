@@ -1255,6 +1255,90 @@ body {
   overflow: hidden;
   border-top: none;
 }
+/* ===== Truncate text 2 lines ===== */
+.project-desc-truncate {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+  max-height: 3em; /* 2 lines */
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* ===== Project Modal — ใหญ่ขึ้น ===== */
+#project-modal .modal {
+  max-width: 900px;
+  padding: 32px;
+  width: 95%;
+  max-height: 90vh;
+}
+
+/* ===== Project Detail — Edit Inline ===== */
+.project-desc-full {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+/* ===== Inline edit textarea ===== */
+#inline-desc-edit {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  font-family: inherit;
+}
+#inline-desc-edit:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+/* ===== Inline Edit — Box เดียวกัน ===== */
+.project-desc-editable {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+.project-desc-editable:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(124, 110, 245, 0.15);
+}
+
+/* Display mode — แบบเดียวกับ textarea */
+.project-desc-display {
+  font-size: 13px;    /* ← เปลี่ยนกลับเป็น 13px ถ้าต้องการ */
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 8px 12px;
+  font-family: inherit;
+}
+.project-desc-display {
+  min-height: 60px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease;
+  cursor: text;
+  color: var(--text);
+}
+.project-desc-display:hover {
+  border-color: var(--border);
+  background: var(--surface2);
+}
 </style>
 </head>
 <body>
@@ -1707,19 +1791,19 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 
 <!-- Project Modal -->
 <div class="modal-overlay" id="project-modal">
-  <div class="modal">
+  <div class="modal" style="max-width:900px; padding:32px;">
     <h3>เพิ่มโปรเจกต์</h3>
     <div class="field"><label>ชื่อโปรเจกต์</label>
       <input class="input" id="project-input-title" placeholder="เช่น เว็บพอร์ตโฟลิโอ">
     </div>
     <div class="field"><label>รายละเอียด</label>
-      <textarea class="input" id="project-input-desc" placeholder="อธิบายโปรเจกต์..."></textarea>
+      <textarea class="input" id="project-input-desc" placeholder="อธิบายโปรเจกต์..." style="height:80px;resize:vertical;white-space:pre-wrap;"></textarea>
     </div>
     <div class="field"><label>Deadline</label>
       <input class="input" type="date" id="project-input-deadline">
     </div>
     <div class="field"><label>โน้ต</label>
-      <textarea class="input" id="project-input-note"></textarea>
+      <textarea class="input" id="project-input-note" style="height:60px;resize:vertical;white-space:pre-wrap;"></textarea>
     </div>
     <div class="field"><label>⭐ ความสำคัญ</label>
       <select class="input" id="project-input-priority">
@@ -1767,7 +1851,8 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;flex-shrink:0;">
       <h3 id="project-detail-title" style="font-size:18px;">ชื่อโปรเจกต์</h3>
       <div style="display:flex;gap:6px;">
-        <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editProjectFromDetail()">✎ แก้ไข</button>
+      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="toggleEditProjectDesc()">✎ แก้ไข</button>        
+      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editProjectFromDetail()">📋 แก้ไขทั้งหมด</button>
         <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="closeModal('project-detail-modal')">✕</button>
       </div>
     </div>
@@ -6009,7 +6094,15 @@ async function renderProjects() {
           <button class="del-x" style="font-size:16px;padding:2px 4px;" onclick="deleteProject(${item.id})">✕</button>
         </div>
       </div>
-      ${item.desc ? `<div class="item-desc" style="font-size:12px;cursor:pointer;" onclick="openProjectDetail(${item.id})">${item.desc}</div>` : ''}
+      ${item.desc ? `
+    <div class="item-desc project-desc-truncate" style="font-size:12px;cursor:pointer;" onclick="openProjectDetail(${item.id})">
+      ${item.desc.replace(/\n/g, '<br>')}
+    </div>
+    <div style="font-size:10px;color:var(--muted);cursor:pointer;margin-top:2px;" onclick="openProjectDetail(${item.id})">
+      ... คลิกเพื่อดูทั้งหมด
+    </div>
+  </div>
+` : ''}
       <div style="margin-top:6px;">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
           <span>ความคืบหน้า</span>
@@ -6054,7 +6147,9 @@ async function openProjectDetail(id) {
       ${(project.tags || []).map(t => `<span class="tag" style="background:rgba(200,169,110,.12);color:var(--accent2);padding:2px 8px;border-radius:10px;font-size:9px;">#${t}</span>`).join('')}
     </div>
     
-    <div style="color:var(--muted);font-size:13px;margin-bottom:10px;">${project.desc || 'ไม่มีคำอธิบาย'}</div>
+    <div class="project-desc-display" data-project-id="${project.id}" style="cursor:text;" onclick="toggleEditProjectDesc()">
+  ${project.desc ? project.desc : 'ไม่มีคำอธิบาย (คลิกเพื่อแก้ไข)'}
+</div>
     
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:var(--muted);margin-bottom:12px;background:var(--surface2);padding:8px 12px;border-radius:8px;">
       ${project.startDate ? `<span>📅 เริ่ม: ${new Date(project.startDate).toLocaleDateString('th-TH')}</span>` : ''}
@@ -6147,6 +6242,175 @@ async function openProjectDetail(id) {
   content.innerHTML = html;
   document.getElementById('project-detail-modal').classList.add('show');
 }
+// ===== Edit Inline — Project Detail (Rich Text) =====
+let isEditingDesc = false;
+let editingDescProjectId = null;
+
+function toggleEditProjectDesc() {
+  const content = document.getElementById('project-detail-content');
+  if (!content) return;
+  
+  const descDiv = content.querySelector('.project-desc-display');
+  if (!descDiv) return;
+  
+  if (!isEditingDesc) {
+    // เปลี่ยนเป็น textarea
+    const currentText = descDiv.textContent || '';
+    const projectId = parseInt(descDiv.dataset.projectId);
+    editingDescProjectId = projectId;
+    const currentHeight = descDiv.offsetHeight;
+    
+    // ✅ สร้าง wrapper
+    const wrapper = document.createElement('div');
+    wrapper.className = 'project-desc-editable-wrapper';
+    wrapper.style.position = 'relative';
+    wrapper.dataset.projectId = projectId;
+    
+    const textarea = document.createElement('textarea');
+    textarea.className = 'project-desc-editable';
+    textarea.id = 'inline-desc-edit';
+    textarea.style.minHeight = Math.max(currentHeight, 100) + 'px';
+    textarea.value = currentText;
+    textarea.dataset.projectId = projectId;
+    
+    const buttonDiv = document.createElement('div');
+    buttonDiv.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
+    buttonDiv.innerHTML = `
+      <button class="btn" onclick="saveInlineDesc()">💾 บันทึก</button>
+      <button class="btn secondary" onclick="cancelInlineDesc()">ยกเลิก</button>
+      <span style="flex:1;"></span>
+      <span style="font-size:11px;color:var(--muted);align-self:center;">กด Ctrl+Enter เพื่อบันทึก</span>
+    `;
+    
+    wrapper.appendChild(textarea);
+    wrapper.appendChild(buttonDiv);
+    
+    // ✅ แทนที่ div ด้วย wrapper
+    descDiv.replaceWith(wrapper);
+    isEditingDesc = true;
+    
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    
+    // Ctrl+Enter บันทึก
+    textarea.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        saveInlineDesc();
+      }
+    });
+    
+    // ✅ คลิกนอก textarea → ยกเลิก (ยกเว้นปุ่ม)
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside, true);
+    }, 10);
+  }
+}
+
+// ✅ ฟังก์ชันจับการคลิกนอก
+function handleClickOutside(e) {
+  const textarea = document.getElementById('inline-desc-edit');
+  if (!textarea) return;
+  
+  const wrapper = textarea.closest('.project-desc-editable-wrapper');
+  if (!wrapper) return;
+  
+  // ถ้าคลิกที่ wrapper หรือลูกของ wrapper → ไม่ยกเลิก
+  if (wrapper.contains(e.target)) {
+    return;
+  }
+  
+  // ถ้าคลิกที่ปุ่มบันทึก/ยกเลิก → ไม่ยกเลิก (ให้ปุ่มทำงาน)
+  if (e.target.closest('.btn')) {
+    return;
+  }
+  
+  // ถ้าคลิกนอก wrapper → ยกเลิกการแก้ไข
+  cancelInlineDesc();
+  document.removeEventListener('click', handleClickOutside, true);
+}
+
+// ✅ แก้ไข cancelInlineDesc — ลบ event listener
+function cancelInlineDesc() {
+  isEditingDesc = false;
+  editingDescProjectId = null;
+  document.removeEventListener('click', handleClickOutside, true);
+  if (detailProjectId) {
+    openProjectDetail(detailProjectId);
+  }
+}
+// ✅ แก้ไข saveInlineDesc — ลบ event listener
+async function saveInlineDesc() {
+  const textarea = document.getElementById('inline-desc-edit');
+  if (!textarea) return;
+  
+  const newDesc = textarea.value;
+  if (editingDescProjectId === null) return;
+  
+  const items = await getProjects();
+  const item = items.find(i => i.id === editingDescProjectId);
+  if (item) {
+    item.desc = newDesc;
+    await saveProjects(items);
+    isEditingDesc = false;
+    editingDescProjectId = null;
+    document.removeEventListener('click', handleClickOutside, true);
+    await openProjectDetail(item.id);
+    showToast('✅ อัพเดตคำอธิบายสำเร็จ', 'success');
+  }
+}
+// ✅ ฟังก์ชันจับการคลิกนอก
+function handleClickOutside(e) {
+  const textarea = document.getElementById('inline-desc-edit');
+  if (!textarea) return;
+  
+  const wrapper = textarea.closest('.project-desc-editable-wrapper');
+  if (!wrapper) return;
+  
+  // ถ้าคลิกที่ wrapper หรือลูกของ wrapper → ไม่ยกเลิก
+  if (wrapper.contains(e.target)) {
+    return;
+  }
+  
+  // ถ้าคลิกที่ปุ่มบันทึก/ยกเลิก → ไม่ยกเลิก (ให้ปุ่มทำงาน)
+  if (e.target.closest('.btn')) {
+    return;
+  }
+  
+  // ถ้าคลิกนอก wrapper → ยกเลิกการแก้ไข
+  cancelInlineDesc();
+  document.removeEventListener('click', handleClickOutside, true);
+}
+
+async function saveInlineDesc() {
+  const textarea = document.getElementById('inline-desc-edit');
+  if (!textarea) return;
+  
+  const newDesc = textarea.value;
+  if (editingDescProjectId === null) return;
+  
+  const items = await getProjects();
+  const item = items.find(i => i.id === editingDescProjectId);
+  if (item) {
+    item.desc = newDesc;
+    await saveProjects(items);
+    isEditingDesc = false;
+    editingDescProjectId = null;
+    // รีเฟรช detail
+    await openProjectDetail(item.id);
+    showToast('✅ อัพเดตคำอธิบายสำเร็จ', 'success');
+  }
+}
+
+// ✅ แก้ไข cancelInlineDesc — ลบ event listener
+function cancelInlineDesc() {
+  isEditingDesc = false;
+  editingDescProjectId = null;
+  document.removeEventListener('click', handleClickOutside, true);
+  if (detailProjectId) {
+    openProjectDetail(detailProjectId);
+  }
+}
 
 // ===== Toggle Collapsible Section =====
 function toggleCollapsible(header) {
@@ -6189,7 +6453,10 @@ async function renderProjectRefPreview() {
 function editProjectFromDetail() {
   if (detailProjectId) {
     closeModal('project-detail-modal');
-    editProject(detailProjectId);
+    // รอให้ modal ปิดก่อนแล้วค่อยเปิด edit
+    setTimeout(() => {
+      editProject(detailProjectId);
+    }, 300);
   }
 }
 
