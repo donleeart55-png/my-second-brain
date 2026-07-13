@@ -1255,7 +1255,7 @@ body {
   overflow: hidden;
   border-top: none;
 }
-/* ===== Truncate text 2 lines ===== */
+/* ===== Truncate text 2 lines (modern) ===== */
 .project-desc-truncate {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1263,7 +1263,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.5;
-  max-height: 3em; /* 2 lines */
+  max-height: calc(1.5em * 2); /* = 3em */
   white-space: pre-wrap;
   word-break: break-word;
 }
