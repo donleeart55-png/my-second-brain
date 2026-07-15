@@ -74,23 +74,34 @@ padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
   color: var(--text);
   transform: translateY(-1px);
 }
-  .nav-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(124, 110, 245, 0.3); }
+.nav-btn.active { background: #C8A96E; color: #0e0e12; box-shadow: 0 2px 12px rgba(200, 169, 110, 0.3); }
 .nav-btn.active:hover {
-  background: var(--accent);
+  background: #C8A96E;
   transform: none;
+  box-shadow: 0 2px 16px rgba(200, 169, 110, 0.4);
 }
   .page { display: none; }
   .page.active { display: block; }
 
   /* ===== Shared UI ===== */
   .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
-  .btn {
-    background: var(--accent); color: white; border: none; padding: 9px 16px;
-    border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
-  }
-  .btn:hover { opacity: .9; }
-  .btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn.danger { background: rgba(224,92,92,.15); color: var(--red); border: 1px solid var(--red); }
+.btn {
+  background: #e05071; color: white; border: none; padding: 9px 16px;
+  border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  opacity: .9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(224, 80, 113, 0.45);
+}
+.btn:active {
+  transform: scale(0.96);
+}
+.btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn.secondary:hover { background: var(--surface); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn.danger { background: rgba(224,80,113,.15); color: #e05071; border: 1px solid #e05071; }
+.btn.danger:hover { background: rgba(224,80,113,.25); box-shadow: 0 4px 12px rgba(224,80,113,0.3); }
   .input, select.input, textarea.input {
     background: var(--surface); border: 1px solid var(--border); color: var(--text);
     padding: 8px 11px; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none;
@@ -468,20 +479,21 @@ padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
 }
 /* ===== Primary Nav Button ===== */
 .nav-btn.primary {
-  background: var(--accent);
+  background: #e05071;
   color: white;
   font-size: 15px;
   padding: 10px 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(124,110,245,.3);
+  box-shadow: 0 4px 15px rgba(224, 80, 113, 0.35);
 }
 .nav-btn.primary:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(124,110,245,.4);
+  box-shadow: 0 6px 25px rgba(224, 80, 113, 0.45);
 }
 .nav-btn.primary.active {
-  background: var(--accent2);
+  background: #C8A96E;
   color: #0e0e12;
+  box-shadow: 0 4px 15px rgba(200, 169, 110, 0.3);
 }
 /* ===== Sub Navigation (Journal) ===== */
 .sub-nav-btn {
@@ -497,9 +509,11 @@ padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
   transition: all 0.2s;
 }
 .sub-nav-btn.active {
-  background: var(--accent);
-  color: white;
+  background: #C8A96E;
+  color: #0e0e12;
+  box-shadow: 0 2px 12px rgba(200, 169, 110, 0.25);
 }
+
 .sub-nav-btn:hover:not(.active) {
   background: var(--surface2);
 }
@@ -559,20 +573,47 @@ padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #e05071;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(124,110,245,0.4);
-  transition: transform 0.2s;
+  box-shadow: 0 4px 16px rgba(224, 80, 113, 0.4);
+  transition: all 0.2s ease;
   margin-top: -16px;
 }
-
+.fab-note:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(224, 80, 113, 0.5);
+}
 .fab-note:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
+}
+.fab-note.active {
+  background: #C8A96E;
+  color: #0e0e12;
+  box-shadow: 0 4px 16px rgba(200, 169, 110, 0.4);
+}
+/* ===== Pink Add Button ===== */
+.btn-pink {
+  background: #FF6B8A;
+  color: white;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-pink:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(255, 107, 138, 0.4);
+}
+.btn-pink:active {
+  transform: scale(0.96);
 }
 
 .more-menu {
@@ -657,8 +698,9 @@ padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
 }
 
 .finance-tab.active {
-  background: var(--accent);
-  color: white;
+  background: #C8A96E;
+  color: #0e0e12;
+  box-shadow: 0 2px 12px rgba(200, 169, 110, 0.25);
 }
 
 .finance-tab:hover:not(.active) {
@@ -1561,6 +1603,118 @@ body {
 #undo-bar .btn-secondary:hover {
   background: var(--surface);
 }
+/* ===== Dashboard Stats Enhanced ===== */
+.dash-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.dash-stat-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 24px rgba(124, 110, 245, 0.12);
+}
+.dash-stat-card:active {
+  transform: scale(0.97);
+}
+.dash-stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.dash-stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.dash-stat-change {
+  font-size: 10px;
+  margin-top: 4px;
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+.dash-stat-change.up {
+  color: var(--green);
+  background: rgba(78, 203, 113, 0.12);
+}
+.dash-stat-change.down {
+  color: var(--red);
+  background: rgba(224, 92, 92, 0.12);
+}
+.dash-stat-change.same {
+  color: var(--muted);
+  background: rgba(138, 135, 152, 0.12);
+}
+.dash-stat-icon {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+/* ===== Goals Sub Tabs ===== */
+.goals-tab {
+  display: none;
+}
+.goals-tab.active {
+  display: block;
+  animation: fadeIn 0.25s ease;
+}
+/* ===== Category Management ===== */
+.cat-manager {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.cat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2px 8px 2px 10px;
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cat-tag:hover {
+  border-color: var(--accent);
+}
+.cat-tag .del-cat {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.cat-tag .del-cat:hover {
+  transform: scale(1.2);
+}
+.cat-add-btn {
+  background: var(--surface2);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cat-add-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 </style>
 </head>
 <body>
@@ -1594,42 +1748,54 @@ body {
     <div id="global-search-results" style="margin-top:8px;"></div>
   </div>
 
-  <!-- Stats - คลิกได้ทุกการ์ด -->
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;">
-  <div class="dash-card" data-module="ref" onclick="switchPage('ref')">
-    <div style="font-size:24px;">📁</div>
-    <div style="font-size:22px;font-weight:700;" id="dash-ref-count">0</div>
-    <div style="color:var(--muted);font-size:11px;">รูปอ้างอิง</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;">
+  <div class="dash-stat-card" data-module="ref" onclick="switchPage('ref')">
+    <div class="dash-stat-icon">📁</div>
+    <div class="dash-stat-number" id="dash-ref-count">0</div>
+    <div class="dash-stat-label">รูปอ้างอิง</div>
+    <div class="dash-stat-change" id="dash-ref-change">+0%</div>
   </div>
-  <div class="dash-card" data-module="vision" onclick="switchPage('vision')">
-    <div style="font-size:24px;">🗺️</div>
-    <div style="font-size:22px;font-weight:700;" id="dash-vision-count">0</div>
-    <div style="color:var(--muted);font-size:11px;">วิสัยทัศน์</div>
+  <div class="dash-stat-card" data-module="vision" onclick="switchPage('vision')">
+    <div class="dash-stat-icon">🗺️</div>
+    <div class="dash-stat-number" id="dash-vision-count">0</div>
+    <div class="dash-stat-label">วิสัยทัศน์</div>
+    <div class="dash-stat-change" id="dash-vision-change">+0%</div>
   </div>
-  <div class="dash-card" data-module="goals" onclick="switchPage('goals')">
-    <div style="font-size:24px;">🎯</div>
-    <div style="font-size:22px;font-weight:700;" id="dash-goal-count">0</div>
-    <div style="color:var(--muted);font-size:11px;">เป้าหมาย</div>
+  <div class="dash-stat-card" data-module="goals" onclick="switchPage('goals')">
+    <div class="dash-stat-icon">🎯</div>
+    <div class="dash-stat-number" id="dash-goal-count">0</div>
+    <div class="dash-stat-label">เป้าหมาย</div>
+    <div class="dash-stat-change" id="dash-goal-change">+0%</div>
   </div>
-  <div class="dash-card" data-module="study" onclick="switchPage('study')">
-    <div style="font-size:24px;">📚</div>
-    <div style="font-size:22px;font-weight:700;" id="dash-study-count">0</div>
-    <div style="color:var(--muted);font-size:11px;">แผนเรียน</div>
+  <div class="dash-stat-card" data-module="study" onclick="switchPage('study')">
+    <div class="dash-stat-icon">📚</div>
+    <div class="dash-stat-number" id="dash-study-count">0</div>
+    <div class="dash-stat-label">แผนเรียน</div>
+    <div class="dash-stat-change" id="dash-study-change">+0%</div>
   </div>
-  <div class="dash-card" data-module="projects" onclick="switchPage('projects')">
-    <div style="font-size:24px;">📋</div>
-    <div style="font-size:22px;font-weight:700;" id="dash-project-count">0</div>
-    <div style="color:var(--muted);font-size:11px;">โปรเจกต์</div>
+  <div class="dash-stat-card" data-module="projects" onclick="switchPage('projects')">
+    <div class="dash-stat-icon">📋</div>
+    <div class="dash-stat-number" id="dash-project-count">0</div>
+    <div class="dash-stat-label">โปรเจกต์</div>
+    <div class="dash-stat-change" id="dash-project-change">+0%</div>
   </div>
-  <div class="dash-card" data-module="finance" onclick="switchPage('finance')">
-    <div style="font-size:24px;">💰</div>
-    <div style="font-size:22px;font-weight:700;" id="dash-finance-count">0</div>
-    <div style="color:var(--muted);font-size:11px;">เป้าหมายการเงิน</div>
+  <div class="dash-stat-card" data-module="finance" onclick="switchPage('finance')">
+    <div class="dash-stat-icon">💰</div>
+    <div class="dash-stat-number" id="dash-finance-count">0</div>
+    <div class="dash-stat-label">เป้าหมายการเงิน</div>
+    <div class="dash-stat-change" id="dash-finance-change">+0%</div>
   </div>
-  <div class="dash-card" data-module="finance" onclick="switchPage('finance')">
-    <div style="font-size:24px;">🛍️</div>
-    <div style="font-size:22px;font-weight:700;" id="dash-wish-count">0</div>
-    <div style="color:var(--muted);font-size:11px;">Wishlist</div>
+  <div class="dash-stat-card" data-module="finance" onclick="switchPage('finance')">
+    <div class="dash-stat-icon">🛍️</div>
+    <div class="dash-stat-number" id="dash-wish-count">0</div>
+    <div class="dash-stat-label">Wishlist</div>
+    <div class="dash-stat-change" id="dash-wish-change">+0%</div>
+  </div>
+  <div class="dash-stat-card" data-module="journal" onclick="switchPage('journal')">
+    <div class="dash-stat-icon">📝</div>
+    <div class="dash-stat-number" id="dash-daily-count">0</div>
+    <div class="dash-stat-label">บันทึกประจำวัน</div>
+    <div class="dash-stat-change" id="dash-daily-change">+0%</div>
   </div>
 </div>
 
@@ -1656,7 +1822,15 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 <button class="btn secondary" style="width:100%;text-align:left;font-size:12px;" onclick="openDailyModal();toggleQuickActions()">📖 Daily Log</button>
 </div>
 </div>
-
+  <!-- ===== Art Trend ===== -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">🎨 แนวโน้มงานศิลปะ (7 วันล่าสุด)</h3>
+  <div id="dash-art-trend" style="display:flex;gap:4px;align-items:flex-end;height:80px;padding:8px 4px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:16px;overflow-x:auto;"></div>
+  <!-- ===== Fitness Trend ===== -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">💪 แนวโน้มออกกำลังกาย (7 วันล่าสุด)</h3>
+  <div id="dash-fitness-trend" style="display:flex;gap:4px;align-items:flex-end;height:80px;padding:8px 4px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:16px;overflow-x:auto;"></div>
+  <!-- ===== Finance Trend ===== -->
+  <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">💰 แนวโน้มการเงิน (7 วันล่าสุด)</h3>
+  <div id="dash-finance-trend" style="display:flex;gap:4px;align-items:flex-end;height:80px;padding:8px 4px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:16px;overflow-x:auto;"></div>
   <!-- Goal Status - คลิกไปที่ Goals พร้อม filter -->
   <h3 style="font-size:13px;color:var(--muted);margin:12px 0 8px;">📊 สถานะเป้าหมาย</h3>
   <div id="dash-goal-status" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
@@ -1685,10 +1859,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 
 <!-- ============ PAGE: Journal (จด) ============ -->
 <div class="page" id="page-journal">
-  <!-- Sub Navigation -->
-  <div style="display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:10px;margin-bottom:16px;overflow-x:auto;">
+  <!-- Sub Navigation - แก้ไขให้มี 6 tabs -->
+  <div style="display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:10px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;justify-content:center;">
     <button class="sub-nav-btn active" id="sub-inbox" onclick="switchJournalTab('inbox')">📥 Inbox <span id="inbox-badge-sub" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:4px;display:none;">0</span></button>
-    <button class="sub-nav-btn" id="sub-daily" onclick="switchJournalTab('daily')">📖 Daily Log</button>
+    <button class="sub-nav-btn" id="sub-daily" onclick="switchJournalTab('daily')">📖 Daily</button>
+    <button class="sub-nav-btn" id="sub-idea" onclick="switchJournalTab('idea')">💡 Idea</button>
+    <button class="sub-nav-btn" id="sub-knowledge" onclick="switchJournalTab('knowledge')">📚 Knowledge</button>
+    <button class="sub-nav-btn" id="sub-art" onclick="switchJournalTab('art')">🎨 Art</button>
+    <button class="sub-nav-btn" id="sub-fit" onclick="switchJournalTab('fit')">💪 Fit</button>
   </div>
 
   <!-- Inbox Content -->
@@ -1721,6 +1899,66 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     </div>
     <div id="daily-list"></div>
     <div class="empty" id="daily-empty" style="display:none;">ยังไม่มีบันทึก</div>
+  </div>
+</div>
+  <!-- Idea Bank Content -->
+  <div id="journal-idea" class="journal-tab">
+    <div class="toolbar">
+      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openIdeaModal()">💡 + บันทึกไอเดีย</button>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="filter-chip active" onclick="setJournalFilter('idea','all')" id="idea-filter-all">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setJournalFilter('idea','fav')" id="idea-filter-fav">⭐</button>
+        <button class="filter-chip" onclick="setJournalFilter('idea','archived')" id="idea-filter-archived">📦</button>
+      </div>
+      <span style="font-size:14px;font-weight:600;margin-left:auto;">Idea Bank</span>
+    </div>
+    <div id="idea-list"></div>
+    <div class="empty" id="idea-empty" style="display:none;">ยังไม่มีไอเดีย</div>
+  </div>
+
+  <!-- Knowledge Bank Content -->
+  <div id="journal-knowledge" class="journal-tab">
+    <div class="toolbar">
+      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openKnowledgeModal()">📚 + บันทึกความรู้</button>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="filter-chip active" onclick="setJournalFilter('knowledge','all')" id="knowledge-filter-all">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setJournalFilter('knowledge','fav')" id="knowledge-filter-fav">⭐</button>
+        <button class="filter-chip" onclick="setJournalFilter('knowledge','archived')" id="knowledge-filter-archived">📦</button>
+      </div>
+      <span style="font-size:14px;font-weight:600;margin-left:auto;">Knowledge Bank</span>
+    </div>
+    <div id="knowledge-list"></div>
+    <div class="empty" id="knowledge-empty" style="display:none;">ยังไม่มีความรู้</div>
+  </div>
+
+  <!-- Art Log Content -->
+  <div id="journal-art" class="journal-tab">
+    <div class="toolbar">
+      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openArtModal()">🎨 + บันทึกงานศิลปะ</button>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="filter-chip active" onclick="setJournalFilter('art','all')" id="art-filter-all">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setJournalFilter('art','fav')" id="art-filter-fav">⭐</button>
+        <button class="filter-chip" onclick="setJournalFilter('art','archived')" id="art-filter-archived">📦</button>
+      </div>
+      <span style="font-size:14px;font-weight:600;margin-left:auto;">Art Log</span>
+    </div>
+    <div id="art-list"></div>
+    <div class="empty" id="art-empty" style="display:none;">ยังไม่มีงานศิลปะ</div>
+  </div>
+
+  <!-- Fit Log Content -->
+  <div id="journal-fit" class="journal-tab">
+    <div class="toolbar">
+      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openFitModal()">💪 + บันทึกออกกำลังกาย</button>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="filter-chip active" onclick="setJournalFilter('fit','all')" id="fit-filter-all">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setJournalFilter('fit','fav')" id="fit-filter-fav">⭐</button>
+        <button class="filter-chip" onclick="setJournalFilter('fit','archived')" id="fit-filter-archived">📦</button>
+      </div>
+      <span style="font-size:14px;font-weight:600;margin-left:auto;">Fit Log</span>
+    </div>
+    <div id="fit-list"></div>
+    <div class="empty" id="fit-empty" style="display:none;">ยังไม่มีบันทึกออกกำลังกาย</div>
   </div>
 </div>
 
@@ -1778,7 +2016,10 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       
         <label style="font-size:10px;min-width:35px;">Tags:</label>
         <input class="input" id="batch-tags" placeholder="แทนที่" 
-               list="ref-tag-suggestions" style="flex:1;min-width:60px;padding:4px 6px;font-size:11px;" oninput="handleBatchTagInput(this)">
+       list="ref-tag-suggestions" 
+       oninput="handleBatchTagInput(this)" 
+       onfocus="showAllSuggestions(this)" 
+       onclick="showAllSuggestions(this)">
         <datalist id="ref-tag-suggestions"></datalist>
       </div>
       <div class="batch-row" style="margin-top:4px;">
@@ -1821,67 +2062,129 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 
 <!-- ============ PAGE: Goals ============ -->
 <div class="page" id="page-goals">
+  <!-- Sub Navigation: Goals + Study -->
+  <div style="display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:10px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;justify-content:center;">
+    <button class="sub-nav-btn active" id="goals-sub-goals" onclick="switchGoalsTab('goals')">🎯 เป้าหมาย <span id="calendar-goal-count" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:4px;">0</span></button>
+    <button class="sub-nav-btn" id="goals-sub-study" onclick="switchGoalsTab('study')">📚 แผนเรียน</button>
+  </div>
+
+  <!-- Goals Content -->
+  <div id="goals-tab-goals" class="goals-tab active">
     <!-- Calendar -->
-<div style="margin-bottom:14px;">
-  <!-- Header with toggle button -->
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;cursor:pointer;" onclick="toggleCalendar()">
-    <span style="font-size:16px;" id="calendar-toggle-icon">📅</span>
-    <span style="font-weight:600;font-size:14px;" id="calendar-month">มกราคม 2026</span>
-    <span style="font-size:12px;color:var(--muted);margin-left:auto;">▼</span>
-  </div>
-  
-  <!-- Calendar body - can be collapsed -->
-  <div id="calendar-body">
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
-      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(-1)">◀</button>
-      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(1)">▶</button>
-      <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="resetCalendar()">📅 วันนี้</button>
-      <span style="font-size:11px;color:var(--muted);margin-left:auto;">
-        <span id="calendar-goal-count">0</span> เป้าหมาย
-      </span>
+    <div style="margin-bottom:14px;">
+      <!-- Header with toggle button -->
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+        <div style="display:flex;gap:8px;align-items:center;cursor:pointer;flex:1;" onclick="toggleCalendar()">
+          <span style="font-size:16px;" id="calendar-toggle-icon">📅</span>
+          <span style="font-weight:600;font-size:14px;" id="calendar-month">มกราคม 2026</span>
+          <span style="font-size:12px;color:var(--muted);">▼</span>
+        </div>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();openCalendarPopup()">📅 ปฏิทิน</button>
+          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();clearDateFilter()">🗑️ ล้าง filter</button>
+        </div>
+      </div>
+      
+      <!-- Calendar body - can be collapsed -->
+      <div id="calendar-body">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(-1)">◀</button>
+          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(1)">▶</button>
+          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="resetCalendar()">📅 วันนี้</button>
+          <span style="font-size:11px;color:var(--muted);margin-left:auto;">
+            <span id="calendar-goal-count">0</span> เป้าหมาย
+          </span>
+        </div>
+        <div id="calendar-grid" style="
+          display: grid; grid-template-columns: repeat(7, 1fr);
+          gap: 2px; background: var(--surface); border-radius: 8px;
+          padding: 6px; border: 1px solid var(--border);
+        "></div>
+      </div>
     </div>
-    <div id="calendar-grid" style="
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      gap: 2px; background: var(--surface); border-radius: 8px;
-      padding: 6px; border: 1px solid var(--border);
-    "></div>
+    
+    <div class="toolbar">
+      <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+      
+      <!-- Filter Chips -->
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
+        <button class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
+        <button class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
+      </div>
+      
+      <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
+        <option value="">ทุกหมวดหมู่</option>
+        <option value="career">อาชีพ/งาน</option>
+        <option value="health">สุขภาพ</option>
+        <option value="finance">การเงิน</option>
+        <option value="skill">ทักษะ</option>
+        <option value="other">อื่นๆ</option>
+      </select>
+      <select class="input" id="goal-status-filter" onchange="renderGoals()" style="display:none;">
+        <option value="">ทุกสถานะ</option>
+        <option value="not_started">ยังไม่เริ่ม</option>
+        <option value="in_progress">กำลังทำ</option>
+        <option value="done">สำเร็จแล้ว</option>
+      </select>
+      <select class="input" id="goal-priority-filter" onchange="renderGoals()" style="display:none;">
+        <option value="">⭐ ทุกระดับ</option>
+        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+        <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+        <option value="low">☆ ทิ้ง/เลื่อน</option>
+      </select>
+      <select class="input" id="goal-archive-filter" onchange="renderGoals()" style="display:none;">
+        <option value="active">แสดงทั้งหมด</option>
+        <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+        <option value="all">แสดงทั้งหมด</option>
+      </select>
+      
+      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+    </div>
+    
+    <div id="goals-list"></div>
+    <div class="empty" id="goals-empty" style="display:none;">ยังไม่มีเป้าหมายที่บันทึกไว้</div>
   </div>
-</div>
-  <div class="toolbar">
-    <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
-  
-  <!-- Filter Chips -->
-  <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-    <button class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
-    <button class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
-    <button class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
-    <button class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
+
+  <!-- Study Content -->
+  <div id="goals-tab-study" class="goals-tab">
+    <div class="toolbar">
+      <button class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
+      
+      <!-- Filter Chips -->
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="filter-chip active" onclick="setStudyFilter('all')" id="study-filter-all">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setStudyFilter('fav')" id="study-filter-fav">⭐</button>
+        <button class="filter-chip" onclick="setStudyFilter('archived')" id="study-filter-archived">📦</button>
+        <button class="filter-chip" onclick="setStudyFilter('status')" id="study-filter-status">📊</button>
+      </div>
+      
+      <select class="input" id="study-status-filter" onchange="renderStudy()" style="display:none;">
+        <option value="">ทุกสถานะ</option>
+        <option value="planning">📝 วางแผน</option>
+        <option value="studying">📖 กำลังเรียน</option>
+        <option value="completed">✅ เสร็จแล้ว</option>
+      </select>
+      <select class="input" id="study-priority-filter" onchange="renderStudy()" style="display:none;">
+        <option value="">⭐ ทุกระดับ</option>
+        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+        <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+        <option value="low">☆ ทิ้ง/เลื่อน</option>
+      </select>
+      <select class="input" id="study-archive-filter" onchange="renderStudy()" style="display:none;">
+        <option value="active">แสดงทั้งหมด</option>
+        <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+        <option value="all">แสดงทั้งหมด</option>
+      </select>
+      
+      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+    </div>
+    <div id="study-list"></div>
+    <div class="empty" id="study-empty" style="display:none;">ยังไม่มีแผนเรียน</div>
   </div>
-  
-  <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
-    <option value="">ทุกหมวดหมู่</option>
-    <option value="career">อาชีพ/งาน</option>
-    <option value="health">สุขภาพ</option>
-    <option value="finance">การเงิน</option>
-    <option value="skill">ทักษะ</option>
-    <option value="other">อื่นๆ</option>
-  </select>
-  <select class="input" id="goal-status-filter" onchange="renderGoals()" style="display:none;">
-    <option value="">ทุกสถานะ</option>
-    <option value="not_started">ยังไม่เริ่ม</option>
-    <option value="in_progress">กำลังทำ</option>
-    <option value="done">สำเร็จแล้ว</option>
-  </select>
-  <select class="input" id="goal-priority-filter" onchange="renderGoals()" style="display:none;">
-    <option value="">⭐ ทุกระดับ</option>
-    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-    <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-    <option value="low">☆ ทิ้ง/เลื่อน</option>
-  </select>
-  </div>
-  <div id="goals-list"></div>
-  <div class="empty" id="goals-empty" style="display:none;">ยังไม่มีเป้าหมายที่บันทึกไว้</div>
 </div>
 
 <!-- ============ PAGE: Finance & Wishlist ============ -->
@@ -1957,6 +2260,44 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <div id="finance-goals" class="finance-tab-content">
     <div class="toolbar">
   <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+  
+  <!-- Filter Chips -->
+  <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+    <button class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
+    <button class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
+    <button class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
+    <button class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
+  </div>
+  
+  <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
+    <option value="">ทุกหมวดหมู่</option>
+    <option value="career">อาชีพ/งาน</option>
+    <option value="health">สุขภาพ</option>
+    <option value="finance">การเงิน</option>
+    <option value="skill">ทักษะ</option>
+    <option value="other">อื่นๆ</option>
+  </select>
+  <select class="input" id="goal-status-filter" onchange="renderGoals()" style="display:none;">
+    <option value="">ทุกสถานะ</option>
+    <option value="not_started">ยังไม่เริ่ม</option>
+    <option value="in_progress">กำลังทำ</option>
+    <option value="done">สำเร็จแล้ว</option>
+  </select>
+  <select class="input" id="goal-priority-filter" onchange="renderGoals()" style="display:none;">
+    <option value="">⭐ ทุกระดับ</option>
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
+  <select class="input" id="goal-archive-filter" onchange="renderGoals()" style="display:none;">
+    <option value="active">แสดงทั้งหมด</option>
+    <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+    <option value="all">แสดงทั้งหมด</option>
+  </select>
+  
+  <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+</div>
   <button class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
   
   <!-- Filter Chips -->
@@ -2137,8 +2478,11 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="project-input-tags" placeholder="design, web, freelance" 
-             list="project-tag-suggestions">
-      <datalist id="project-tag-suggestions"></datalist>
+       list="project-tag-suggestions" 
+       oninput="handleProjectTagInput(this)" 
+       onfocus="showAllSuggestions(this)" 
+       onclick="showAllSuggestions(this)">
+      <datalist id="global-tag-suggestions"></datalist>
     </div>
     <!-- ... -->
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
@@ -2228,7 +2572,10 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="field">
       <label>Tags (คั่นด้วยจุลภาค)</label>
       <input class="input" id="ref-input-tags" placeholder="เช่น มือ, ท่านั่ง" 
-          list="ref-tag-suggestions" oninput="handleTagInput(this)">
+       list="ref-tag-suggestions" 
+       oninput="handleTagInput(this)" 
+       onfocus="showAllSuggestions(this)" 
+       onclick="showAllSuggestions(this)">
         <datalist id="ref-tag-suggestions"></datalist>
       </div>
     <div class="field">
@@ -2248,14 +2595,15 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <h3>เพิ่มวิสัยทัศน์ชีวิต</h3>
       <div class="field"><label>ด้าน</label>
         <select class="input" id="vision-input-category">
-    <option value="career">💼 อาชีพ/งาน</option>
-    <option value="health">💪 สุขภาพ</option>
-    <option value="relationship">💕 ความสัมพันธ์</option>
-    <option value="growth">🌱 พัฒนาตนเอง</option>
-    <option value="lifestyle">🌟 ไลฟ์สไตล์</option>
-    <option value="other">📦 อื่นๆ</option>
-  </select>
-</div>
+          <option value="career">💼 อาชีพ/งาน</option>
+          <option value="health">💪 สุขภาพ</option>
+          <option value="relationship">💕 ความสัมพันธ์</option>
+          <option value="growth">🌱 พัฒนาตนเอง</option>
+          <option value="lifestyle">🌟 ไลฟ์สไตล์</option>
+          <option value="other">📦 อื่นๆ</option>
+        </select>
+      <div id="vision-cat-manager" class="cat-manager" style="margin-top:6px;"></div>
+    </div>
       <div class="field"><label>หัวข้อ</label>
         <input class="input" id="vision-input-title" placeholder="เช่น เป็นศิลปินที่เลี้ยงตัวเองได้จากงานศิลปะ">
       </div>
@@ -2308,13 +2656,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <input class="input" id="goal-input-title" placeholder="เช่น ปิดคอมมิชชัน 6 ชิ้นในเดือนนี้">
       </div>
     <div class="field"><label>หมวดหมู่</label>
-  <select class="input" id="goal-input-category">
-    <option value="career">💼 อาชีพ/งาน</option>
-    <option value="health">💪 สุขภาพ</option>
-    <option value="finance">💰 การเงิน</option>
-    <option value="skill">🎯 ทักษะ</option>
-    <option value="other">📦 อื่นๆ</option>
-  </select>
+      <select class="input" id="goal-input-category">
+        <option value="career">💼 อาชีพ/งาน</option>
+        <option value="health">💪 สุขภาพ</option>
+        <option value="finance">💰 การเงิน</option>
+        <option value="skill">🎯 ทักษะ</option>
+        <option value="other">📦 อื่นๆ</option>
+      </select>
+    <div id="goal-cat-manager" class="cat-manager" style="margin-top:6px;"></div>
     <div class="field">
     <label>🔗 ลิงก์ (ถ้ามี)</label>
     <input class="input" id="goal-input-link" placeholder="https://...">
@@ -2377,6 +2726,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <option value="big_purchase">🛒 ของใหญ่/ช้อปปิ้ง</option>
         <option value="other" selected>📦 อื่นๆ</option>
       </select>
+      <div id="finance-cat-manager" class="cat-manager" style="margin-top:6px;"></div>
     </div>
     <div class="field"><label>เป้าหมาย (บาท)</label>
       <input class="input" type="number" id="finance-input-target" placeholder="50000">
@@ -2386,8 +2736,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     </div>
     <div class="field">
   <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
-  <input class="input" id="finance-input-tags" placeholder="เช่น emergency, 3-month">
-</div>
+  <input class="input" id="finance-input-tags" placeholder="เช่น emergency, 3-month" 
+       list="global-tag-suggestions" 
+       oninput="handleFinanceTagInput(this)" 
+       onfocus="showAllSuggestions(this)" 
+       onclick="showAllSuggestions(this)">
+       <datalist id="global-tag-suggestions"></datalist>
+  </div>
     <div class="field"><label>⭐ ความสำคัญ</label>
   <select class="input" id="finance-input-priority">
     <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
@@ -2421,6 +2776,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <option value="experience">🎫 ประสบการณ์/ทริป</option>
         <option value="other" selected>📦 อื่นๆ</option>
       </select>
+      <div id="wish-cat-manager" class="cat-manager" style="margin-top:6px;"></div>
     </div>
     <div class="field"><label>ราคา (บาท)</label>
       <input class="input" type="number" id="wish-input-price" placeholder="25000">
@@ -2430,8 +2786,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     </div>
     <div class="field">
   <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
-  <input class="input" id="wish-input-tags" placeholder="เช่น tech, gadget">
-</div>
+  <input class="input" id="wish-input-tags" placeholder="เช่น tech, gadget" 
+       list="global-tag-suggestions" 
+       oninput="handleWishlistTagInput(this)" 
+       onfocus="showAllSuggestions(this)" 
+       onclick="showAllSuggestions(this)">
+      <datalist id="global-tag-suggestions"></datalist>
+  </div>
     <div class="field"><label>ความสำคัญ</label>
       <select class="input" id="wish-input-priority">
         <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
@@ -2496,6 +2857,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <option value="fitness">💪 ฟิตเนส</option>
         <option value="other">📦 อื่นๆ</option>
       </select>
+      <div id="study-cat-manager" class="cat-manager" style="margin-top:6px;"></div>
     </div>
     <div class="field"><label>เป้าหมาย</label>
       <input class="input" id="study-input-goal" placeholder="เช่น 30 นาที/วัน">
@@ -2518,6 +2880,151 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('study-modal')">ยกเลิก</button>
       <button class="btn" onclick="confirmSaveStudy()">บันทึก</button>
+    </div>
+  </div>
+</div>
+<!-- Idea Bank Modal -->
+<div class="modal-overlay" id="idea-modal">
+  <div class="modal" style="max-width:600px; padding:24px;">
+    <h3>💡 บันทึกไอเดีย</h3>
+    <div class="field">
+      <label>📅 วันที่</label>
+      <input class="input" type="date" id="idea-input-date">
+    </div>
+    <div class="field">
+      <label>💡 ไอเดีย</label>
+      <textarea class="input" id="idea-input-content" placeholder="ไอเดียเจ๋งๆ ที่คิดได้..." 
+                style="height:120px; min-height:100px; resize:vertical; font-size:14px; line-height:1.6;"></textarea>
+    </div>
+    <div class="field">
+      <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
+      <input class="input" id="idea-input-tags" placeholder="#idea, #creative" 
+             list="global-tag-suggestions" 
+             oninput="handleIdeaTagInput(this)" 
+             onfocus="showAllSuggestions(this)" 
+             onclick="showAllSuggestions(this)">
+      <datalist id="global-tag-suggestions"></datalist>
+    </div>
+    <div class="field">
+      <label>🔗 ลิงก์ (ถ้ามี)</label>
+      <input class="input" id="idea-input-link" placeholder="https://...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('idea-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveIdea()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Knowledge Bank Modal -->
+<div class="modal-overlay" id="knowledge-modal">
+  <div class="modal" style="max-width:600px; padding:24px;">
+    <h3>📚 บันทึกความรู้</h3>
+    <div class="field">
+      <label>📅 วันที่</label>
+      <input class="input" type="date" id="knowledge-input-date">
+    </div>
+    <div class="field">
+      <label>📚 หัวข้อความรู้</label>
+      <input class="input" id="knowledge-input-title" placeholder="สิ่งที่ได้เรียนรู้...">
+    </div>
+    <div class="field">
+      <label>📝 รายละเอียด</label>
+      <textarea class="input" id="knowledge-input-content" placeholder="รายละเอียดความรู้..." 
+                style="height:120px; min-height:100px; resize:vertical; font-size:14px; line-height:1.6;"></textarea>
+    </div>
+    <div class="field">
+      <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
+      <input class="input" id="knowledge-input-tags" placeholder="#knowledge, #learn" 
+             list="global-tag-suggestions" 
+             oninput="handleKnowledgeTagInput(this)" 
+             onfocus="showAllSuggestions(this)" 
+             onclick="showAllSuggestions(this)">
+      <datalist id="global-tag-suggestions"></datalist>
+    </div>
+    <div class="field">
+      <label>🔗 ลิงก์ (ถ้ามี)</label>
+      <input class="input" id="knowledge-input-link" placeholder="https://...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('knowledge-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveKnowledge()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Art Log Modal -->
+<div class="modal-overlay" id="art-modal">
+  <div class="modal" style="max-width:600px; padding:24px;">
+    <h3>🎨 บันทึกงานศิลปะ</h3>
+    <div class="field">
+      <label>📅 วันที่</label>
+      <input class="input" type="date" id="art-input-date">
+    </div>
+    <div class="field">
+      <label>🎨 ชื่อผลงาน</label>
+      <input class="input" id="art-input-title" placeholder="ชื่อผลงาน...">
+    </div>
+    <div class="field">
+      <label>📝 รายละเอียด</label>
+      <textarea class="input" id="art-input-content" placeholder="เทคนิค, ขนาด, วัสดุ..." 
+                style="height:100px; min-height:80px; resize:vertical; font-size:14px; line-height:1.6;"></textarea>
+    </div>
+    <div class="field">
+      <label>📷 รูป (URL)</label>
+      <input class="input" id="art-input-image" placeholder="https://... หรือลากจาก Cloudinary">
+    </div>
+    <div class="field">
+      <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
+      <input class="input" id="art-input-tags" placeholder="#drawing, #painting" 
+             list="global-tag-suggestions" 
+             oninput="handleArtTagInput(this)" 
+             onfocus="showAllSuggestions(this)" 
+             onclick="showAllSuggestions(this)">
+      <datalist id="global-tag-suggestions"></datalist>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('art-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveArt()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fit Log Modal -->
+<div class="modal-overlay" id="fit-modal">
+  <div class="modal" style="max-width:600px; padding:24px;">
+    <h3>💪 บันทึกออกกำลังกาย</h3>
+    <div class="field">
+      <label>📅 วันที่</label>
+      <input class="input" type="date" id="fit-input-date">
+    </div>
+    <div class="field">
+      <label>💪 ประเภท</label>
+      <select class="input" id="fit-input-type">
+        <option value="cardio">🏃 Cardio</option>
+        <option value="weight">🏋️ Weight Training</option>
+        <option value="yoga">🧘 Yoga</option>
+        <option value="sport">⚽ Sport</option>
+        <option value="other">📦 อื่นๆ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>📝 รายละเอียด</label>
+      <textarea class="input" id="fit-input-content" placeholder="ออกกำลังกายอะไรบ้าง, ระยะเวลา..." 
+                style="height:100px; min-height:80px; resize:vertical; font-size:14px; line-height:1.6;"></textarea>
+    </div>
+    <div class="field">
+      <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
+      <input class="input" id="fit-input-tags" placeholder="#fitness, #workout" 
+             list="global-tag-suggestions" 
+             oninput="handleFitTagInput(this)" 
+             onfocus="showAllSuggestions(this)" 
+             onclick="showAllSuggestions(this)">
+      <datalist id="global-tag-suggestions"></datalist>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('fit-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveFit()">💾 บันทึก</button>
     </div>
   </div>
 </div>
@@ -2568,7 +3075,10 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค) — <span style="color:var(--muted);font-weight:normal;">auto: #quick-idea</span></label>
       <input class="input" id="inbox-input-tags" placeholder="#quick-idea, #inspiration" 
-             list="global-tag-suggestions" oninput="handleInboxTagInput(this)">
+       list="global-tag-suggestions" 
+       oninput="handleInboxTagInput(this)" 
+       onfocus="showAllSuggestions(this)" 
+       onclick="showAllSuggestions(this)">
       <datalist id="global-tag-suggestions"></datalist>
     </div>
     <div class="modal-actions">
@@ -2603,7 +3113,10 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="daily-input-tags" placeholder="#work, #personal" 
-             list="global-tag-suggestions" oninput="handleDailyTagInput(this)">
+       list="global-tag-suggestions" 
+       oninput="handleDailyTagInput(this)" 
+       onfocus="showAllSuggestions(this)" 
+       onclick="showAllSuggestions(this)">
       <datalist id="global-tag-suggestions"></datalist>
     </div>
     <div class="field">
@@ -2858,7 +3371,6 @@ function closeModal(id) {
   if (id === 'vision-modal') {
     resetVisionModal();
     clearEditMode('vision');
-    // ✅ รีเซ็ต tempVisionRefIds
     tempVisionRefIds = [];
     editingVisionRefIds = [];
     renderVisionRefPreview();
@@ -2885,8 +3397,8 @@ function closeModal(id) {
   }
   if (id === 'project-modal') {
     resetProjectModal();
-    clearEditMode('project');  // ← clear เฉพาะ project
-    editingProjectId = null;  // ตัวแปรนี้ยังใช้แยกอยู่
+    clearEditMode('project');
+    editingProjectId = null;
   }
   if (id === 'inbox-modal') {
     resetInboxModal();
@@ -2895,6 +3407,23 @@ function closeModal(id) {
   if (id === 'daily-modal') {
     resetDailyModal();
     clearEditMode('daily');
+  }
+  // ✅ เพิ่มโมดูลใหม่
+  if (id === 'idea-modal') {
+    resetIdeaModal();
+    clearEditMode('idea');
+  }
+  if (id === 'knowledge-modal') {
+    resetKnowledgeModal();
+    clearEditMode('knowledge');
+  }
+  if (id === 'art-modal') {
+    resetArtModal();
+    clearEditMode('art');
+  }
+  if (id === 'fit-modal') {
+    resetFitModal();
+    clearEditMode('fit');
   }
   if (id === 'finance-update-modal') {
     pendingFinanceId = null;
@@ -2931,7 +3460,6 @@ const PAGES = [
   { id: 'vision', label: '🗺️ Life Map' },
   { id: 'projects', label: '📋 Projects' },
   { id: 'goals', label: '🎯 Goals' },
-  { id: 'study', label: '📚 Study' },
   { id: 'finance', label: '💰 Finance' },
   { id: 'settings', label: '⚙️ ตั้งค่า' }
 ];
@@ -3622,6 +4150,55 @@ if (topRecent.length === 0) {
   `).join('');
 }
 }
+// ===== Enhanced Stats with Month-over-Month =====
+async function renderEnhancedStats() {
+  const now = new Date();
+  const currentMonth = now.toISOString().slice(0, 7);
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
+  
+  const [refs, visions, goals, studies, projects, finances, wishes, daily] = await Promise.all([
+    getRefs(), getVisions(), getGoals(), getStudies(), getProjects(),
+    getFinances(), getWishes(), getDaily()
+  ]);
+  
+  const stats = [
+    { id: 'ref', data: refs, label: 'รูปอ้างอิง' },
+    { id: 'vision', data: visions, label: 'วิสัยทัศน์' },
+    { id: 'goal', data: goals, label: 'เป้าหมาย' },
+    { id: 'study', data: studies, label: 'แผนเรียน' },
+    { id: 'project', data: projects, label: 'โปรเจกต์' },
+    { id: 'finance', data: finances, label: 'เป้าหมายการเงิน' },
+    { id: 'wish', data: wishes, label: 'Wishlist' },
+    { id: 'daily', data: daily, label: 'บันทึกประจำวัน' }
+  ];
+  
+  stats.forEach(stat => {
+    const total = stat.data.length;
+    const currentMonthCount = stat.data.filter(i => i.createdAt && i.createdAt.startsWith(currentMonth)).length;
+    const lastMonthCount = stat.data.filter(i => i.createdAt && i.createdAt.startsWith(lastMonth)).length;
+    
+    let changeText = '+0%';
+    let changeClass = 'same';
+    
+    if (lastMonthCount > 0) {
+      const pct = Math.round(((currentMonthCount - lastMonthCount) / lastMonthCount) * 100);
+      if (pct > 0) { changeText = `+${pct}%`; changeClass = 'up'; }
+      else if (pct < 0) { changeText = `${pct}%`; changeClass = 'down'; }
+      else { changeText = '0%'; changeClass = 'same'; }
+    } else if (currentMonthCount > 0) {
+      changeText = '✨ ใหม่';
+      changeClass = 'up';
+    }
+    
+    const countEl = document.getElementById(`dash-${stat.id}-count`);
+    const changeEl = document.getElementById(`dash-${stat.id}-change`);
+    if (countEl) countEl.textContent = total;
+    if (changeEl) {
+      changeEl.textContent = changeText;
+      changeEl.className = `dash-stat-change ${changeClass}`;
+    }
+  });
+}
 // ===== Helper: แสดงเวลาผ่านไป =====
 function getTimeAgo(dateString) {
   const now = new Date();
@@ -4263,14 +4840,27 @@ async function confirmSaveRef() {
 async function deleteRef(id) {
   if (!confirm('ลบรูปนี้ออกจากคลัง? (รูปจริงบน Cloudinary จะยังอยู่)')) return;
 
-  const projects = await getProjects();  // ← เพิ่ม await
+  const projects = await getProjects();
   projects.forEach(p => {
     if (p.refIds) p.refIds = p.refIds.filter(rid => rid !== id);
   });
-  await saveProjects(projects);  // ← เพิ่ม await
+  await saveProjects(projects);
 
-  const refs = await getRefs();  // ← เพิ่ม await
-  await saveRefs(refs.filter(i => i.id !== id));  // ← เพิ่ม await
+  const refs = await getRefs();
+  const index = refs.findIndex(i => i.id === id);
+  const item = refs[index];
+  
+  if (item) {
+    addAction({
+      type: 'delete',
+      module: 'ref',
+      data: item,
+      index: index,
+      message: `ลบรูป "${item.note || 'รูปอ้างอิง'}"`
+    });
+  }
+
+  await saveRefs(refs.filter(i => i.id !== id));
   renderRef();
   renderDashboard();
   updateSearchSuggestions();
@@ -4630,7 +5220,21 @@ async function deleteSelectedRefs() {
   await saveProjects(projects);
   
   const items = await getRefs();
+  const selectedItems = items.filter(i => selectedRefIds.has(i.id));
   const filtered = items.filter(i => !selectedRefIds.has(i.id));
+  
+  // ✅ บันทึกแต่ละรายการสำหรับ undo
+  selectedItems.forEach((item, idx) => {
+    const originalIndex = items.indexOf(item);
+    addAction({
+      type: 'delete',
+      module: 'ref',
+      data: item,
+      index: originalIndex,
+      message: `ลบ "${item.note || 'รูปอ้างอิง'}" (batch)`
+    });
+  });
+  
   await saveRefs(filtered);
   
   const count = selectedRefIds.size;
@@ -4642,7 +5246,6 @@ async function deleteSelectedRefs() {
   document.getElementById('ref-select-all-btn').style.display = 'none';
   document.getElementById('batch-action-bar').style.display = 'none';
   
-  // ✅ อัพเดต suggestions
   updateBoardSuggestions();
   updateBoardFilterSuggestions();
   updateTagSuggestions();
@@ -4680,22 +5283,164 @@ function addGlobalTagSuggestion(tag) {
     updateGlobalTagSuggestions();
   }
 }
-
 function handleInboxTagInput(input) {
   const value = input.value;
   const lastChar = value.charAt(value.length - 1);
+  
   if (lastChar === ',' || lastChar === ' ') {
-    const tags = value.split(',').map(t => t.trim()).filter(Boolean);
+    // ✅ บันทึก tag (trim และเอา # ออก)
+    const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag && lastTag.length > 0) {
+        addGlobalTagSuggestion(lastTag);
+      }
+    }
+    
+    // ✅ แสดง suggestion ทั้งหมด + เตรียม # สำหรับ tag ถัดไป
+    setTimeout(() => {
+      const currentValue = input.value;
+      const trimmed = currentValue.trim();
+      
+      // ✅ ตรวจสอบว่าลงท้ายด้วย , หรือไม่
+      if (trimmed.endsWith(',')) {
+        // ลงท้ายด้วย , → เพิ่ม space และ # เพื่อเตรียมพิมพ์ tag ถัดไป
+        input.value = currentValue + ' #';
+      } else {
+        // ถ้าลงท้ายด้วย space แล้ว → แค่แสดง suggestion
+        if (!currentValue.endsWith(' ')) {
+          input.value = currentValue + ' ';
+        }
+      }
+      
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    }, 150); // ✅ เพิ่ม delay เป็น 150ms
+  }
+}
+
+
+function handleDailyTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
     if (tags.length > 0) {
       const lastTag = tags[tags.length - 1];
       if (lastTag) addGlobalTagSuggestion(lastTag);
     }
+    
+    setTimeout(() => {
+      const currentValue = input.value;
+      const trimmed = currentValue.trim();
+      if (trimmed.endsWith(',')) {
+        input.value = currentValue + ' #';
+      } else if (!currentValue.endsWith(' ')) {
+        input.value = currentValue + ' ';
+      }
+      
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    }, 150);
   }
 }
 
-function handleDailyTagInput(input) {
-  handleInboxTagInput(input);
+// ==========================================================
+// SHOW ALL TAG SUGGESTIONS
+// ==========================================================
+function showAllSuggestions(input) {
+  if (!input) return;
+  
+  const currentValue = input.value;
+  const trimmed = currentValue.trim();
+  
+  // ตรวจสอบว่าต้องการแสดง suggestion ทั้งหมดหรือไม่
+  const shouldShowAll = trimmed.endsWith(',') || 
+                        trimmed.endsWith('#') ||
+                        currentValue.length === 0;
+  
+  if (shouldShowAll) {
+    // ✅ ต้องมี space หลัง , เพื่อให้ datalist แสดงทุก tag
+    if (!currentValue.endsWith(' ')) {
+      input.value = currentValue + ' ';
+    }
+    
+    // ✅ ใช้ setTimeout เพื่อให้ datalist โหลดเสร็จ
+    setTimeout(() => {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    }, 150);
+  } else {
+    // มีข้อความปกติ → ใช้ ArrowDown เพื่อเปิด datalist
+    setTimeout(() => {
+      input.focus();
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    }, 100);
+  }
 }
+// ==========================================================
+// MODULE: Idea Bank
+// ==========================================================
+const ideaModule = createFirestoreModule('ideas');
+let ideaListeners = [];
+
+function getIdeas() { return ideaModule.getItems(); }
+function saveIdeas(items) { return ideaModule.saveItems(items); }
+function onIdeasSnapshot(callback) {
+  const unsub = ideaModule.onSnapshot(callback);
+  ideaListeners.push(unsub);
+  return unsub;
+}
+ideaModule.migrateFromLocalStorage('idea_items');
+
+// ==========================================================
+// MODULE: Knowledge Bank
+// ==========================================================
+const knowledgeModule = createFirestoreModule('knowledges');
+let knowledgeListeners = [];
+
+function getKnowledges() { return knowledgeModule.getItems(); }
+function saveKnowledges(items) { return knowledgeModule.saveItems(items); }
+function onKnowledgesSnapshot(callback) {
+  const unsub = knowledgeModule.onSnapshot(callback);
+  knowledgeListeners.push(unsub);
+  return unsub;
+}
+knowledgeModule.migrateFromLocalStorage('knowledge_items');
+
+// ==========================================================
+// MODULE: Art Log
+// ==========================================================
+const artModule = createFirestoreModule('arts');
+let artListeners = [];
+
+function getArts() { return artModule.getItems(); }
+function saveArts(items) { return artModule.saveItems(items); }
+function onArtsSnapshot(callback) {
+  const unsub = artModule.onSnapshot(callback);
+  artListeners.push(unsub);
+  return unsub;
+}
+artModule.migrateFromLocalStorage('art_items');
+
+// ==========================================================
+// MODULE: Fit Log
+// ==========================================================
+const fitModule = createFirestoreModule('fits');
+let fitListeners = [];
+
+function getFits() { return fitModule.getItems(); }
+function saveFits(items) { return fitModule.saveItems(items); }
+function onFitsSnapshot(callback) {
+  const unsub = fitModule.onSnapshot(callback);
+  fitListeners.push(unsub);
+  return unsub;
+}
+fitModule.migrateFromLocalStorage('fit_items');
 
 // ==========================================================
 // MODULE: Vision (Firestore)
@@ -4882,7 +5627,6 @@ async function confirmEditVision() {
 }
 
 async function deleteVision(id) {
-  if (event) event.stopPropagation();
   if (!confirm('ลบรายการนี้?')) return;
   
   const items = await getVisions();
@@ -5261,14 +6005,27 @@ async function cycleGoalStatus(id) {
 async function deleteGoal(id) {
   if (!confirm('ลบเป้าหมายนี้?')) return;
 
-  const projects = await getProjects();  // ← เพิ่ม await
+  const projects = await getProjects();
   projects.forEach(p => {
     if (p.goalIds) p.goalIds = p.goalIds.filter(gid => gid !== id);
   });
-  await saveProjects(projects);  // ← เพิ่ม await
+  await saveProjects(projects);
 
-  const goals = await getGoals();  // ← เพิ่ม await
-  await saveGoals(goals.filter(i => i.id !== id));  // ← เพิ่ม await
+  const goals = await getGoals();
+  const index = goals.findIndex(i => i.id === id);
+  const item = goals[index];
+  
+  if (item) {
+    addAction({
+      type: 'delete',
+      module: 'goal',
+      data: item,
+      index: index,
+      message: `ลบ "${item.title}"`
+    });
+  }
+
+  await saveGoals(goals.filter(i => i.id !== id));
   renderGoals();
   renderDashboard();
   showToast('🗑️ ลบเป้าหมายแล้ว', 'error');
@@ -5624,15 +6381,28 @@ async function confirmUpdateFinance() {
 async function deleteFinance(id) {
   if (!confirm('ลบเป้าหมายการเงินนี้?')) return;
 
-  const projects = await getProjects();  // ← เพิ่ม await
+  const projects = await getProjects();
   projects.forEach(p => {
     if (p.financeIds) p.financeIds = p.financeIds.filter(fid => fid !== id);
   });
-  await saveProjects(projects);  // ← เพิ่ม await
+  await saveProjects(projects);
 
-  const finances = await getFinances();  // ← เพิ่ม await
-  await saveFinances(finances.filter(i => i.id !== id));  // ← เพิ่ม await
-  await renderWishlist();
+  const finances = await getFinances();
+  const index = finances.findIndex(i => i.id === id);
+  const item = finances[index];
+  
+  if (item) {
+    addAction({
+      type: 'delete',
+      module: 'finance',
+      data: item,
+      index: index,
+      message: `ลบ "${item.name}"`
+    });
+  }
+
+  await saveFinances(finances.filter(i => i.id !== id));
+  await renderFinanceGoals();
   renderDashboard();
   showToast('🗑️ ลบเป้าหมายการเงินแล้ว', 'error');
 }
@@ -5748,6 +6518,72 @@ function addProjectTagSuggestion(tag) {
     saveProjectTagSuggestions(tags);
     updateProjectTagSuggestions();
   }
+}
+// ==========================================================
+// Wishlist Tags Auto-save
+// ==========================================================
+function handleWishlistTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addGlobalTagSuggestion(lastTag);
+    }
+    
+    setTimeout(() => {
+      const currentValue = input.value;
+      const trimmed = currentValue.trim();
+      if (trimmed.endsWith(',')) {
+        input.value = currentValue + ' #';
+      } else if (!currentValue.endsWith(' ')) {
+        input.value = currentValue + ' ';
+      }
+      
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    }, 150);
+  }
+}
+// ==========================================================
+// Finance Goal Tags Auto-save
+// ==========================================================
+function handleFinanceTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addGlobalTagSuggestion(lastTag);
+    }
+    
+    setTimeout(() => {
+      const currentValue = input.value;
+      const trimmed = currentValue.trim();
+      if (trimmed.endsWith(',')) {
+        input.value = currentValue + ' #';
+      } else if (!currentValue.endsWith(' ')) {
+        input.value = currentValue + ' ';
+      }
+      
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    }, 150);
+  }
+}
+// ==========================================================
+// INIT TAG SYSTEMS
+// ==========================================================
+function initTagSystems() {
+  updateGlobalTagSuggestions();
+  updateProjectTagSuggestions();
+  updateTagSuggestions();
 }
 
 // ===== Project Ref Selection =====
@@ -6918,14 +7754,27 @@ async function toggleBought(id) {
 async function deleteWish(id) {
   if (!confirm('ลบรายการนี้?')) return;
 
-  const projects = await getProjects();  // ← เพิ่ม await
+  const projects = await getProjects();
   projects.forEach(p => {
     if (p.wishIds) p.wishIds = p.wishIds.filter(wid => wid !== id);
   });
-  await saveProjects(projects);  // ← เพิ่ม await
+  await saveProjects(projects);
 
-  const wishes = await getWishes();  // ← เพิ่ม await
-  await saveWishes(wishes.filter(i => i.id !== id));  // ← เพิ่ม await
+  const wishes = await getWishes();
+  const index = wishes.findIndex(i => i.id === id);
+  const item = wishes[index];
+  
+  if (item) {
+    addAction({
+      type: 'delete',
+      module: 'wish',
+      data: item,
+      index: index,
+      message: `ลบ "${item.name}"`
+    });
+  }
+
+  await saveWishes(wishes.filter(i => i.id !== id));
   await renderWishlist();
   renderDashboard();
   showToast('🗑️ ลบรายการ Wishlist แล้ว', 'error');
@@ -7143,14 +7992,27 @@ async function cycleStudyStatus(id) {
 async function deleteStudy(id) {
   if (!confirm('ลบแผนเรียนนี้?')) return;
 
-  const projects = await getProjects();  // ← เพิ่ม await
+  const projects = await getProjects();
   projects.forEach(p => {
     if (p.studyIds) p.studyIds = p.studyIds.filter(sid => sid !== id);
   });
-  await saveProjects(projects);  // ← เพิ่ม await
+  await saveProjects(projects);
 
-  const studies = await getStudies();  // ← เพิ่ม await
-  await saveStudies(studies.filter(i => i.id !== id));  // ← เพิ่ม await
+  const studies = await getStudies();
+  const index = studies.findIndex(i => i.id === id);
+  const item = studies[index];
+  
+  if (item) {
+    addAction({
+      type: 'delete',
+      module: 'study',
+      data: item,
+      index: index,
+      message: `ลบ "${item.title}"`
+    });
+  }
+
+  await saveStudies(studies.filter(i => i.id !== id));
   renderStudy();
   renderDashboard();
   showToast('🗑️ ลบแผนเรียนแล้ว', 'error');
@@ -7536,7 +8398,21 @@ async function cycleProjectStatus(id) {
 
 async function deleteProject(id) {
   if (!confirm('ลบโปรเจกต์นี้?')) return;
+  
   const items = await getProjects();
+  const index = items.findIndex(i => i.id === id);
+  const item = items[index];
+  
+  if (item) {
+    addAction({
+      type: 'delete',
+      module: 'project',
+      data: item,
+      index: index,
+      message: `ลบ "${item.title}"`
+    });
+  }
+  
   await saveProjects(items.filter(i => i.id !== id));
   renderProjects();
   renderDashboard();
@@ -8247,8 +9123,22 @@ async function confirmSaveInbox() {
 
 async function deleteInbox(id) {
   if (!confirm('ลบข้อความนี้?')) return;
-  const items = await getInbox();  // ← เพิ่ม await
-  await saveInbox(items.filter(i => i.id !== id));  // ← เพิ่ม await
+  
+  const items = await getInbox();
+  const index = items.findIndex(i => i.id === id);
+  const item = items[index];
+  
+  if (item) {
+    addAction({
+      type: 'delete',
+      module: 'inbox',
+      data: item,
+      index: index,
+      message: `ลบ "${item.text.substring(0, 30)}${item.text.length > 30 ? '...' : ''}"`
+    });
+  }
+  
+  await saveInbox(items.filter(i => i.id !== id));
   renderInbox();
   renderDashboard();
   renderNav();
@@ -8439,8 +9329,22 @@ async function confirmSaveDaily() {
 
 async function deleteDaily(id) {
   if (!confirm('ลบบันทึกนี้?')) return;
-  const items = await getDaily();  // ← เพิ่ม await
-  await saveDaily(items.filter(i => i.id !== id));  // ← เพิ่ม await
+  
+  const items = await getDaily();
+  const index = items.findIndex(i => i.id === id);
+  const item = items[index];
+  
+  if (item) {
+    addAction({
+      type: 'delete',
+      module: 'daily',
+      data: item,
+      index: index,
+      message: `ลบบันทึก ${new Date(item.date).toLocaleDateString('th-TH')}`
+    });
+  }
+  
+  await saveDaily(items.filter(i => i.id !== id));
   renderDaily();
   showToast('🗑️ ลบบันทึกแล้ว', 'error');
 }
@@ -8513,7 +9417,6 @@ async function renderDaily() {
   const list = document.getElementById('daily-list');
   const empty = document.getElementById('daily-empty');
   
-  // ✅ เพิ่มการตรวจสอบ element
   if (!list || !empty) {
     console.warn('⚠️ daily-list or daily-empty not found in DOM');
     return;
@@ -8524,12 +9427,9 @@ async function renderDaily() {
   try {
     let items = await getDaily();
     
-    // Favourite filter
     if (state.active === 'fav') {
       items = items.filter(i => i.favourite);
     }
-    
-    // Archive filter
     if (state.active === 'archived') {
       items = items.filter(i => i.archived);
     } else if (state.active !== 'fav') {
@@ -8539,7 +9439,6 @@ async function renderDaily() {
     list.innerHTML = '';
     empty.style.display = items.length === 0 ? 'block' : 'none';
 
-    // เรียงตามวันที่ (ใหม่สุดก่อน)
     items.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
 
     const moodEmojis = { happy: '😊', ok: '😐', tired: '😫', sad: '😢' };
@@ -8557,7 +9456,8 @@ async function renderDaily() {
       card.innerHTML = `
         <div class="item-top">
           <div style="flex:1;">
-            <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('daily', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
+            <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
+            <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('daily', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
               <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
               ${moodEmoji ? `<span class="daily-mood">${moodEmoji}</span>` : ''}
@@ -8568,9 +9468,10 @@ async function renderDaily() {
             </div>
             ${item.image ? `<img src="${item.image}" class="daily-image-thumb" onclick="openLightbox('${item.image}')">` : ''}
           </div>
-          <div style="display:flex;gap:4px;flex-shrink:0;">
-            <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="editDaily(${item.id})">✎</button>
-            <button class="del-x" style="font-size:14px;" onclick="deleteDaily(${item.id})">✕</button>
+          <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+            <button class="del-x" style="color:var(--accent);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();editDaily(${item.id})">✎</button>
+            <button class="del-x" style="font-size:16px;padding:4px 8px;" onclick="event.stopPropagation();deleteDaily(${item.id})">✕</button>
+            <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('daily', ${item.id})">📦</button>
           </div>
         </div>
       `;
@@ -8586,17 +9487,20 @@ async function renderDaily() {
 // JOURNAL (จด) — Sub-tabs
 // ==========================================================
 function switchJournalTab(tab) {
-  // Sub-nav buttons
   document.querySelectorAll('.sub-nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`sub-${tab}`).classList.add('active');
-
-  // Content
   document.querySelectorAll('.journal-tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`journal-${tab}`).classList.add('active');
-
-  // Render ตาม tab ที่เปิด
-  if (tab === 'inbox') renderInbox();
-  else if (tab === 'daily') renderDaily();
+  
+  const renderMap = {
+    inbox: renderInbox,
+    daily: renderDaily,
+    idea: renderIdea,
+    knowledge: renderKnowledge,
+    art: renderArt,
+    fit: renderFit
+  };
+  if (renderMap[tab]) renderMap[tab]();
 }
 // ==========================================================
 // EXPORT / IMPORT
@@ -9111,7 +10015,8 @@ async function renderCalendar() {
   // Header
   const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-  document.getElementById('calendar-month').textContent = `${monthNames[month]} ${year + 543}`;
+  const monthEl = document.getElementById('calendar-month');
+  if (monthEl) monthEl.textContent = `${monthNames[month]} ${year + 543}`;
   
   // First day of month
   const firstDay = new Date(year, month, 1).getDay();
@@ -9119,7 +10024,7 @@ async function renderCalendar() {
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
   
-  // ✅ ดึงข้อมูลจากทุก module ที่มีวันที่
+  // ดึงข้อมูลจากทุก module ที่มีวันที่
   const [goals, projects, studies, finances, wishes] = await Promise.all([
     getGoals(),
     getProjects(),
@@ -9128,7 +10033,7 @@ async function renderCalendar() {
     getWishes()
   ]);
   
-  // ✅ รวมทุก item ที่มีวันที่
+  // รวมทุก item ที่มีวันที่
   const allItems = [];
   
   goals.forEach(g => {
@@ -9207,7 +10112,7 @@ async function renderCalendar() {
     }
   });
   
-  // ✅ จัดกลุ่มตามวันที่
+  // จัดกลุ่มตามวันที่
   const itemsByDate = {};
   allItems.forEach(item => {
     const dateKey = item.date || item[item.dateField]?.slice(0, 10);
@@ -9217,15 +10122,18 @@ async function renderCalendar() {
     }
   });
   
-  // ✅ อัพเดตจำนวนเป้าหมายทั้งหมด
-  const totalItems = allItems.length;
-  const goalCountEl = document.getElementById('calendar-goal-count');
-  if (goalCountEl) {
-    goalCountEl.textContent = totalItems;
-  }
+  // อัพเดต badge (ถ้ามี)
+  try {
+    const goalCountEl = document.getElementById('calendar-goal-count');
+    if (goalCountEl) {
+      goalCountEl.textContent = allItems.length;
+    }
+  } catch (e) { /* ignore */ }
   
   // Build grid
   const grid = document.getElementById('calendar-grid');
+  if (!grid) return;
+  
   const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
   let html = dayNames.map(d => `<div style="text-align:center;font-size:10px;color:var(--muted);padding:4px 0;">${d}</div>`).join('');
   
@@ -9266,9 +10174,22 @@ async function renderCalendar() {
 
 function changeMonth(delta) {
   calendarDate.setMonth(calendarDate.getMonth() + delta);
+  
+  // อัพเดต calendar month display (ถ้ามี)
+  try {
+    const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
+                        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const monthEl = document.getElementById('calendar-month');
+    if (monthEl) {
+      monthEl.textContent = `${monthNames[month]} ${year + 543}`;
+    }
+  } catch (e) { /* ignore */ }
+  
   renderCalendar();
   
-  // ✅ ถ้า popup เปิดอยู่ ให้ refresh
+  // ถ้า popup เปิดอยู่ ให้ refresh
   if (document.getElementById('calendar-full-popup')) {
     refreshCalendarPopup();
   }
@@ -9283,9 +10204,21 @@ function resetCalendar() {
     renderGoals();
   }
   
+  // อัพเดต calendar month display (ถ้ามี)
+  try {
+    const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
+                        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const monthEl = document.getElementById('calendar-month');
+    if (monthEl) {
+      monthEl.textContent = `${monthNames[month]} ${year + 543}`;
+    }
+  } catch (e) { /* ignore */ }
+  
   renderCalendar();
   
-  // ✅ ถ้า popup เปิดอยู่ ให้ refresh
+  // ถ้า popup เปิดอยู่ ให้ refresh
   if (document.getElementById('calendar-full-popup')) {
     refreshCalendarPopup();
   }
@@ -9387,15 +10320,29 @@ function toggleCalendar() {
   localStorage.setItem('calendar_collapsed', calendarCollapsed);
 }
 function handleTagInput(input) {
-  // เมื่อพิมพ์เสร็จ (กด comma หรือ space) ให้เพิ่ม tag suggestion
   const value = input.value;
   const lastChar = value.charAt(value.length - 1);
+  
   if (lastChar === ',' || lastChar === ' ') {
     const tags = value.split(',').map(t => t.trim()).filter(Boolean);
     if (tags.length > 0) {
       const lastTag = tags[tags.length - 1];
       if (lastTag) addTagSuggestion(lastTag);
     }
+    
+    setTimeout(() => {
+      const currentValue = input.value;
+      const trimmed = currentValue.trim();
+      if (trimmed.endsWith(',')) {
+        input.value = currentValue + ' ';
+      } else if (!currentValue.endsWith(' ')) {
+        input.value = currentValue + ' ';
+      }
+      
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    }, 100);
   }
 }
 
@@ -9414,6 +10361,35 @@ function handleBatchTagInput(input) {
       const lastTag = tags[tags.length - 1];
       if (lastTag) addTagSuggestion(lastTag);
     }
+    
+    setTimeout(() => {
+      showAllSuggestions(input);
+    }, 50);
+  }
+}
+function handleProjectTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim()).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag && lastTag.length > 0) {
+        addProjectTagSuggestion(lastTag);
+      }
+    }
+    
+    setTimeout(() => {
+      const currentValue = input.value;
+      if (!currentValue.endsWith(' ')) {
+        input.value = currentValue + ' ';
+      }
+      
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    }, 150);
   }
 }
 function clearProjectRefs() {
@@ -9717,7 +10693,11 @@ const editState = {
   project: { id: null, module: 'project' },
   ref: { id: null, module: 'ref' },
   inbox: { id: null, module: 'inbox' },
-  daily: { id: null, module: 'daily' }
+  daily: { id: null, module: 'daily' },
+  idea: { id: null, module: 'idea' },
+  knowledge: { id: null, module: 'knowledge' },
+  art: { id: null, module: 'art' },
+  fit: { id: null, module: 'fit' }
 };
 
 // ✅ ฟังก์ชันใหม่ - ตั้งค่า edit mode
@@ -9736,7 +10716,6 @@ function clearEditMode(module) {
     editState[module].id = null;
     console.log(`🔧 Cleared edit mode: ${module}`);
   } else if (!module) {
-    // ถ้าไม่ระบุ module → clear ทั้งหมด (ใช้เฉพาะตอน import)
     Object.keys(editState).forEach(key => editState[key].id = null);
     console.log('🔧 Cleared all edit modes');
   }
@@ -9916,6 +10895,17 @@ async function openCalendarPopup() {
   const existing = document.getElementById('calendar-full-popup');
   if (existing) { existing.remove(); return; }
   
+  // ✅ ใช้ try-catch เผื่อ element ไม่มี
+  let monthDisplay = '📅 ปฏิทิน';
+  try {
+    const monthEl = document.getElementById('calendar-month');
+    if (monthEl) {
+      monthDisplay = monthEl.textContent || '📅 ปฏิทิน';
+    }
+  } catch (e) {
+    // ignore
+  }
+  
   const popup = document.createElement('div');
   popup.id = 'calendar-full-popup';
   popup.style.cssText = `
@@ -9926,11 +10916,9 @@ async function openCalendarPopup() {
     box-shadow: 0 8px 50px rgba(0,0,0,0.7);
   `;
   
-  const monthDisplay = document.getElementById('calendar-month').textContent;
-  
   popup.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h3 style="margin:0;">📅 ${monthDisplay}</h3>
+      <h3 style="margin:0;">${monthDisplay}</h3>
       <button style="background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;" onclick="this.closest('#calendar-full-popup').remove()">✕</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
@@ -9953,7 +10941,7 @@ async function openCalendarPopup() {
   
   document.body.appendChild(popup);
   
-  // ✅ รอ render calendar ใน popup
+  // รอ render calendar ใน popup
   await renderCalendarPopup();
 }
 
@@ -9976,7 +10964,7 @@ async function renderCalendarPopup() {
     html += `<div style="padding:4px;"></div>`;
   }
   
-  // ✅ ดึงข้อมูลทุก module
+  // ดึงข้อมูลทุก module
   const [goals, projects, studies, finances, wishes] = await Promise.all([
     getGoals(), getProjects(), getStudies(), getFinances(), getWishes()
   ]);
@@ -10041,22 +11029,18 @@ async function renderCalendarPopup() {
 async function refreshCalendarPopup() {
   await renderCalendarPopup();
   // อัพเดต header
-  const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
-                      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-  const year = calendarDate.getFullYear();
-  const month = calendarDate.getMonth();
-  const header = document.querySelector('#calendar-full-popup h3');
-  if (header) {
-    header.textContent = `📅 ${monthNames[month]} ${year + 543}`;
+  try {
+    const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
+                        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const header = document.querySelector('#calendar-full-popup h3');
+    if (header) {
+      header.textContent = `📅 ${monthNames[month]} ${year + 543}`;
+    }
+  } catch (e) {
+    // ignore
   }
-}
-function toggleRelation(header) {
-  const body = header.nextElementSibling;
-  const arrow = header.querySelector('.arrow');
-  if (!body) return;
-  
-  body.classList.toggle('collapsed');
-  if (arrow) arrow.classList.toggle('collapsed');
 }
 
 // ==========================================================
@@ -10072,6 +11056,10 @@ async function toggleFavourite(module, id) {
     'project': { get: getProjects, save: saveProjects, render: renderProjects },
     'inbox': { get: getInbox, save: saveInbox, render: renderInbox },
     'daily': { get: getDaily, save: saveDaily, render: renderDaily },
+    'idea': { get: getIdeas, save: saveIdeas, render: renderIdea },
+    'knowledge': { get: getKnowledges, save: saveKnowledges, render: renderKnowledge },
+    'art': { get: getArts, save: saveArts, render: renderArt },
+    'fit': { get: getFits, save: saveFits, render: renderFit },
     'ref': { get: getRefs, save: saveRefs, render: renderRef }
   };
   
@@ -10089,22 +11077,19 @@ async function toggleFavourite(module, id) {
     await mod.save(items);
     mod.render();
     
-    // ✅ บันทึกสำหรับ undo
     if (wasFav) {
-      // ถ้าเคย fav มาก่อน → กำลังลบ fav
       addAction({
         type: 'favourite',
         module: module,
         id: id,
-        message: `☆ ลบ favourites "${item.title || item.name}"`
+        message: `☆ ลบ favourites "${item.title || item.content || item.name || 'item'}"`
       });
     } else {
-      // ถ้าไม่เคย fav → กำลังเพิ่ม fav
       addAction({
         type: 'favourite',
         module: module,
         id: id,
-        message: `⭐ เพิ่ม favourites "${item.title || item.name}"`
+        message: `⭐ เพิ่ม favourites "${item.title || item.content || item.name || 'item'}"`
       });
     }
     
@@ -10162,7 +11147,7 @@ function toggleFavFilter(module) {
   }
 }
 // ==========================================================
-// UNDO / REDO
+// UNDO / REDO - FIXED
 // ==========================================================
 const actionHistory = {
   stack: [],
@@ -10192,7 +11177,7 @@ function showUndoBar(action) {
     bar = document.createElement('div');
     bar.id = 'undo-bar';
     bar.innerHTML = `
-      <span class="undo-msg" id="undo-msg">ลบรายการแล้ว</span>
+      <span class="undo-msg" id="undo-msg">ดำเนินการแล้ว</span>
       <button class="btn" onclick="undoLastAction()">↩ ยกเลิก</button>
       <button class="btn-secondary" onclick="hideUndoBar()">✕</button>
     `;
@@ -10224,50 +11209,50 @@ async function undoLastAction() {
   hideUndoBar();
   
   try {
+    const mod = getModuleFunctions(last.module);
+    if (!mod) {
+      console.warn('⚠️ No module functions for:', last.module);
+      actionHistory.isRestoring = false;
+      return;
+    }
+    
     if (last.type === 'delete') {
-      const mod = getModuleFunctions(last.module);
-      if (mod) {
-        const items = await mod.get();
-        items.splice(last.index || 0, 0, last.data);
-        await mod.save(items);
-        mod.render();
-        showToast(`↩ กู้คืน "${last.data.title || last.data.name || 'item'}" แล้ว`, 'success', 2000);
-      }
+      const items = await mod.get();
+      // Insert back at original index
+      const insertIndex = (last.index !== undefined && last.index <= items.length) ? last.index : 0;
+      items.splice(insertIndex, 0, last.data);
+      await mod.save(items);
+      await mod.render();
+      showToast(`↩ กู้คืน "${last.data.title || last.data.name || last.data.content || 'item'}" แล้ว`, 'success', 2000);
+      
     } else if (last.type === 'edit') {
-      const mod = getModuleFunctions(last.module);
-      if (mod) {
-        const items = await mod.get();
-        const item = items.find(i => i.id === last.id);
-        if (item) {
-          Object.assign(item, last.oldData);
-          await mod.save(items);
-          mod.render();
-          showToast(`↩ ยกเลิกการแก้ไขแล้ว`, 'info', 2000);
-        }
+      const items = await mod.get();
+      const item = items.find(i => i.id === last.id);
+      if (item && last.oldData) {
+        Object.assign(item, last.oldData);
+        await mod.save(items);
+        await mod.render();
+        showToast(`↩ ยกเลิกการแก้ไขแล้ว`, 'info', 2000);
       }
+      
     } else if (last.type === 'archive') {
-      const mod = getModuleFunctions(last.module);
-      if (mod) {
-        const items = await mod.get();
-        const item = items.find(i => i.id === last.id);
-        if (item) {
-          item.archived = false;
-          await mod.save(items);
-          mod.render();
-          showToast(`📂 แสดงรายการแล้ว`, 'info', 2000);
-        }
+      const items = await mod.get();
+      const item = items.find(i => i.id === last.id);
+      if (item) {
+        item.archived = false;
+        await mod.save(items);
+        await mod.render();
+        showToast(`📂 แสดงรายการแล้ว`, 'info', 2000);
       }
+      
     } else if (last.type === 'favourite') {
-      const mod = getModuleFunctions(last.module);
-      if (mod) {
-        const items = await mod.get();
-        const item = items.find(i => i.id === last.id);
-        if (item) {
-          item.favourite = false;
-          await mod.save(items);
-          mod.render();
-          showToast(`☆ ลบ favourites แล้ว`, 'info', 2000);
-        }
+      const items = await mod.get();
+      const item = items.find(i => i.id === last.id);
+      if (item) {
+        item.favourite = false;
+        await mod.save(items);
+        await mod.render();
+        showToast(`☆ ลบ favourites แล้ว`, 'info', 2000);
       }
     }
   } catch (err) {
@@ -10279,21 +11264,85 @@ async function undoLastAction() {
 }
 
 // ==========================================================
-// GET MODULE FUNCTIONS
+// GET MODULE FUNCTIONS - FIXED (เพิ่ม render ให้เป็น async)
 // ==========================================================
 function getModuleFunctions(module) {
   const map = {
-    'vision': { get: getVisions, save: saveVisions, render: renderVision },
-    'goal': { get: getGoals, save: saveGoals, render: renderGoals },
-    'study': { get: getStudies, save: saveStudies, render: renderStudy },
-    'finance': { get: getFinances, save: saveFinances, render: renderFinanceGoals },
-    'wish': { get: getWishes, save: saveWishes, render: renderWishlist },
-    'project': { get: getProjects, save: saveProjects, render: renderProjects },
-    'inbox': { get: getInbox, save: saveInbox, render: renderInbox },
-    'daily': { get: getDaily, save: saveDaily, render: renderDaily },
-    'transaction': { get: getTransactions, save: saveTransactions, render: renderFinanceTransactions },
-    'budget': { get: getBudgets, save: saveBudgets, render: renderBudgets },
-    'ref': { get: getRefs, save: saveRefs, render: renderRef }
+    'vision': { 
+      get: getVisions, 
+      save: saveVisions, 
+      render: async () => { await renderVision(); renderDashboard(); } 
+    },
+    'goal': { 
+      get: getGoals, 
+      save: saveGoals, 
+      render: async () => { await renderGoals(); renderDashboard(); } 
+    },
+    'study': { 
+      get: getStudies, 
+      save: saveStudies, 
+      render: async () => { await renderStudy(); renderDashboard(); } 
+    },
+    'finance': { 
+      get: getFinances, 
+      save: saveFinances, 
+      render: async () => { await renderFinanceGoals(); renderDashboard(); renderFinanceSnapshot(); } 
+    },
+    'wish': { 
+      get: getWishes, 
+      save: saveWishes, 
+      render: async () => { await renderWishlist(); renderDashboard(); renderFinanceSnapshot(); } 
+    },
+    'project': { 
+      get: getProjects, 
+      save: saveProjects, 
+      render: async () => { await renderProjects(); renderDashboard(); } 
+    },
+    'inbox': { 
+      get: getInbox, 
+      save: saveInbox, 
+      render: async () => { await renderInbox(); renderDashboard(); renderNav(); } 
+    },
+    'daily': { 
+      get: getDaily, 
+      save: saveDaily, 
+      render: async () => { await renderDaily(); renderDashboard(); renderNav(); } 
+    },
+    'idea': { 
+      get: getIdeas, 
+      save: saveIdeas, 
+      render: async () => { await renderIdea(); renderDashboard(); } 
+    },
+    'knowledge': { 
+      get: getKnowledges, 
+      save: saveKnowledges, 
+      render: async () => { await renderKnowledge(); renderDashboard(); } 
+    },
+    'art': { 
+      get: getArts, 
+      save: saveArts, 
+      render: async () => { await renderArt(); renderDashboard(); } 
+    },
+    'fit': { 
+      get: getFits, 
+      save: saveFits, 
+      render: async () => { await renderFit(); renderDashboard(); } 
+    },
+    'ref': { 
+      get: getRefs, 
+      save: saveRefs, 
+      render: async () => { await renderRef(); renderDashboard(); updateSearchSuggestions(); } 
+    },
+    'transaction': { 
+      get: getTransactions, 
+      save: saveTransactions, 
+      render: async () => { await renderFinanceTransactions(); renderFinanceOverview(); } 
+    },
+    'budget': { 
+      get: getBudgets, 
+      save: saveBudgets, 
+      render: async () => { await renderBudgets(); renderFinanceOverview(); } 
+    }
   };
   return map[module] || null;
 }
@@ -10315,16 +11364,15 @@ async function toggleArchive(module, id) {
   const wasArchived = item.archived;
   item.archived = !item.archived;
   
-  // ✅ บันทึกสำหรับ undo
   addAction({
     type: 'archive',
     module: module,
     id: id,
-    message: wasArchived ? `แสดง "${item.title || item.name}"` : `ซ่อน "${item.title || item.name}"`
+    message: wasArchived ? `แสดง "${item.title || item.content || item.name || 'item'}"` : `ซ่อน "${item.title || item.content || item.name || 'item'}"`
   });
   
   await mod.save(items);
-  mod.render();
+  await mod.render();
   renderDashboard();
   showToast(item.archived ? '📦 ซ่อนรายการแล้ว' : '📂 แสดงรายการแล้ว', 'info', 1500);
 }
@@ -10341,7 +11389,11 @@ const filterStates = {
   wish: { active: 'all', priority: '' },
   inbox: { active: 'all' },
   daily: { active: 'all' },
-  ref: { active: 'all' }
+  ref: { active: 'all' },
+  idea: { active: 'all' },
+  knowledge: { active: 'all' },
+  art: { active: 'all' },
+  fit: { active: 'all' }
 };
 // ===== Vision Filter =====
 function setVisionFilter(type) {
@@ -10605,7 +11657,1093 @@ function setWishFilter(type) {
   }
   renderWishlist();
 }
+// ==========================================================
+// IDEA BANK CRUD
+// ==========================================================
+function openIdeaModal() {
+  document.getElementById('idea-input-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('idea-input-content').value = '';
+  document.getElementById('idea-input-tags').value = '#idea';
+  document.getElementById('idea-input-link').value = '';
+  document.getElementById('idea-modal').querySelector('h3').textContent = '💡 บันทึกไอเดีย';
+  document.getElementById('idea-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveIdea;
+  clearEditMode('idea');
+  document.getElementById('idea-modal').classList.add('show');
+}
 
+async function confirmSaveIdea() {
+  const content = document.getElementById('idea-input-content').value.trim();
+  if (!content) { showToast('กรุณาใส่ไอเดีย', 'error'); return; }
+  
+  const tags = document.getElementById('idea-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  tags.forEach(t => addGlobalTagSuggestion(t));
+  
+  const item = {
+    id: Date.now(),
+    date: document.getElementById('idea-input-date').value || new Date().toISOString().slice(0, 10),
+    content: content,
+    tags: tags,
+    link: document.getElementById('idea-input-link').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  const items = await getIdeas();
+  items.unshift(item);
+  await saveIdeas(items);
+  closeModal('idea-modal');
+  renderIdea();
+  showToast('✅ บันทึกไอเดียเรียบร้อย', 'success');
+}
+
+async function deleteIdea(id) {
+  if (!confirm('ลบไอเดียนี้?')) return;
+  const items = await getIdeas();
+  await saveIdeas(items.filter(i => i.id !== id));
+  renderIdea();
+  showToast('🗑️ ลบไอเดียแล้ว', 'error');
+}
+
+async function editIdea(id) {
+  const items = await getIdeas();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  document.getElementById('idea-input-date').value = item.date;
+  document.getElementById('idea-input-content').value = item.content;
+  document.getElementById('idea-input-tags').value = (item.tags || []).join(', ');
+  document.getElementById('idea-input-link').value = item.link || '';
+  document.getElementById('idea-modal').querySelector('h3').textContent = '✎ แก้ไขไอเดีย';
+  document.getElementById('idea-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditIdea;
+  setEditMode('idea', id);
+  document.getElementById('idea-modal').classList.add('show');
+}
+
+async function confirmEditIdea() {
+  const editingId = getEditingId('idea');
+  if (editingId === null) { showToast('❌ ไม่พบรายการ', 'error'); return; }
+  
+  const content = document.getElementById('idea-input-content').value.trim();
+  if (!content) { alert('กรุณาใส่ไอเดีย'); return; }
+  
+  const items = await getIdeas();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.date = document.getElementById('idea-input-date').value || new Date().toISOString().slice(0, 10);
+    item.content = content;
+    item.tags = document.getElementById('idea-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    item.link = document.getElementById('idea-input-link').value.trim();
+    await saveIdeas(items);
+    showToast('✅ แก้ไขไอเดียสำเร็จ', 'success');
+  }
+  closeModal('idea-modal');
+  clearEditMode('idea');
+  renderIdea();
+}
+
+async function renderIdea() {
+  const list = document.getElementById('idea-list');
+  const empty = document.getElementById('idea-empty');
+  const state = filterStates.idea || { active: 'all' };
+  
+  let items = await getIdeas();
+  let filteredItems = items;
+  
+  if (state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => i.favourite);
+  }
+  if (state.active === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  } else if (state.active !== 'fav') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  }
+  
+  list.innerHTML = '';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+  
+  filteredItems.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+  
+  filteredItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    card.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
+          <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('idea', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
+          <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
+          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content}</div>
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+          </div>
+          ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ลิงก์</a>` : ''}
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          <button class="del-x" style="color:var(--accent);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();editIdea(${item.id})">✎</button>
+          <button class="del-x" style="font-size:16px;padding:4px 8px;" onclick="event.stopPropagation();deleteIdea(${item.id})">✕</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('idea', ${item.id})">📦</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+// ==========================================================
+// KNOWLEDGE BANK CRUD
+// ==========================================================
+function openKnowledgeModal() {
+  document.getElementById('knowledge-input-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('knowledge-input-title').value = '';
+  document.getElementById('knowledge-input-content').value = '';
+  document.getElementById('knowledge-input-tags').value = '#knowledge';
+  document.getElementById('knowledge-input-link').value = '';
+  document.getElementById('knowledge-modal').querySelector('h3').textContent = '📚 บันทึกความรู้';
+  document.getElementById('knowledge-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveKnowledge;
+  clearEditMode('knowledge');
+  document.getElementById('knowledge-modal').classList.add('show');
+}
+
+async function confirmSaveKnowledge() {
+  const title = document.getElementById('knowledge-input-title').value.trim();
+  const content = document.getElementById('knowledge-input-content').value.trim();
+  if (!title && !content) { showToast('กรุณาใส่หัวข้อหรือรายละเอียด', 'error'); return; }
+  
+  const tags = document.getElementById('knowledge-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  tags.forEach(t => addGlobalTagSuggestion(t));
+  
+  const item = {
+    id: Date.now(),
+    date: document.getElementById('knowledge-input-date').value || new Date().toISOString().slice(0, 10),
+    title: title || '📚 ความรู้',
+    content: content,
+    tags: tags,
+    link: document.getElementById('knowledge-input-link').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  const items = await getKnowledges();
+  items.unshift(item);
+  await saveKnowledges(items);
+  closeModal('knowledge-modal');
+  renderKnowledge();
+  showToast('✅ บันทึกความรู้เรียบร้อย', 'success');
+}
+
+async function deleteKnowledge(id) {
+  if (!confirm('ลบความรู้นี้?')) return;
+  const items = await getKnowledges();
+  await saveKnowledges(items.filter(i => i.id !== id));
+  renderKnowledge();
+  showToast('🗑️ ลบความรู้แล้ว', 'error');
+}
+
+async function editKnowledge(id) {
+  const items = await getKnowledges();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('knowledge-input-date').value = item.date;
+  document.getElementById('knowledge-input-title').value = item.title || '';
+  document.getElementById('knowledge-input-content').value = item.content || '';
+  document.getElementById('knowledge-input-tags').value = (item.tags || []).join(', ');
+  document.getElementById('knowledge-input-link').value = item.link || '';
+  document.getElementById('knowledge-modal').querySelector('h3').textContent = '✎ แก้ไขความรู้';
+  document.getElementById('knowledge-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditKnowledge;
+  setEditMode('knowledge', id);
+  document.getElementById('knowledge-modal').classList.add('show');
+}
+
+async function confirmEditKnowledge() {
+  const editingId = getEditingId('knowledge');
+  if (editingId === null) { showToast('❌ ไม่พบรายการ', 'error'); return; }
+  const items = await getKnowledges();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.date = document.getElementById('knowledge-input-date').value || new Date().toISOString().slice(0, 10);
+    item.title = document.getElementById('knowledge-input-title').value.trim() || '📚 ความรู้';
+    item.content = document.getElementById('knowledge-input-content').value.trim();
+    item.tags = document.getElementById('knowledge-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    item.link = document.getElementById('knowledge-input-link').value.trim();
+    await saveKnowledges(items);
+    showToast('✅ แก้ไขความรู้สำเร็จ', 'success');
+  }
+  closeModal('knowledge-modal');
+  clearEditMode('knowledge');
+  renderKnowledge();
+}
+
+async function renderKnowledge() {
+  const list = document.getElementById('knowledge-list');
+  const empty = document.getElementById('knowledge-empty');
+  const state = filterStates.knowledge || { active: 'all' };
+  
+  let items = await getKnowledges();
+  let filteredItems = items;
+  if (state.active === 'fav') filteredItems = filteredItems.filter(i => i.favourite);
+  if (state.active === 'archived') filteredItems = filteredItems.filter(i => i.archived);
+  else if (state.active !== 'fav') filteredItems = filteredItems.filter(i => !i.archived);
+  
+  list.innerHTML = '';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+  
+  filteredItems.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+  
+  filteredItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    card.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
+          <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('knowledge', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
+          <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
+          <div style="font-size:14px;font-weight:600;margin-top:4px;">${item.title}</div>
+          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content || ''}</div>
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+          </div>
+          ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ลิงก์</a>` : ''}
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          <button class="del-x" style="color:var(--accent);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();editKnowledge(${item.id})">✎</button>
+          <button class="del-x" style="font-size:16px;padding:4px 8px;" onclick="event.stopPropagation();deleteKnowledge(${item.id})">✕</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('knowledge', ${item.id})">📦</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+// ==========================================================
+// TAG INPUT HANDLERS
+// ==========================================================
+function handleIdeaTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addGlobalTagSuggestion(lastTag);
+    }
+    setTimeout(() => { showAllSuggestions(input); }, 100);
+  }
+}
+
+function handleKnowledgeTagInput(input) { handleIdeaTagInput(input); }
+function handleArtTagInput(input) { handleIdeaTagInput(input); }
+function handleFitTagInput(input) { handleIdeaTagInput(input); }
+
+// ==========================================================
+// JOURNAL FILTER
+// ==========================================================
+function setJournalFilter(module, type) {
+  const containerId = module === 'idea' ? 'journal-idea' :
+                      module === 'knowledge' ? 'journal-knowledge' :
+                      module === 'art' ? 'journal-art' :
+                      module === 'fit' ? 'journal-fit' : '';
+  
+  if (!containerId) return;
+  
+  document.querySelectorAll(`#${containerId} .filter-chip`).forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById(`${module}-filter-all`);
+  const favBtn = document.getElementById(`${module}-filter-fav`);
+  const archivedBtn = document.getElementById(`${module}-filter-archived`);
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    filterStates[module].active = 'all';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    filterStates[module].active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    filterStates[module].active = 'archived';
+  }
+  
+  const renderMap = {
+    idea: renderIdea,
+    knowledge: renderKnowledge,
+    art: renderArt,
+    fit: renderFit
+  };
+  if (renderMap[module]) renderMap[module]();
+}
+// ==========================================================
+// ART LOG CRUD (ย่อ)
+// ==========================================================
+function openArtModal() {
+  document.getElementById('art-input-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('art-input-title').value = '';
+  document.getElementById('art-input-content').value = '';
+  document.getElementById('art-input-image').value = '';
+  document.getElementById('art-input-tags').value = '#art';
+  document.getElementById('art-modal').querySelector('h3').textContent = '🎨 บันทึกงานศิลปะ';
+  document.getElementById('art-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveArt;
+  clearEditMode('art');
+  document.getElementById('art-modal').classList.add('show');
+}
+
+async function confirmSaveArt() {
+  const title = document.getElementById('art-input-title').value.trim();
+  if (!title) { showToast('กรุณาใส่ชื่อผลงาน', 'error'); return; }
+  const tags = document.getElementById('art-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  tags.forEach(t => addGlobalTagSuggestion(t));
+  const item = {
+    id: Date.now(),
+    date: document.getElementById('art-input-date').value || new Date().toISOString().slice(0, 10),
+    title: title,
+    content: document.getElementById('art-input-content').value.trim(),
+    image: document.getElementById('art-input-image').value.trim(),
+    tags: tags,
+    createdAt: new Date().toISOString()
+  };
+  const items = await getArts();
+  items.unshift(item);
+  await saveArts(items);
+  closeModal('art-modal');
+  renderArt();
+  showToast('✅ บันทึกงานศิลปะเรียบร้อย', 'success');
+}
+
+async function deleteArt(id) {
+  if (!confirm('ลบผลงานนี้?')) return;
+  const items = await getArts();
+  await saveArts(items.filter(i => i.id !== id));
+  renderArt();
+  showToast('🗑️ ลบผลงานแล้ว', 'error');
+}
+
+async function editArt(id) {
+  const items = await getArts();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('art-input-date').value = item.date;
+  document.getElementById('art-input-title').value = item.title;
+  document.getElementById('art-input-content').value = item.content || '';
+  document.getElementById('art-input-image').value = item.image || '';
+  document.getElementById('art-input-tags').value = (item.tags || []).join(', ');
+  document.getElementById('art-modal').querySelector('h3').textContent = '✎ แก้ไขงานศิลปะ';
+  document.getElementById('art-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditArt;
+  setEditMode('art', id);
+  document.getElementById('art-modal').classList.add('show');
+}
+async function confirmEditArt() {
+  const editingId = getEditingId('art');
+  if (editingId === null) { showToast('❌ ไม่พบรายการ', 'error'); return; }
+  const items = await getArts();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.date = document.getElementById('art-input-date').value || new Date().toISOString().slice(0, 10);
+    item.title = document.getElementById('art-input-title').value.trim();
+    item.content = document.getElementById('art-input-content').value.trim();
+    item.image = document.getElementById('art-input-image').value.trim();
+    item.tags = document.getElementById('art-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    await saveArts(items);
+    showToast('✅ แก้ไขงานศิลปะสำเร็จ', 'success');
+  }
+  closeModal('art-modal');
+  clearEditMode('art');
+  renderArt();
+}
+
+async function renderArt() {
+  const list = document.getElementById('art-list');
+  const empty = document.getElementById('art-empty');
+  const state = filterStates.art || { active: 'all' };
+  let items = await getArts();
+  let filteredItems = items;
+  if (state.active === 'fav') filteredItems = filteredItems.filter(i => i.favourite);
+  if (state.active === 'archived') filteredItems = filteredItems.filter(i => i.archived);
+  else if (state.active !== 'fav') filteredItems = filteredItems.filter(i => !i.archived);
+  
+  list.innerHTML = '';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+  filteredItems.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+  
+  filteredItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    card.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
+          <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('art', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
+          <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
+          <div style="font-size:14px;font-weight:600;margin-top:4px;">${item.title}</div>
+          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content || ''}</div>
+          ${item.image ? `<img src="${item.image}" class="daily-image-thumb" onclick="openLightbox('${item.image}')">` : ''}
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          <button class="del-x" style="color:var(--accent);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();editArt(${item.id})">✎</button>
+          <button class="del-x" style="font-size:16px;padding:4px 8px;" onclick="event.stopPropagation();deleteArt(${item.id})">✕</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('art', ${item.id})">📦</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ==========================================================
+// FIT LOG CRUD (ย่อ - ใช้ pattern เดียวกัน)
+// ==========================================================
+function openFitModal() {
+  document.getElementById('fit-input-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('fit-input-type').value = 'cardio';
+  document.getElementById('fit-input-content').value = '';
+  document.getElementById('fit-input-tags').value = '#fitness';
+  document.getElementById('fit-modal').querySelector('h3').textContent = '💪 บันทึกออกกำลังกาย';
+  document.getElementById('fit-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFit;
+  clearEditMode('fit');
+  document.getElementById('fit-modal').classList.add('show');
+}
+
+async function confirmSaveFit() {
+  const content = document.getElementById('fit-input-content').value.trim();
+  if (!content) { showToast('กรุณาใส่รายละเอียด', 'error'); return; }
+  const tags = document.getElementById('fit-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  tags.forEach(t => addGlobalTagSuggestion(t));
+  const item = {
+    id: Date.now(),
+    date: document.getElementById('fit-input-date').value || new Date().toISOString().slice(0, 10),
+    type: document.getElementById('fit-input-type').value,
+    content: content,
+    tags: tags,
+    createdAt: new Date().toISOString()
+  };
+  const items = await getFits();
+  items.unshift(item);
+  await saveFits(items);
+  closeModal('fit-modal');
+  renderFit();
+  showToast('✅ บันทึกออกกำลังกายเรียบร้อย', 'success');
+}
+
+async function deleteFit(id) {
+  if (!confirm('ลบบันทึกนี้?')) return;
+  const items = await getFits();
+  await saveFits(items.filter(i => i.id !== id));
+  renderFit();
+  showToast('🗑️ ลบบันทึกแล้ว', 'error');
+}
+
+async function editFit(id) {
+  const items = await getFits();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('fit-input-date').value = item.date;
+  document.getElementById('fit-input-type').value = item.type || 'cardio';
+  document.getElementById('fit-input-content').value = item.content;
+  document.getElementById('fit-input-tags').value = (item.tags || []).join(', ');
+  document.getElementById('fit-modal').querySelector('h3').textContent = '✎ แก้ไขออกกำลังกาย';
+  document.getElementById('fit-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditFit;
+  setEditMode('fit', id);
+  document.getElementById('fit-modal').classList.add('show');
+}
+
+async function confirmEditFit() {
+  const editingId = getEditingId('fit');
+  if (editingId === null) { showToast('❌ ไม่พบรายการ', 'error'); return; }
+  const items = await getFits();
+  const item = items.find(i => i.id === editingId);
+  if (item) {
+    item.date = document.getElementById('fit-input-date').value || new Date().toISOString().slice(0, 10);
+    item.type = document.getElementById('fit-input-type').value;
+    item.content = document.getElementById('fit-input-content').value.trim();
+    item.tags = document.getElementById('fit-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    await saveFits(items);
+    showToast('✅ แก้ไขออกกำลังกายสำเร็จ', 'success');
+  }
+  closeModal('fit-modal');
+  clearEditMode('fit');
+  renderFit();
+}
+
+async function renderFit() {
+  const list = document.getElementById('fit-list');
+  const empty = document.getElementById('fit-empty');
+  const state = filterStates.fit || { active: 'all' };
+  let items = await getFits();
+  let filteredItems = items;
+  if (state.active === 'fav') filteredItems = filteredItems.filter(i => i.favourite);
+  if (state.active === 'archived') filteredItems = filteredItems.filter(i => i.archived);
+  else if (state.active !== 'fav') filteredItems = filteredItems.filter(i => !i.archived);
+  
+  list.innerHTML = '';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+  filteredItems.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+  
+  const typeLabels = { cardio: '🏃 Cardio', weight: '🏋️ Weight', yoga: '🧘 Yoga', sport: '⚽ Sport', other: '📦 อื่นๆ' };
+  
+  filteredItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    card.innerHTML = `
+      <div class="item-top">
+        <div style="flex:1;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
+          <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('fit', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
+          <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
+          <span class="item-cat">${typeLabels[item.type] || item.type}</span>
+          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content}</div>
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          <button class="del-x" style="color:var(--accent);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();editFit(${item.id})">✎</button>
+          <button class="del-x" style="font-size:16px;padding:4px 8px;" onclick="event.stopPropagation();deleteFit(${item.id})">✕</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('fit', ${item.id})">📦</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+function resetIdeaModal() {
+  document.getElementById('idea-modal').querySelector('h3').textContent = '💡 บันทึกไอเดีย';
+  document.getElementById('idea-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveIdea;
+  document.getElementById('idea-input-date').value = '';
+  document.getElementById('idea-input-content').value = '';
+  document.getElementById('idea-input-tags').value = '#idea';
+  document.getElementById('idea-input-link').value = '';
+}
+
+function resetKnowledgeModal() {
+  document.getElementById('knowledge-modal').querySelector('h3').textContent = '📚 บันทึกความรู้';
+  document.getElementById('knowledge-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveKnowledge;
+  document.getElementById('knowledge-input-date').value = '';
+  document.getElementById('knowledge-input-title').value = '';
+  document.getElementById('knowledge-input-content').value = '';
+  document.getElementById('knowledge-input-tags').value = '#knowledge';
+  document.getElementById('knowledge-input-link').value = '';
+}
+
+function resetArtModal() {
+  document.getElementById('art-modal').querySelector('h3').textContent = '🎨 บันทึกงานศิลปะ';
+  document.getElementById('art-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveArt;
+  document.getElementById('art-input-date').value = '';
+  document.getElementById('art-input-title').value = '';
+  document.getElementById('art-input-content').value = '';
+  document.getElementById('art-input-image').value = '';
+  document.getElementById('art-input-tags').value = '#art';
+}
+
+function resetFitModal() {
+  document.getElementById('fit-modal').querySelector('h3').textContent = '💪 บันทึกออกกำลังกาย';
+  document.getElementById('fit-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFit;
+  document.getElementById('fit-input-date').value = '';
+  document.getElementById('fit-input-type').value = 'cardio';
+  document.getElementById('fit-input-content').value = '';
+  document.getElementById('fit-input-tags').value = '#fitness';
+}
+// ===== Art Trend =====
+async function renderArtTrend() {
+  const container = document.getElementById('dash-art-trend');
+  if (!container) return;
+  
+  const arts = await getArts();
+  const days = 7;
+  const today = new Date();
+  const trend = [];
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const count = arts.filter(a => a.date === dateStr).length;
+    trend.push({ date: dateStr, count });
+  }
+  
+  const maxCount = Math.max(1, ...trend.map(t => t.count));
+  
+  container.innerHTML = trend.map(t => {
+    const height = Math.max(4, (t.count / maxCount) * 60);
+    const dateDisplay = new Date(t.date + 'T00:00:00').toLocaleDateString('th-TH', { weekday: 'short' });
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:28px;">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">${t.count}</div>
+        <div style="width:20px;height:${height}px;background:${t.count > 0 ? 'var(--accent2)' : 'var(--surface)'};border-radius:4px 4px 0 0;transition:height 0.5s ease;"></div>
+        <div style="font-size:8px;color:var(--muted);margin-top:4px;">${dateDisplay}</div>
+      </div>
+    `;
+  }).join('');
+}
+// ===== Fitness Trend =====
+async function renderFitnessTrend() {
+  const container = document.getElementById('dash-fitness-trend');
+  if (!container) return;
+  
+  const fits = await getFits();
+  const days = 7;
+  const today = new Date();
+  const trend = [];
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const count = fits.filter(f => f.date === dateStr).length;
+    trend.push({ date: dateStr, count });
+  }
+  
+  const maxCount = Math.max(1, ...trend.map(t => t.count));
+  
+  container.innerHTML = trend.map(t => {
+    const height = Math.max(4, (t.count / maxCount) * 60);
+    const dateDisplay = new Date(t.date + 'T00:00:00').toLocaleDateString('th-TH', { weekday: 'short' });
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:28px;">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">${t.count}</div>
+        <div style="width:20px;height:${height}px;background:${t.count > 0 ? '#e05071' : 'var(--surface)'};border-radius:4px 4px 0 0;transition:height 0.5s ease;"></div>
+        <div style="font-size:8px;color:var(--muted);margin-top:4px;">${dateDisplay}</div>
+      </div>
+    `;
+  }).join('');
+}
+// ===== Finance Trend =====
+async function renderFinanceTrend() {
+  const container = document.getElementById('dash-finance-trend');
+  if (!container) return;
+  
+  const transactions = await getTransactions();
+  const days = 7;
+  const today = new Date();
+  const trend = [];
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    
+    const dayTx = transactions.filter(t => t.date === dateStr);
+    const income = dayTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expense = dayTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const net = income - expense;
+    
+    trend.push({ date: dateStr, income, expense, net });
+  }
+  
+  const maxAbs = Math.max(1, ...trend.map(t => Math.abs(t.net)));
+  
+  container.innerHTML = trend.map(t => {
+    const barHeight = Math.max(4, (Math.abs(t.net) / maxAbs) * 60);
+    const isPositive = t.net >= 0;
+    const dateDisplay = new Date(t.date + 'T00:00:00').toLocaleDateString('th-TH', { weekday: 'short' });
+    const netDisplay = t.net !== 0 ? (isPositive ? '+' : '') + t.net.toLocaleString() : '0';
+    
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:28px;">
+        <div style="font-size:9px;color:${isPositive ? 'var(--green)' : 'var(--red)'};margin-bottom:2px;">${netDisplay}</div>
+        <div style="width:20px;height:${barHeight}px;background:${isPositive ? 'var(--green)' : 'var(--red)'};border-radius:4px 4px 0 0;transition:height 0.5s ease;opacity:0.8;"></div>
+        <div style="font-size:8px;color:var(--muted);margin-top:4px;">${dateDisplay}</div>
+      </div>
+    `;
+  }).join('');
+}
+// ===== Switch Goals Tab (Goals / Study) =====
+function switchGoalsTab(tab) {
+  // ✅ ตรวจสอบ element
+  const subBtns = document.querySelectorAll('#page-goals .sub-nav-btn');
+  const goalTab = document.getElementById('goals-tab-goals');
+  const studyTab = document.getElementById('goals-tab-study');
+  
+  // ✅ ถ้าไม่มี element ให้สร้าง (fallback)
+  if (subBtns.length === 0) {
+    console.warn('⚠️ Sub navigation not found, creating...');
+    const container = document.getElementById('page-goals');
+    if (container) {
+      const navDiv = document.createElement('div');
+      navDiv.style.cssText = 'display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:10px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;justify-content:center;';
+      navDiv.innerHTML = `
+        <button class="sub-nav-btn active" id="goals-sub-goals" onclick="switchGoalsTab('goals')">🎯 เป้าหมาย <span id="calendar-goal-count" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:4px;">0</span></button>
+        <button class="sub-nav-btn" id="goals-sub-study" onclick="switchGoalsTab('study')">📚 แผนเรียน</button>
+      `;
+      container.insertBefore(navDiv, container.firstChild);
+    }
+  }
+  
+  // ✅ อัปเดต active state
+  document.querySelectorAll('#page-goals .sub-nav-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById(`goals-sub-${tab}`);
+  if (activeBtn) activeBtn.classList.add('active');
+  
+  // ✅ สลับ tabs
+  document.querySelectorAll('#page-goals .goals-tab').forEach(t => t.classList.remove('active'));
+  const targetTab = document.getElementById(`goals-tab-${tab}`);
+  if (targetTab) {
+    targetTab.classList.add('active');
+  }
+  
+  // ✅ Render ตาม tab
+  if (tab === 'goals') {
+    renderGoals();
+  } else if (tab === 'study') {
+    renderStudy();
+  }
+}
+// ===== Vision Categories (แก้ไขได้) =====
+const DEFAULT_VISION_CATEGORIES = [
+  { key: 'career', label: '💼 อาชีพ/งาน' },
+  { key: 'health', label: '💪 สุขภาพ' },
+  { key: 'relationship', label: '💕 ความสัมพันธ์' },
+  { key: 'growth', label: '🌱 พัฒนาตนเอง' },
+  { key: 'lifestyle', label: '🌟 ไลฟ์สไตล์' },
+  { key: 'other', label: '📦 อื่นๆ' }
+];
+
+function getVisionCategories() {
+  try {
+    const custom = JSON.parse(localStorage.getItem('vision_custom_categories') || '[]');
+    return [...DEFAULT_VISION_CATEGORIES, ...custom];
+  } catch { return [...DEFAULT_VISION_CATEGORIES]; }
+}
+
+function saveVisionCategories(categories) {
+  const custom = categories.filter(c => !DEFAULT_VISION_CATEGORIES.find(d => d.key === c.key));
+  localStorage.setItem('vision_custom_categories', JSON.stringify(custom));
+}
+
+function addVisionCategory(label) {
+  const categories = getVisionCategories();
+  const key = 'custom_' + Date.now();
+  categories.push({ key, label: label.trim() });
+  saveVisionCategories(categories);
+  renderVisionCategorySelect();
+  renderVisionCategoryManager();
+  return key;
+}
+
+function deleteVisionCategory(key) {
+  const isDefault = DEFAULT_VISION_CATEGORIES.find(c => c.key === key);
+  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
+  const categories = getVisionCategories().filter(c => c.key !== key);
+  saveVisionCategories(categories);
+  renderVisionCategorySelect();
+  renderVisionCategoryManager();
+  return true;
+}
+
+function renderVisionCategorySelect() {
+  const select = document.getElementById('vision-input-category');
+  if (!select) return;
+  const categories = getVisionCategories();
+  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+}
+
+function renderVisionCategoryManager() {
+  const container = document.getElementById('vision-cat-manager');
+  if (!container) return;
+  const categories = getVisionCategories();
+  container.innerHTML = categories.map(c => `
+    <span class="cat-tag">
+      ${c.label}
+      ${!DEFAULT_VISION_CATEGORIES.find(d => d.key === c.key) ? 
+        `<button class="del-cat" onclick="deleteVisionCategory('${c.key}')">✕</button>` : ''}
+    </span>
+  `).join('') + `
+    <button class="cat-add-btn" onclick="addVisionCategoryPrompt()">+ เพิ่มหมวด</button>
+  `;
+}
+
+function addVisionCategoryPrompt() {
+  const label = prompt('ชื่อหมวดหมู่ใหม่:');
+  if (label && label.trim()) {
+    addVisionCategory(label.trim());
+    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
+  }
+}
+// ===== Goal Categories (แก้ไขได้) =====
+const DEFAULT_GOAL_CATEGORIES = [
+  { key: 'career', label: '💼 อาชีพ/งาน' },
+  { key: 'health', label: '💪 สุขภาพ' },
+  { key: 'finance', label: '💰 การเงิน' },
+  { key: 'skill', label: '🎯 ทักษะ' },
+  { key: 'other', label: '📦 อื่นๆ' }
+];
+
+function getGoalCategories() {
+  try {
+    const custom = JSON.parse(localStorage.getItem('goal_custom_categories') || '[]');
+    return [...DEFAULT_GOAL_CATEGORIES, ...custom];
+  } catch { return [...DEFAULT_GOAL_CATEGORIES]; }
+}
+
+function saveGoalCategories(categories) {
+  const custom = categories.filter(c => !DEFAULT_GOAL_CATEGORIES.find(d => d.key === c.key));
+  localStorage.setItem('goal_custom_categories', JSON.stringify(custom));
+}
+
+function addGoalCategory(label) {
+  const categories = getGoalCategories();
+  const key = 'custom_' + Date.now();
+  categories.push({ key, label: label.trim() });
+  saveGoalCategories(categories);
+  renderGoalCategorySelect();
+  renderGoalCategoryManager();
+  return key;
+}
+
+function deleteGoalCategory(key) {
+  const isDefault = DEFAULT_GOAL_CATEGORIES.find(c => c.key === key);
+  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
+  const categories = getGoalCategories().filter(c => c.key !== key);
+  saveGoalCategories(categories);
+  renderGoalCategorySelect();
+  renderGoalCategoryManager();
+  return true;
+}
+
+function renderGoalCategorySelect() {
+  const select = document.getElementById('goal-input-category');
+  if (!select) return;
+  const categories = getGoalCategories();
+  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+}
+
+function renderGoalCategoryManager() {
+  const container = document.getElementById('goal-cat-manager');
+  if (!container) return;
+  const categories = getGoalCategories();
+  container.innerHTML = categories.map(c => `
+    <span class="cat-tag">
+      ${c.label}
+      ${!DEFAULT_GOAL_CATEGORIES.find(d => d.key === c.key) ? 
+        `<button class="del-cat" onclick="deleteGoalCategory('${c.key}')">✕</button>` : ''}
+    </span>
+  `).join('') + `
+    <button class="cat-add-btn" onclick="addGoalCategoryPrompt()">+ เพิ่มหมวด</button>
+  `;
+}
+
+function addGoalCategoryPrompt() {
+  const label = prompt('ชื่อหมวดหมู่ใหม่:');
+  if (label && label.trim()) {
+    addGoalCategory(label.trim());
+    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
+  }
+}
+// ===== Study Categories (แก้ไขได้) =====
+const DEFAULT_STUDY_CATEGORIES = [
+  { key: 'art', label: '🎨 ศิลปะ' },
+  { key: 'coding', label: '💻 โค้ดดิ้ง' },
+  { key: 'language', label: '🌍 ภาษา' },
+  { key: 'music', label: '🎵 ดนตรี' },
+  { key: 'fitness', label: '💪 ฟิตเนส' },
+  { key: 'other', label: '📦 อื่นๆ' }
+];
+
+function getStudyCategories() {
+  try {
+    const custom = JSON.parse(localStorage.getItem('study_custom_categories') || '[]');
+    return [...DEFAULT_STUDY_CATEGORIES, ...custom];
+  } catch { return [...DEFAULT_STUDY_CATEGORIES]; }
+}
+
+function saveStudyCategories(categories) {
+  const custom = categories.filter(c => !DEFAULT_STUDY_CATEGORIES.find(d => d.key === c.key));
+  localStorage.setItem('study_custom_categories', JSON.stringify(custom));
+}
+
+function addStudyCategory(label) {
+  const categories = getStudyCategories();
+  const key = 'custom_' + Date.now();
+  categories.push({ key, label: label.trim() });
+  saveStudyCategories(categories);
+  renderStudyCategorySelect();
+  renderStudyCategoryManager();
+  return key;
+}
+
+function deleteStudyCategory(key) {
+  const isDefault = DEFAULT_STUDY_CATEGORIES.find(c => c.key === key);
+  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
+  const categories = getStudyCategories().filter(c => c.key !== key);
+  saveStudyCategories(categories);
+  renderStudyCategorySelect();
+  renderStudyCategoryManager();
+  return true;
+}
+
+function renderStudyCategorySelect() {
+  const select = document.getElementById('study-input-category');
+  if (!select) return;
+  const categories = getStudyCategories();
+  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+}
+
+function renderStudyCategoryManager() {
+  const container = document.getElementById('study-cat-manager');
+  if (!container) return;
+  const categories = getStudyCategories();
+  container.innerHTML = categories.map(c => `
+    <span class="cat-tag">
+      ${c.label}
+      ${!DEFAULT_STUDY_CATEGORIES.find(d => d.key === c.key) ? 
+        `<button class="del-cat" onclick="deleteStudyCategory('${c.key}')">✕</button>` : ''}
+    </span>
+  `).join('') + `
+    <button class="cat-add-btn" onclick="addStudyCategoryPrompt()">+ เพิ่มหมวด</button>
+  `;
+}
+
+function addStudyCategoryPrompt() {
+  const label = prompt('ชื่อหมวดหมู่ใหม่:');
+  if (label && label.trim()) {
+    addStudyCategory(label.trim());
+    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
+  }
+}
+// ===== Finance Categories (แก้ไขได้) =====
+const DEFAULT_FINANCE_CATEGORIES = [
+  { key: 'emergency', label: '🚨 กองทุนฉุกเฉิน' },
+  { key: 'saving', label: '🏦 ออมทรัพย์' },
+  { key: 'investment', label: '📈 ลงทุน' },
+  { key: 'debt', label: '💳 หนี้สิน' },
+  { key: 'income', label: '💵 รายได้' },
+  { key: 'big_purchase', label: '🛒 ของใหญ่/ช้อปปิ้ง' },
+  { key: 'other', label: '📦 อื่นๆ' }
+];
+
+function getFinanceCategories() {
+  try {
+    const custom = JSON.parse(localStorage.getItem('finance_custom_categories') || '[]');
+    return [...DEFAULT_FINANCE_CATEGORIES, ...custom];
+  } catch { return [...DEFAULT_FINANCE_CATEGORIES]; }
+}
+
+function saveFinanceCategories(categories) {
+  const custom = categories.filter(c => !DEFAULT_FINANCE_CATEGORIES.find(d => d.key === c.key));
+  localStorage.setItem('finance_custom_categories', JSON.stringify(custom));
+}
+
+function addFinanceCategory(label) {
+  const categories = getFinanceCategories();
+  const key = 'custom_' + Date.now();
+  categories.push({ key, label: label.trim() });
+  saveFinanceCategories(categories);
+  renderFinanceCategorySelect();
+  renderFinanceCategoryManager();
+  return key;
+}
+
+function deleteFinanceCategory(key) {
+  const isDefault = DEFAULT_FINANCE_CATEGORIES.find(c => c.key === key);
+  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
+  const categories = getFinanceCategories().filter(c => c.key !== key);
+  saveFinanceCategories(categories);
+  renderFinanceCategorySelect();
+  renderFinanceCategoryManager();
+  return true;
+}
+
+function renderFinanceCategorySelect() {
+  const select = document.getElementById('finance-input-category');
+  if (!select) return;
+  const categories = getFinanceCategories();
+  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+}
+
+function renderFinanceCategoryManager() {
+  const container = document.getElementById('finance-cat-manager');
+  if (!container) return;
+  const categories = getFinanceCategories();
+  container.innerHTML = categories.map(c => `
+    <span class="cat-tag">
+      ${c.label}
+      ${!DEFAULT_FINANCE_CATEGORIES.find(d => d.key === c.key) ? 
+        `<button class="del-cat" onclick="deleteFinanceCategory('${c.key}')">✕</button>` : ''}
+    </span>
+  `).join('') + `
+    <button class="cat-add-btn" onclick="addFinanceCategoryPrompt()">+ เพิ่มหมวด</button>
+  `;
+}
+
+function addFinanceCategoryPrompt() {
+  const label = prompt('ชื่อหมวดหมู่ใหม่:');
+  if (label && label.trim()) {
+    addFinanceCategory(label.trim());
+    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
+  }
+}
+// ===== Wish Categories (แก้ไขได้) =====
+const DEFAULT_WISH_CATEGORIES = [
+  { key: 'tech', label: '📱 เทคโนโลยี' },
+  { key: 'art', label: '🎨 อุปกรณ์ศิลปะ' },
+  { key: 'book', label: '📚 หนังสือ' },
+  { key: 'clothing', label: '👕 เสื้อผ้า/แฟชั่น' },
+  { key: 'home', label: '🏠 ของใช้ในบ้าน' },
+  { key: 'food', label: '🍽️ อาหาร/ของกิน' },
+  { key: 'experience', label: '🎫 ประสบการณ์/ทริป' },
+  { key: 'other', label: '📦 อื่นๆ' }
+];
+
+function getWishCategories() {
+  try {
+    const custom = JSON.parse(localStorage.getItem('wish_custom_categories') || '[]');
+    return [...DEFAULT_WISH_CATEGORIES, ...custom];
+  } catch { return [...DEFAULT_WISH_CATEGORIES]; }
+}
+
+function saveWishCategories(categories) {
+  const custom = categories.filter(c => !DEFAULT_WISH_CATEGORIES.find(d => d.key === c.key));
+  localStorage.setItem('wish_custom_categories', JSON.stringify(custom));
+}
+
+function addWishCategory(label) {
+  const categories = getWishCategories();
+  const key = 'custom_' + Date.now();
+  categories.push({ key, label: label.trim() });
+  saveWishCategories(categories);
+  renderWishCategorySelect();
+  renderWishCategoryManager();
+  return key;
+}
+
+function deleteWishCategory(key) {
+  const isDefault = DEFAULT_WISH_CATEGORIES.find(c => c.key === key);
+  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
+  const categories = getWishCategories().filter(c => c.key !== key);
+  saveWishCategories(categories);
+  renderWishCategorySelect();
+  renderWishCategoryManager();
+  return true;
+}
+
+function renderWishCategorySelect() {
+  const select = document.getElementById('wish-input-category');
+  if (!select) return;
+  const categories = getWishCategories();
+  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+}
+
+function renderWishCategoryManager() {
+  const container = document.getElementById('wish-cat-manager');
+  if (!container) return;
+  const categories = getWishCategories();
+  container.innerHTML = categories.map(c => `
+    <span class="cat-tag">
+      ${c.label}
+      ${!DEFAULT_WISH_CATEGORIES.find(d => d.key === c.key) ? 
+        `<button class="del-cat" onclick="deleteWishCategory('${c.key}')">✕</button>` : ''}
+    </span>
+  `).join('') + `
+    <button class="cat-add-btn" onclick="addWishCategoryPrompt()">+ เพิ่มหมวด</button>
+  `;
+}
+
+function addWishCategoryPrompt() {
+  const label = prompt('ชื่อหมวดหมู่ใหม่:');
+  if (label && label.trim()) {
+    addWishCategory(label.trim());
+    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
+  }
+}
 
 // แก้ไข confirmSaveMultiRef() และ confirmEditRef() ให้เรียก collectTagSuggestionsFromInput()
 // ก่อนบันทึก
@@ -10621,6 +12759,7 @@ async function initApp() {
     });
   });
   renderNav();
+  initTagSystems();
   // ใน initApp() เพิ่ม:
   updateRefCategorySuggestions();
   updateCategoryFilterSuggestions();
@@ -10660,6 +12799,10 @@ async function initApp() {
   onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onStudiesSnapshot(() => { renderStudy(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onProjectsSnapshot(() => { renderProjects(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
+  onIdeasSnapshot(() => { renderIdea(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
+  onKnowledgesSnapshot(() => { renderKnowledge(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
+  onArtsSnapshot(() => { renderArt(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
+  onFitsSnapshot(() => { renderFit(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   
   let lastPage = localStorage.getItem('last_active_page') || 'journal';
   const validPages = PAGES.map(p => p.id);
@@ -10674,6 +12817,10 @@ async function initApp() {
   renderFinanceGoals();
   renderWishlist();
   renderDashboard();
+  renderEnhancedStats();
+  renderArtTrend();
+  renderFitnessTrend();
+  renderFinanceTrend();
   renderFocusThisWeek();
   renderOverdueGoals();
   renderRecentActivity();
@@ -10685,6 +12832,11 @@ async function initApp() {
   renderPresets();
   renderFinanceOverview();
   renderFinanceSnapshot();
+  renderVisionCategoryManager();
+  renderGoalCategoryManager();
+  renderStudyCategoryManager();
+  renderFinanceCategoryManager();
+  renderWishCategoryManager();
   setTimeout(() => {
     syncBottomTabActive();
     syncTopNavActive();  // ← เพิ่ม
