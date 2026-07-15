@@ -154,8 +154,9 @@ padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
   .progress-label { font-size: 10px; color: var(--muted); margin-top: 4px; font-family: monospace; }
 
   /* ===== Modal (shared structure, content swapped per module) ===== */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); align-items: center; justify-content: center; z-index: 150; }
-  .modal-overlay.show { display: flex; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); align-items: center; justify-content: center; z-index: 150; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.modal-overlay.show { display: flex; }
+body.modal-open { overflow: hidden; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; }
   .modal h3 { font-size: 15px; margin-bottom: 14px; }
   .modal-preview { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 14px; background: #000; }
@@ -2007,14 +2008,14 @@ body {
 
 <div class="nav-wrapper" id="nav-wrapper">
   <div style="display:flex;align-items:center;gap:4px;position:relative;">
-    <button class="nav-arrow" onclick="switchNavPage(-1)" 
+    <button type="button" class="nav-arrow" onclick="switchNavPage(-1)" 
         style="background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;flex-shrink:0;transition:all 0.2s;"
         onmouseover="this.style.background='var(--surface2)'" 
         onmouseout="this.style.background='var(--surface)'">
       ◀
     </button>
     <div class="nav" id="nav" style="flex:1;overflow-x:auto;scroll-behavior:smooth;"></div>
-    <button class="nav-arrow" onclick="switchNavPage(1)" 
+    <button type="button" class="nav-arrow" onclick="switchNavPage(1)" 
         style="background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;flex-shrink:0;transition:all 0.2s;"
         onmouseover="this.style.background='var(--surface2)'" 
         onmouseout="this.style.background='var(--surface)'">
@@ -2084,25 +2085,22 @@ body {
 
   <!-- Quick Actions (Dropdown) -->
 <div style="position:relative;margin-bottom:16px;">
-<button class="btn" onclick="toggleQuickActions()" style="font-size:13px;padding:8px 16px;">
-✨ + เพิ่ม...
+<!-- แก้ไขให้ถูกต้อง -->
+<button type="button" class="btn" onclick="toggleQuickActions()" style="font-size:13px;padding:8px 16px;">
+  ✨ + เพิ่ม...
 </button>
-<div id="quick-actions-menu" style="
-display:none;position:absolute;top:100%;left:0;margin-top:8px;
-background:var(--surface);border:1px solid var(--border);
-border-radius:10px;padding:8px;z-index:50;min-width:220px;
-box-shadow:0 8px 30px rgba(0,0,0,.4);
-">
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openUploadWidget();toggleQuickActions()"> เพิ่มรูป</button>
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openVisionModal();toggleQuickActions()">🗺️ วิสัยทัศน์</button>
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openGoalModal();toggleQuickActions()">🎯 เป้าหมาย</button>
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openStudyModal();toggleQuickActions()">📚 แผนเรียน</button>
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openProjectModal();toggleQuickActions()"> โปรเจกต์</button>
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openFinanceModal();toggleQuickActions()">💰 การเงิน</button>
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openWishModal();toggleQuickActions()">🛍️ Wishlist</button>
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openTransactionModal();toggleQuickActions()">💸 รายการเงิน</button>
-<button class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openInboxModal();toggleQuickActions()">📥 Inbox</button>
-<button class="btn secondary" style="width:100%;text-align:left;font-size:12px;" onclick="openDailyModal();toggleQuickActions()">📖 Daily Log</button>
+
+<div id="quick-actions-menu" style="display:none;position:absolute;top:100%;left:0;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;z-index:50;min-width:220px;box-shadow:0 8px 30px rgba(0,0,0,.4);">
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openUploadWidget();toggleQuickActions()">📁 เพิ่มรูป</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openVisionModal();toggleQuickActions()">🗺️ วิสัยทัศน์</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openGoalModal();toggleQuickActions()">🎯 เป้าหมาย</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openStudyModal();toggleQuickActions()">📚 แผนเรียน</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openProjectModal();toggleQuickActions()">📋 โปรเจกต์</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openFinanceModal();toggleQuickActions()">💰 การเงิน</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openWishModal();toggleQuickActions()">🛍️ Wishlist</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openTransactionModal();toggleQuickActions()">💸 รายการเงิน</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;margin-bottom:4px;font-size:12px;" onclick="openInboxModal();toggleQuickActions()">📥 Inbox</button>
+  <button type="button" class="btn secondary" style="width:100%;text-align:left;font-size:12px;" onclick="openDailyModal();toggleQuickActions()">📖 Daily Log</button>
 </div>
 </div>
   <!-- ===== Art Trend ===== -->
@@ -2142,27 +2140,27 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 
 <!-- ============ PAGE: Journal (จด) ============ -->
 <div class="page" id="page-journal">
-  <!-- Sub Navigation - แก้ไขให้มี 6 tabs -->
+  <!-- Sub Navigation - 6 tabs -->
   <div style="display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:10px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;justify-content:center;">
-    <button class="sub-nav-btn active" id="sub-inbox" onclick="switchJournalTab('inbox')">📥 Inbox <span id="inbox-badge-sub" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:4px;display:none;">0</span></button>
-    <button class="sub-nav-btn" id="sub-daily" onclick="switchJournalTab('daily')">📖 Daily</button>
-    <button class="sub-nav-btn" id="sub-idea" onclick="switchJournalTab('idea')">💡 Idea</button>
-    <button class="sub-nav-btn" id="sub-knowledge" onclick="switchJournalTab('knowledge')">📚 Knowledge</button>
-    <button class="sub-nav-btn" id="sub-art" onclick="switchJournalTab('art')">🎨 Art</button>
-    <button class="sub-nav-btn" id="sub-fit" onclick="switchJournalTab('fit')">💪 Fit</button>
+    <button type="button" class="sub-nav-btn active" id="sub-inbox" onclick="switchJournalTab('inbox')">📥 Inbox <span id="inbox-badge-sub" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:4px;display:none;">0</span></button>
+    <button type="button" class="sub-nav-btn" id="sub-daily" onclick="switchJournalTab('daily')">📖 Daily</button>
+    <button type="button" class="sub-nav-btn" id="sub-idea" onclick="switchJournalTab('idea')">💡 Idea</button>
+    <button type="button" class="sub-nav-btn" id="sub-knowledge" onclick="switchJournalTab('knowledge')">📚 Knowledge</button>
+    <button type="button" class="sub-nav-btn" id="sub-art" onclick="switchJournalTab('art')">🎨 Art</button>
+    <button type="button" class="sub-nav-btn" id="sub-fit" onclick="switchJournalTab('fit')">💪 Fit</button>
   </div>
 
   <!-- Inbox Content -->
   <div id="journal-inbox" class="journal-tab active">
     <div class="toolbar">
-      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openInboxModal()">📥 + พิมพ์ความคิด</button>
+      <button type="button" class="btn" style="font-size:13px;padding:6px 16px;" onclick="openInboxModal()">📥 + พิมพ์ความคิด</button>
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-        <button class="filter-chip active" onclick="setInboxFilter('all')" id="inbox-filter-all">ทั้งหมด</button>
-        <button class="filter-chip" onclick="setInboxFilter('fav')" id="inbox-filter-fav">⭐</button>
-        <button class="filter-chip" onclick="setInboxFilter('archived')" id="inbox-filter-archived">📦</button>
+        <button type="button" class="filter-chip active" onclick="setInboxFilter('all')" id="inbox-filter-all">ทั้งหมด</button>
+        <button type="button" class="filter-chip" onclick="setInboxFilter('fav')" id="inbox-filter-fav">⭐</button>
+        <button type="button" class="filter-chip" onclick="setInboxFilter('archived')" id="inbox-filter-archived">📦</button>
       </div>
       <span style="font-size:14px;font-weight:600;margin-left:auto;">Inbox</span>
-      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+      <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
     </div>
     <div id="inbox-list"></div>
     <div class="empty" id="inbox-empty" style="display:none;">🎉 ไม่มี Inbox ค้าง!</div>
@@ -2171,27 +2169,27 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Daily Log Content -->
   <div id="journal-daily" class="journal-tab">
     <div class="toolbar">
-      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openDailyModal()">📖 + บันทึกวันนี้</button>
+      <button type="button" class="btn" style="font-size:13px;padding:6px 16px;" onclick="openDailyModal()">📖 + บันทึกวันนี้</button>
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-        <button class="filter-chip active" onclick="setDailyFilter('all')" id="daily-filter-all">ทั้งหมด</button>
-        <button class="filter-chip" onclick="setDailyFilter('fav')" id="daily-filter-fav">⭐</button>
-        <button class="filter-chip" onclick="setDailyFilter('archived')" id="daily-filter-archived">📦</button>
+        <button type="button" class="filter-chip active" onclick="setDailyFilter('all')" id="daily-filter-all">ทั้งหมด</button>
+        <button type="button" class="filter-chip" onclick="setDailyFilter('fav')" id="daily-filter-fav">⭐</button>
+        <button type="button" class="filter-chip" onclick="setDailyFilter('archived')" id="daily-filter-archived">📦</button>
       </div>
       <span style="font-size:14px;font-weight:600;margin-left:auto;">Daily Log</span>
-      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+      <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
     </div>
     <div id="daily-list"></div>
     <div class="empty" id="daily-empty" style="display:none;">ยังไม่มีบันทึก</div>
   </div>
-</div>
+
   <!-- Idea Bank Content -->
   <div id="journal-idea" class="journal-tab">
     <div class="toolbar">
-      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openIdeaModal()">💡 + บันทึกไอเดีย</button>
+      <button type="button" class="btn" style="font-size:13px;padding:6px 16px;" onclick="openIdeaModal()">💡 + บันทึกไอเดีย</button>
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-        <button class="filter-chip active" onclick="setJournalFilter('idea','all')" id="idea-filter-all">ทั้งหมด</button>
-        <button class="filter-chip" onclick="setJournalFilter('idea','fav')" id="idea-filter-fav">⭐</button>
-        <button class="filter-chip" onclick="setJournalFilter('idea','archived')" id="idea-filter-archived">📦</button>
+        <button type="button" class="filter-chip active" onclick="setJournalFilter('idea','all')" id="idea-filter-all">ทั้งหมด</button>
+        <button type="button" class="filter-chip" onclick="setJournalFilter('idea','fav')" id="idea-filter-fav">⭐</button>
+        <button type="button" class="filter-chip" onclick="setJournalFilter('idea','archived')" id="idea-filter-archived">📦</button>
       </div>
       <span style="font-size:14px;font-weight:600;margin-left:auto;">Idea Bank</span>
     </div>
@@ -2202,11 +2200,11 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Knowledge Bank Content -->
   <div id="journal-knowledge" class="journal-tab">
     <div class="toolbar">
-      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openKnowledgeModal()">📚 + บันทึกความรู้</button>
+      <button type="button" class="btn" style="font-size:13px;padding:6px 16px;" onclick="openKnowledgeModal()">📚 + บันทึกความรู้</button>
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-        <button class="filter-chip active" onclick="setJournalFilter('knowledge','all')" id="knowledge-filter-all">ทั้งหมด</button>
-        <button class="filter-chip" onclick="setJournalFilter('knowledge','fav')" id="knowledge-filter-fav">⭐</button>
-        <button class="filter-chip" onclick="setJournalFilter('knowledge','archived')" id="knowledge-filter-archived">📦</button>
+        <button type="button" class="filter-chip active" onclick="setJournalFilter('knowledge','all')" id="knowledge-filter-all">ทั้งหมด</button>
+        <button type="button" class="filter-chip" onclick="setJournalFilter('knowledge','fav')" id="knowledge-filter-fav">⭐</button>
+        <button type="button" class="filter-chip" onclick="setJournalFilter('knowledge','archived')" id="knowledge-filter-archived">📦</button>
       </div>
       <span style="font-size:14px;font-weight:600;margin-left:auto;">Knowledge Bank</span>
     </div>
@@ -2217,11 +2215,11 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Art Log Content -->
   <div id="journal-art" class="journal-tab">
     <div class="toolbar">
-      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openArtModal()">🎨 + บันทึกงานศิลปะ</button>
+      <button type="button" class="btn" style="font-size:13px;padding:6px 16px;" onclick="openArtModal()">🎨 + บันทึกงานศิลปะ</button>
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-        <button class="filter-chip active" onclick="setJournalFilter('art','all')" id="art-filter-all">ทั้งหมด</button>
-        <button class="filter-chip" onclick="setJournalFilter('art','fav')" id="art-filter-fav">⭐</button>
-        <button class="filter-chip" onclick="setJournalFilter('art','archived')" id="art-filter-archived">📦</button>
+        <button type="button" class="filter-chip active" onclick="setJournalFilter('art','all')" id="art-filter-all">ทั้งหมด</button>
+        <button type="button" class="filter-chip" onclick="setJournalFilter('art','fav')" id="art-filter-fav">⭐</button>
+        <button type="button" class="filter-chip" onclick="setJournalFilter('art','archived')" id="art-filter-archived">📦</button>
       </div>
       <span style="font-size:14px;font-weight:600;margin-left:auto;">Art Log</span>
     </div>
@@ -2232,11 +2230,11 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Fit Log Content -->
   <div id="journal-fit" class="journal-tab">
     <div class="toolbar">
-      <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openFitModal()">💪 + บันทึกออกกำลังกาย</button>
+      <button type="button" class="btn" style="font-size:13px;padding:6px 16px;" onclick="openFitModal()">💪 + บันทึกออกกำลังกาย</button>
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-        <button class="filter-chip active" onclick="setJournalFilter('fit','all')" id="fit-filter-all">ทั้งหมด</button>
-        <button class="filter-chip" onclick="setJournalFilter('fit','fav')" id="fit-filter-fav">⭐</button>
-        <button class="filter-chip" onclick="setJournalFilter('fit','archived')" id="fit-filter-archived">📦</button>
+        <button type="button" class="filter-chip active" onclick="setJournalFilter('fit','all')" id="fit-filter-all">ทั้งหมด</button>
+        <button type="button" class="filter-chip" onclick="setJournalFilter('fit','fav')" id="fit-filter-fav">⭐</button>
+        <button type="button" class="filter-chip" onclick="setJournalFilter('fit','archived')" id="fit-filter-archived">📦</button>
       </div>
       <span style="font-size:14px;font-weight:600;margin-left:auto;">Fit Log</span>
     </div>
@@ -2250,10 +2248,10 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <div style="min-height: calc(100vh - 200px); display: flex; flex-direction: column;">
     <div style="flex:1;">
       <div class="toolbar">
-        <button class="btn" id="upload-btn" onclick="openUploadWidget()">📁 + เพิ่มรูป</button>
-        <button class="btn secondary" id="ref-select-btn" onclick="toggleRefSelection()">✏️ Select</button>
-        <button class="btn secondary" id="ref-select-all-btn" onclick="toggleSelectAll()" style="display:none;">SelectAll</button>
-        <button class="btn secondary" id="ref-back-btn" onclick="clearRefFilters()" style="display:none;">📁 กลับไป Board</button>
+        <button type="button" class="btn" id="upload-btn" onclick="openUploadWidget()">📁 + เพิ่มรูป</button>
+        <button type="button" class="btn secondary" id="ref-select-btn" onclick="toggleRefSelection()">✏️ Select</button>
+        <button type="button" class="btn secondary" id="ref-select-all-btn" onclick="toggleSelectAll()" style="display:none;">SelectAll</button>
+        <button type="button" class="btn secondary" id="ref-back-btn" onclick="clearRefFilters()" style="display:none;">📁 กลับไป Board</button>
         <input class="input" id="ref-search" placeholder="🔍 ค้นหาทุกอย่าง (หมวด, board, tags, note)" 
                 list="ref-search-suggestions" style="flex:1;min-width:120px;" 
                 oninput="renderRef()" onchange="renderRef()">
@@ -2266,7 +2264,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
                list="ref-board-filter-suggestions" style="max-width:150px;" 
                oninput="renderRef()" onchange="renderRef()">
         <datalist id="ref-board-filter-suggestions"></datalist>
-        <button class="filter-chip" id="fav-filter-ref" onclick="toggleFavFilter('ref')" 
+        <button type="button" class="filter-chip" id="fav-filter-ref" onclick="toggleFavFilter('ref')" 
         style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:11px;cursor:pointer;color:var(--muted);transition:all 0.2s;">
   ⭐
 </button>
@@ -2286,16 +2284,16 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div id="batch-action-bar" class="batch-action-bar" style="display:none;">
       <div class="batch-row">
         <span class="batch-info" id="batch-info">เลือก 0 รูป</span>
-        <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="clearRefSelection()">ยกเลิกเลือก</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="clearRefSelection()">ยกเลิกเลือก</button>
       </div>
       <div class="batch-row" style="flex-wrap:nowrap;">
         <label style="font-size:10px;min-width:45px;">หมวด:</label>
         <input class="input" id="batch-category" placeholder="ไม่เปลี่ยน" list="ref-category-suggestions" style="flex:1;min-width:60px;padding:4px 6px;font-size:11px;">
-        <button class="btn secondary" style="font-size:9px;padding:2px 6px;" onclick="addNewRefCategory()">+</button>
+        <button type="button" class="btn secondary" style="font-size:9px;padding:2px 6px;" onclick="addNewRefCategory()">+</button>
       
         <label style="font-size:10px;min-width:40px;">Board:</label>
         <input class="input" id="batch-board" placeholder="ไม่เปลี่ยน" list="board-suggestions" style="flex:1;min-width:60px;padding:4px 6px;font-size:11px;">
-        <button class="btn secondary" style="font-size:9px;padding:2px 6px;" onclick="addNewRefBoard()">+</button>
+        <button type="button" class="btn secondary" style="font-size:9px;padding:2px 6px;" onclick="addNewRefBoard()">+</button>
       
         <label style="font-size:10px;min-width:35px;">Tags:</label>
         <input class="input" id="batch-tags" placeholder="แทนที่" 
@@ -2306,10 +2304,10 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <datalist id="ref-tag-suggestions"></datalist>
       </div>
       <div class="batch-row" style="margin-top:4px;">
-        <button class="btn" style="font-size:10px;padding:4px 10px;" onclick="applyBatchEdit()">✅ ใช้</button>
-        <button class="btn danger" style="font-size:10px;padding:4px 10px;" onclick="deleteSelectedRefs()">🗑️ ลบ</button>
+        <button type="button" class="btn" style="font-size:10px;padding:4px 10px;" onclick="applyBatchEdit()">✅ ใช้</button>
+        <button type="button" class="btn danger" style="font-size:10px;padding:4px 10px;" onclick="deleteSelectedRefs()">🗑️ ลบ</button>
         <span style="flex:1;"></span>
-        <button class="btn secondary" style="font-size:10px;padding:4px 10px;" onclick="clearRefSelection()">✕ ยกเลิก</button>
+        <button type="button" class="btn secondary" style="font-size:10px;padding:4px 10px;" onclick="clearRefSelection()">✕ ยกเลิก</button>
       </div>
     </div>
   </div>
@@ -2319,14 +2317,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 <!-- ============ PAGE: Life Map ============ -->
 <div class="page" id="page-vision">
   <div class="toolbar">
-    <button class="btn" onclick="openVisionModal()">+ เพิ่มวิสัยทัศน์</button>
+    <button type="button" class="btn" onclick="openVisionModal()">+ เพิ่มวิสัยทัศน์</button>
     
     <!-- Filter Chips -->
     <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
       <button class="filter-chip active" onclick="setVisionFilter('all')" id="vision-filter-all">ทั้งหมด</button>
-      <button class="filter-chip" onclick="setVisionFilter('fav')" id="vision-filter-fav">⭐</button>
-      <button class="filter-chip" onclick="setVisionFilter('archived')" id="vision-filter-archived">📦</button>
-      <button class="filter-chip" onclick="setVisionFilter('priority')" id="vision-filter-priority">📊</button>
+      <button type="button" class="filter-chip" onclick="setVisionFilter('fav')" id="vision-filter-fav">⭐</button>
+      <button type="button" class="filter-chip" onclick="setVisionFilter('archived')" id="vision-filter-archived">📦</button>
+      <button type="button" class="filter-chip" onclick="setVisionFilter('priority')" id="vision-filter-priority">📊</button>
     </div>
     
     <select class="input" id="vision-cat-filter" onchange="renderVision()" style="display:none;">
@@ -2337,7 +2335,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <option value="growth">พัฒนาตนเอง</option>
       <option value="lifestyle">ไลฟ์สไตล์</option>
     </select>
-    <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+    <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
   </div>
   <div id="vision-list"></div>
   <div class="empty" id="vision-empty" style="display:none;">ยังไม่มีวิสัยทัศน์ที่บันทึกไว้</div>
@@ -2348,7 +2346,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Sub Navigation: Goals + Study -->
   <div style="display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:10px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;justify-content:center;">
     <button class="sub-nav-btn active" id="goals-sub-goals" onclick="switchGoalsTab('goals')">🎯 เป้าหมาย <span id="calendar-goal-count" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:4px;">0</span></button>
-    <button class="sub-nav-btn" id="goals-sub-study" onclick="switchGoalsTab('study')">📚 แผนเรียน</button>
+    <button type="button" class="sub-nav-btn" id="goals-sub-study" onclick="switchGoalsTab('study')">📚 แผนเรียน</button>
   </div>
 
   <!-- Goals Content -->
@@ -2363,17 +2361,17 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
           <span style="font-size:12px;color:var(--muted);">▼</span>
         </div>
         <div style="display:flex;gap:4px;align-items:center;">
-          <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();openCalendarPopup()">📅 ปฏิทิน</button>
-          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();clearDateFilter()">🗑️ ล้าง filter</button>
+          <button type="button" class="btn" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();openCalendarPopup()">📅 ปฏิทิน</button>
+          <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();clearDateFilter()">🗑️ ล้าง filter</button>
         </div>
       </div>
       
       <!-- Calendar body - can be collapsed -->
       <div id="calendar-body">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
-          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(-1)">◀</button>
-          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(1)">▶</button>
-          <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="resetCalendar()">📅 วันนี้</button>
+          <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(-1)">◀</button>
+          <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(1)">▶</button>
+          <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="resetCalendar()">📅 วันนี้</button>
           <span style="font-size:11px;color:var(--muted);margin-left:auto;">
             <span id="calendar-goal-count">0</span> เป้าหมาย
           </span>
@@ -2387,14 +2385,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     </div>
     
     <div class="toolbar">
-      <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+      <button type="button" class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
       
       <!-- Filter Chips -->
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
         <button class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
-        <button class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
-        <button class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
-        <button class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
+        <button type="button" class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
+        <button type="button" class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
+        <button type="button" class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
       </div>
       
       <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
@@ -2424,7 +2422,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <option value="all">แสดงทั้งหมด</option>
       </select>
       
-      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+      <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
     </div>
     
     <div id="goals-list"></div>
@@ -2434,14 +2432,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Study Content -->
   <div id="goals-tab-study" class="goals-tab">
     <div class="toolbar">
-      <button class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
+      <button type="button" class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
       
       <!-- Filter Chips -->
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
         <button class="filter-chip active" onclick="setStudyFilter('all')" id="study-filter-all">ทั้งหมด</button>
-        <button class="filter-chip" onclick="setStudyFilter('fav')" id="study-filter-fav">⭐</button>
-        <button class="filter-chip" onclick="setStudyFilter('archived')" id="study-filter-archived">📦</button>
-        <button class="filter-chip" onclick="setStudyFilter('status')" id="study-filter-status">📊</button>
+        <button type="button" class="filter-chip" onclick="setStudyFilter('fav')" id="study-filter-fav">⭐</button>
+        <button type="button" class="filter-chip" onclick="setStudyFilter('archived')" id="study-filter-archived">📦</button>
+        <button type="button" class="filter-chip" onclick="setStudyFilter('status')" id="study-filter-status">📊</button>
       </div>
       
       <select class="input" id="study-status-filter" onchange="renderStudy()" style="display:none;">
@@ -2463,7 +2461,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <option value="all">แสดงทั้งหมด</option>
       </select>
       
-      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+      <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
     </div>
     <div id="study-list"></div>
     <div class="empty" id="study-empty" style="display:none;">ยังไม่มีแผนเรียน</div>
@@ -2474,7 +2472,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 <div class="page" id="page-finance">
   <!-- Finance Tabs -->
   <div class="finance-tabs">
-    <button class="finance-tab active" onclick="switchFinanceTab('overview')"> Overview</button>
+    <button type="button" class="finance-tab active" onclick="switchFinanceTab('overview')"> Overview</button>
     <button class="finance-tab" onclick="switchFinanceTab('transactions')"> Transactions</button>
     <button class="finance-tab" onclick="switchFinanceTab('budgets')"> Budgets</button>
     <button class="finance-tab" onclick="switchFinanceTab('goals')">💰 Goals</button>
@@ -2503,8 +2501,8 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Tab: Transactions -->
   <div id="finance-transactions" class="finance-tab-content">
     <div class="toolbar">
-      <button class="btn" onclick="openTransactionModal()">+ เพิ่มรายการ</button>
-      <button class="btn secondary" onclick="openImportCSVModal()">📥 Import CSV</button>
+      <button type="button" class="btn" onclick="openTransactionModal()">+ เพิ่มรายการ</button>
+      <button type="button" class="btn secondary" onclick="openImportCSVModal()">📥 Import CSV</button>
       <select class="input" id="transaction-type-filter" onchange="renderFinanceTransactions()">
         <option value="all">ทั้งหมด</option>
         <option value="income">รายรับ</option>
@@ -2523,9 +2521,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Tab: Budgets -->
   <div id="finance-budgets" class="finance-tab-content">
     <div class="toolbar">
-  <button class="btn" onclick="openBudgetModal()">+ ตั้งงบประมาณ</button>
-  <button class="btn secondary" onclick="openPresetUseModal()"> จาก Preset</button>
-  <button class="btn secondary" onclick="openPresetSaveModal()">💾 บันทึก Preset</button>
+  <button type="button" class="btn" onclick="openBudgetModal()">+ ตั้งงบประมาณ</button>
+  <button type="button" class="btn secondary" onclick="openPresetUseModal()"> จาก Preset</button>
+  <button type="button" class="btn secondary" onclick="openPresetSaveModal()">💾 บันทึก Preset</button>
   <select class="input" id="budget-month-filter" onchange="renderBudgets()">
     <option value="">เดือนนี้</option>
   </select>
@@ -2542,14 +2540,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Tab: Goals -->
   <div id="finance-goals" class="finance-tab-content">
     <div class="toolbar">
-  <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+  <button type="button" class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
   
   <!-- Filter Chips -->
   <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
     <button class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
-    <button class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
-    <button class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
-    <button class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
+    <button type="button" class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
+    <button type="button" class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
+    <button type="button" class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
   </div>
   
   <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
@@ -2579,16 +2577,16 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <option value="all">แสดงทั้งหมด</option>
   </select>
   
-  <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+  <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
 </div>
-  <button class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
+  <button type="button" class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
   
   <!-- Filter Chips -->
   <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
     <button class="filter-chip active" onclick="setFinanceFilter('all')" id="finance-filter-all">ทั้งหมด</button>
-    <button class="filter-chip" onclick="setFinanceFilter('fav')" id="finance-filter-fav">⭐</button>
-    <button class="filter-chip" onclick="setFinanceFilter('archived')" id="finance-filter-archived">📦</button>
-    <button class="filter-chip" onclick="setFinanceFilter('filter')" id="finance-filter-filter">📊</button>
+    <button type="button" class="filter-chip" onclick="setFinanceFilter('fav')" id="finance-filter-fav">⭐</button>
+    <button type="button" class="filter-chip" onclick="setFinanceFilter('archived')" id="finance-filter-archived">📦</button>
+    <button type="button" class="filter-chip" onclick="setFinanceFilter('filter')" id="finance-filter-filter">📊</button>
   </div>
   
   <select class="input" id="finance-priority-filter" onchange="renderFinanceGoals()" style="display:none;">
@@ -2615,7 +2613,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <option value="all">แสดงทั้งหมด</option>
   </select>
   
-  <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+  <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
 </div>
     <div id="finance-goals-list"></div>
     <div class="empty" id="finance-goals-empty" style="display:none;">ยังไม่มีเป้าหมายการเงิน</div>
@@ -2624,13 +2622,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Tab: Wishlist -->
   <div id="finance-wishlist" class="finance-tab-content">
     <div class="toolbar">
-      <button class="btn" onclick="openWishModal()">🛍️ + ของที่อยากได้</button>
+      <button type="button" class="btn" onclick="openWishModal()">🛍️ + ของที่อยากได้</button>
       <!-- Filter Chips -->
   <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
     <button class="filter-chip active" onclick="setWishFilter('all')" id="wish-filter-all">ทั้งหมด</button>
-    <button class="filter-chip" onclick="setWishFilter('fav')" id="wish-filter-fav">⭐</button>
-    <button class="filter-chip" onclick="setWishFilter('archived')" id="wish-filter-archived">📦</button>
-    <button class="filter-chip" onclick="setWishFilter('filter')" id="wish-filter-filter">📊</button>
+    <button type="button" class="filter-chip" onclick="setWishFilter('fav')" id="wish-filter-fav">⭐</button>
+    <button type="button" class="filter-chip" onclick="setWishFilter('archived')" id="wish-filter-archived">📦</button>
+    <button type="button" class="filter-chip" onclick="setWishFilter('filter')" id="wish-filter-filter">📊</button>
   </div>
     <select class="input" id="wish-priority-filter" onchange="renderWishlist()" style="display:none;">
     <option value="">⭐ ทุกระดับ</option>
@@ -2653,14 +2651,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 <!-- ============ PAGE: Study Plan ============ -->
 <div class="page" id="page-study">
   <div class="toolbar">
-    <button class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
+    <button type="button" class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
     
     <!-- Filter Chips -->
     <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
       <button class="filter-chip active" onclick="setStudyFilter('all')" id="study-filter-all">ทั้งหมด</button>
-      <button class="filter-chip" onclick="setStudyFilter('fav')" id="study-filter-fav">⭐</button>
-      <button class="filter-chip" onclick="setStudyFilter('archived')" id="study-filter-archived">📦</button>
-      <button class="filter-chip" onclick="setStudyFilter('status')" id="study-filter-status">📊</button>
+      <button type="button" class="filter-chip" onclick="setStudyFilter('fav')" id="study-filter-fav">⭐</button>
+      <button type="button" class="filter-chip" onclick="setStudyFilter('archived')" id="study-filter-archived">📦</button>
+      <button type="button" class="filter-chip" onclick="setStudyFilter('status')" id="study-filter-status">📊</button>
     </div>
     
     <select class="input" id="study-status-filter" onchange="renderStudy()" style="display:none;">
@@ -2682,7 +2680,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <option value="all">แสดงทั้งหมด</option>
     </select>
     
-    <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+    <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
   </div>
   <div id="study-list"></div>
   <div class="empty" id="study-empty" style="display:none;">ยังไม่มีแผนเรียน</div>
@@ -2690,14 +2688,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 <!-- ============ PAGE: Project Board ============ -->
 <div class="page" id="page-projects">
   <div class="toolbar">
-    <button class="btn" onclick="openProjectModal()">+ เพิ่มโปรเจกต์</button>
+    <button type="button" class="btn" onclick="openProjectModal()">+ เพิ่มโปรเจกต์</button>
   
     <!-- Filter Chips -->
     <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
       <button class="filter-chip active" onclick="setProjectFilter('all')" id="project-filter-all">ทั้งหมด</button>
-      <button class="filter-chip" onclick="setProjectFilter('fav')" id="project-filter-fav">⭐</button>
-      <button class="filter-chip" onclick="setProjectFilter('archived')" id="project-filter-archived">📦</button>
-      <button class="filter-chip" onclick="setProjectFilter('status')" id="project-filter-status">📊</button>
+      <button type="button" class="filter-chip" onclick="setProjectFilter('fav')" id="project-filter-fav">⭐</button>
+      <button type="button" class="filter-chip" onclick="setProjectFilter('archived')" id="project-filter-archived">📦</button>
+      <button type="button" class="filter-chip" onclick="setProjectFilter('status')" id="project-filter-status">📊</button>
     </div>
   
     <select class="input" id="project-status-filter" onchange="renderProjects()" style="display:none;">
@@ -2720,7 +2718,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <option value="archived">แสดงเฉพาะที่ซ่อน</option>
       <option value="all">แสดงทั้งหมด</option>
     </select>
-      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+      <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
 
   </div>
   <div id="projects-list"></div>
@@ -2780,14 +2778,14 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
       <label style="font-weight:600;">📁 Ref Library (<span id="project-ref-count">0</span> รูป)</label>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="openRefSelectionForProject()">เลือก Ref</button>
-        <button class="btn secondary" style="font-size:11px;padding:4px 12px;color:var(--red);border-color:var(--red);" onclick="clearProjectRefs()">🗑️ ลบ Ref ทั้งหมด</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="openRefSelectionForProject()">เลือก Ref</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;color:var(--red);border-color:var(--red);" onclick="clearProjectRefs()">🗑️ ลบ Ref ทั้งหมด</button>
         <div id="project-ref-preview" style="display:flex;gap:4px;flex-wrap:wrap;flex:1;"></div>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('project-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveProject()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('project-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveProject(event)">บันทึก</button>
     </div>
   </div>
 </div>
@@ -2797,9 +2795,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;flex-shrink:0;">
       <h3 id="project-detail-title" style="font-size:18px;">ชื่อโปรเจกต์</h3>
       <div style="display:flex;gap:6px;">
-      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="toggleEditProjectDesc()">✎ แก้ไข</button>        
-      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editProjectFromDetail()">📋 แก้ไขทั้งหมด</button>
-        <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="closeModal('project-detail-modal')">✕</button>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="toggleEditProjectDesc()">✎ แก้ไข</button>        
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editProjectFromDetail()">📋 แก้ไขทั้งหมด</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="closeModal('project-detail-modal')">✕</button>
       </div>
     </div>
     <div id="project-detail-content" style="flex:1;overflow-y:auto;padding-bottom:20px;"></div>
@@ -2813,7 +2811,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="item-desc">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ JSON</div>
     <div class="item-footer">
       <span></span>
-      <button class="btn" onclick="exportAll()">Export JSON</button>
+      <button type="button" class="btn" onclick="exportAll()">Export JSON</button>
     </div>
   </div>
   <div class="item-card">
@@ -2841,7 +2839,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <label>หมวดหมู่</label>
       <input class="input" id="ref-input-category" placeholder="พิมพ์หรือเลือกหมวดหมู่" list="ref-category-suggestions">
       <datalist id="ref-category-suggestions"></datalist>
-      <button class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" 
+      <button type="button" class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" 
           onclick="addNewRefCategory()">+ เพิ่มหมวดหมู่ใหม่</button>
     </div>
     <div class="field">
@@ -2849,7 +2847,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" id="ref-input-board" placeholder="เช่น inspiration, study, commission-ref" 
         list="board-suggestions">
       <datalist id="board-suggestions"></datalist>
-      <button class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" 
+      <button type="button" class="btn secondary" style="font-size:10px;padding:4px 8px;margin-top:4px;" 
           onclick="addNewRefBoard()">+ เพิ่ม Board ใหม่</button>
     </div>
     <div class="field">
@@ -2866,8 +2864,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <textarea class="input" id="ref-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('ref-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveMultiRef()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('ref-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveMultiRef(event)">💾 บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -2918,15 +2917,16 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
       <label style="font-weight:600;">📁 Ref Library (<span id="vision-ref-count">0</span> รูป)</label>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="openRefSelectionForVision()">เลือก Ref</button>
-        <button class="btn secondary" style="font-size:11px;padding:4px 12px;color:var(--red);border-color:var(--red);" onclick="clearVisionRefs()">🗑️ ลบ Ref ทั้งหมด</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="openRefSelectionForVision()">เลือก Ref</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;color:var(--red);border-color:var(--red);" onclick="clearVisionRefs()">🗑️ ลบ Ref ทั้งหมด</button>
         <div id="vision-ref-preview" style="display:flex;gap:4px;flex-wrap:wrap;flex:1;"></div>
       </div>
     </div>
     
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('vision-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveVision()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('vision-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveVision(event)">บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -2979,15 +2979,16 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
       <label style="font-weight:600;">📁 Ref Library (<span id="goal-ref-count">0</span> รูป)</label>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="openRefSelectionForGoal()">เลือก Ref</button>
-        <button class="btn secondary" style="font-size:11px;padding:4px 12px;color:var(--red);border-color:var(--red);" onclick="clearGoalRefs()">🗑️ ลบ Ref ทั้งหมด</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="openRefSelectionForGoal()">เลือก Ref</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;color:var(--red);border-color:var(--red);" onclick="clearGoalRefs()">🗑️ ลบ Ref ทั้งหมด</button>
         <div id="goal-ref-preview" style="display:flex;gap:4px;flex-wrap:wrap;flex:1;"></div>
       </div>
     </div>
     
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('goal-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveGoal()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('goal-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveGoal(event)">บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3035,8 +3036,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   </select>
 </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('finance-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveFinance()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('finance-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveFinance(event)">บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3088,8 +3090,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" id="wish-input-link" placeholder="https://...">
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('wish-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveWish()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('wish-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveWish(event)">บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3102,8 +3105,8 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <input class="input" type="number" id="finance-update-amount" placeholder="0">
       </div>
       <div class="modal-actions">
-        <button class="btn secondary" onclick="closeModal('finance-update-modal')">ยกเลิก</button>
-        <button class="btn" onclick="confirmUpdateFinance()">บันทึก</button>
+        <button type="button" class="btn secondary" onclick="closeModal('finance-update-modal')">ยกเลิก</button>
+        <button type="button" class="btn" onclick="confirmUpdateFinance(event)">บันทึก</button>
       </div>
     </div>
   </div>
@@ -3119,8 +3122,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" type="number" id="wish-update-amount" placeholder="0">
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('wish-update-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmUpdateWish()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('wish-update-modal')">ยกเลิก</button>
+
+      <button type="button" class="btn" onclick="confirmUpdateWish(event)">บันทึก</button>
     </div>
   </div>
 </div>
@@ -3161,8 +3165,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" id="study-input-link" placeholder="https://...">
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('study-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveStudy()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('study-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveStudy(event)">บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3193,8 +3198,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" id="idea-input-link" placeholder="https://...">
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('idea-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveIdea()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('idea-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveIdea(event)">💾 บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3230,8 +3236,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" id="knowledge-input-link" placeholder="https://...">
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('knowledge-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveKnowledge()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('knowledge-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveKnowledge(event)">💾 บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3267,8 +3274,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <datalist id="global-tag-suggestions"></datalist>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('art-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveArt()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('art-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveArt(event)">💾 บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3306,8 +3314,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <datalist id="global-tag-suggestions"></datalist>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('fit-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveFit()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('fit-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveFit(event)">💾 บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3340,8 +3349,8 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div id="ref-selection-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;max-height:50vh;overflow-y:auto;padding:4px;"></div>
     <div class="modal-actions">
       <span style="flex:1;font-size:12px;color:var(--muted);" id="ref-selection-info">เลือก 0 รูป</span>
-      <button class="btn secondary" onclick="closeModal('ref-selection-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmRefSelection()">✅ ยืนยัน</button>
+      <button type="button" class="btn secondary" onclick="closeModal('ref-selection-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmRefSelection()">✅ ยืนยัน</button>
     </div>
   </div>
 </div>
@@ -3365,8 +3374,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <datalist id="global-tag-suggestions"></datalist>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('inbox-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveInbox()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('inbox-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveInbox(event)">💾 บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3407,8 +3417,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" id="daily-input-image" placeholder="https://... หรือลากจาก Cloudinary">
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('daily-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveDaily()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('daily-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveDaily(event)">💾 บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3432,8 +3443,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('inbox-convert-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmConvertInbox()">แปลง + ลบ Inbox</button>
+      <button type="button" class="btn secondary" onclick="closeModal('inbox-convert-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmConvertInbox(event)">แปลง + ลบ Inbox</button>
+
     </div>
   </div>
 </div>
@@ -3447,7 +3459,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="bottom-tab-icon">🎯</div>
     <div class="bottom-tab-label">Goals</div>
   </div>
-  <button class="fab-note" id="fab-note">📝</button>
+  <button type="button" class="fab-note" id="fab-note">📝</button>
   <div class="bottom-tab" data-section="study">
     <div class="bottom-tab-icon">📚</div>
     <div class="bottom-tab-label">Study</div>
@@ -3508,8 +3520,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" id="transaction-input-note" placeholder="เช่น ข้าวกลางวัน">
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('transaction-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveTransaction()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('transaction-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveTransaction(event)">บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3528,8 +3541,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <div class="budget-total-display" id="budget-total-display">รวม: 0 บาท</div>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('budget-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveBudget()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('budget-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSaveBudget()">💾 บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3558,8 +3572,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" type="number" id="budget-edit-input-limit" placeholder="5000">
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('budget-edit-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmEditBudget()">บันทึก</button>
+      <button type="button" class="btn secondary" onclick="closeModal('budget-edit-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmEditBudget()">บันทึก</button>
+
     </div>
   </div>
 </div>
@@ -3579,8 +3594,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       </label>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('import-csv-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmImportCSV()">Import</button>
+      <button type="button" class="btn secondary" onclick="closeModal('import-csv-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmImportCSV(event)">Import</button>
+
     </div>
   </div>
 </div>
@@ -3599,8 +3615,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       </label>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('preset-save-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSavePreset()">บันทึก Preset</button>
+      <button type="button" class="btn secondary" onclick="closeModal('preset-save-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmSavePreset()">บันทึก Preset</button>
+
     </div>
   </div>
 </div>
@@ -3623,8 +3640,9 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       </label>
     </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('preset-use-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmCreateFromPreset()">สร้าง Budgets</button>
+      <button type="button" class="btn secondary" onclick="closeModal('preset-use-modal')">ยกเลิก</button>
+      <button type="button" class="btn" onclick="confirmCreateFromPreset(event)">สร้าง Budgets</button>
+
     </div>
   </div>
 </div>
@@ -3633,7 +3651,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <div class="modal" style="max-width: 600px; padding: 24px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
       <h3 id="detail-modal-title" style="font-size:18px;margin:0;">หัวข้อ</h3>
-      <button class="btn secondary" style="font-size:12px;padding:4px 12px;" onclick="closeModal('detail-modal')">✕</button>
+      <button type="button" class="btn secondary" style="font-size:12px;padding:4px 12px;" onclick="closeModal('detail-modal')">✕</button>
     </div>
     <div id="detail-modal-body" style="font-size:14px;line-height:1.8;color:var(--text);"></div>
   </div>
@@ -3644,11 +3662,21 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 // ไม่มี object กลางที่ทุกอย่างยัดรวม (เรียนรู้จากปัญหา tracker เดิม)
 // ==========================================================
 
+function preventBodyScroll(shouldPrevent) {
+  if (shouldPrevent) {
+    document.body.classList.add('modal-open');
+  } else {
+    document.body.classList.remove('modal-open');
+  }
+}
+
 function closeModal(id) {
   const modal = document.getElementById(id);
   if (!modal || !modal.classList.contains('show')) return;
   
   modal.classList.remove('show');
+  
+  preventBodyScroll(false);
   
   // รีเซ็ต modal กลับสู่โหมดเพิ่มใหม่
   if (id === 'vision-modal') {
@@ -3735,6 +3763,7 @@ function closeModal(id) {
   }
 }
 
+
 // ---------- Navigation ----------
 const PAGES = [
   { id: 'journal', label: '📝 จด', primary: true },
@@ -3749,35 +3778,61 @@ const PAGES = [
 
 function renderNav() {
   const nav = document.getElementById('nav');
-  const currentPage = getCurrentPage(); // ← ดึง current page ก่อน render
+  const currentPage = getCurrentPage();
   
-  nav.innerHTML = PAGES.map(p => {
+  // ✅ สร้าง HTML ก่อน แล้วค่อยใส่
+  let html = '';
+  
+  for (const p of PAGES) {
     let badge = '';
+    let badgeHtml = '';
+    
     if (p.id === 'journal') {
-      getInbox().then(items => {
-        const count = items.filter(i => !i.processed).length;
-        const badgeEl = document.getElementById(`nav-badge-${p.id}`);
-        if (badgeEl) {
-          if (count > 0) {
-            badgeEl.textContent = count;
-            badgeEl.style.display = 'inline';
-          } else {
-            badgeEl.style.display = 'none';
-          }
-        }
-      });
-      badge = ` <span id="nav-badge-journal" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:2px;display:none;">0</span>`;
+      // ✅ ใช้ try-catch ป้องกัน error
+      try {
+        const items = getInbox(); // เรียกแบบ sync (ข้อมูลอาจจะยังไม่โหลด)
+        // แต่เราจะอัพเดต badge ทีหลัง
+      } catch(e) {}
+      badgeHtml = ` <span id="nav-badge-${p.id}" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:2px;display:none;">0</span>`;
     }
+    
     const isPrimary = p.primary ? 'primary' : '';
-    const isActive = (currentPage === p.id) ? 'active' : ''; // ← ตรวจสอบ active
-    return `<button class="nav-btn ${isPrimary} ${isActive}" id="nav-${p.id}" onclick="switchPage('${p.id}')">${p.label}${badge}</button>`;
-  }).join('');
+    const isActive = (currentPage === p.id) ? 'active' : '';
+    html += `<button type="button" class="nav-btn ${isPrimary} ${isActive}" id="nav-${p.id}" onclick="switchPage('${p.id}')">${p.label}${badgeHtml}</button>`;
+  }
   
+  nav.innerHTML = html;
+  
+  // ✅ อัพเดต badge แยกต่างหาก
+  updateNavBadge();
+  
+  // ✅ ลดความล่าช้า และตรวจสอบว่า Modal ปิดอยู่หรือไม่
   setTimeout(() => {
     updateNavOverflow();
-    scrollToActiveNav();
+    // ✅ เรียก scroll เฉพาะเมื่อ Modal ปิด
+    if (!document.querySelector('.modal-overlay.show')) {
+    // scrollToActiveNav(); //
+    }
     syncBottomTabActive();
-  }, 100);
+  }, 50); // ← ลดจาก 100 เป็น 50
+}
+
+// ✅ ฟังก์ชันแยกสำหรับอัพเดต badge
+function updateNavBadge() {
+  try {
+    getInbox().then(items => {
+      const count = items.filter(i => !i.processed).length;
+      const badgeEl = document.getElementById('nav-badge-journal');
+      if (badgeEl) {
+        if (count > 0) {
+          badgeEl.textContent = count;
+          badgeEl.style.display = 'inline';
+        } else {
+          badgeEl.style.display = 'none';
+        }
+      }
+    });
+  } catch(e) {}
 }
 // ✅ sync top nav active state
 function syncTopNavActive() {
@@ -3825,6 +3880,21 @@ window.addEventListener('resize', updateNavOverflow);
 
 // Auto-scroll ไปที่ปุ่มที่ active เมื่อเปิดหน้า
 function scrollToActiveNav() {
+  // ✅ ถ้า Modal เปิดอยู่ → ไม่ scroll
+  if (document.querySelector('.modal-overlay.show')) {
+    return;
+  }
+  
+  // ✅ ถ้ากำลังพิมพ์ใน input → ไม่ scroll
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+    return;
+  }
+  
+  // ✅ ถ้ากำลังพิมพ์ใน textarea → ไม่ scroll
+  if (document.activeElement && document.activeElement.tagName === 'TEXTAREA') {
+    return;
+  }
+  
   const activeBtn = document.querySelector('.nav-btn.active');
   if (activeBtn) {
     activeBtn.scrollIntoView({ 
@@ -3842,16 +3912,21 @@ function switchPage(pageId) {
     if (pageEl) pageEl.classList.remove('active');
     if (navEl) navEl.classList.remove('active');
   });
+  
   const pageEl = document.getElementById(`page-${pageId}`);
   const navEl = document.getElementById(`nav-${pageId}`);
   if (pageEl) pageEl.classList.add('active');
   if (navEl) navEl.classList.add('active');
-  localStorage.setItem('last_active_page', pageId);
   
-  // ✅ update bottom tab
+  localStorage.setItem('last_active_page', pageId);
   updateBottomTabActive(pageId);
   
-  setTimeout(scrollToActiveNav, 100);
+  // ✅ เรียก scroll ด้วย delay สั้นๆ และตรวจสอบ Modal
+  setTimeout(() => {
+    if (!document.querySelector('.modal-overlay.show')) {
+      scrollToActiveNav();
+    }
+  }, 50);
 }
 // ===== เปลี่ยนหน้า + ตั้งค่า filter =====
 function switchPageWithFilter(pageId, filterValue) {
@@ -4308,7 +4383,7 @@ async function renderDashboard() {
   if (goals.length === 0) {
     statusDiv.innerHTML = `
       <span style="color:var(--muted);font-size:13px;">ยังไม่มีเป้าหมาย</span>
-      <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+      <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
     `;
   } else {
     const totalGoals = goals.length;
@@ -4439,8 +4514,8 @@ if (topRecent.length === 0) {
     <div class="empty" style="padding:20px 0;">
       ยังไม่มีกิจกรรม
       <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openUploadWidget()">📁 เพิ่มรูปแรก</button>
-        <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">🎯 เพิ่มเป้าหมายแรก</button>
+        <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="openUploadWidget()">📁 เพิ่มรูปแรก</button>
+        <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">🎯 เพิ่มเป้าหมายแรก</button>
       </div>
     </div>
   `;
@@ -5220,7 +5295,7 @@ function openRefModalWithPreview() {
     `💾 บันทึก ${pendingUploadUrls.length} รูป`;
   document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveMultiRef;
   
-  document.getElementById('ref-modal').classList.add('show');
+  document.getElementById('ref-modal').classList.add('show'); preventBodyScroll(true);
 }
 function removePendingUpload(idx) {
   pendingUploadUrls.splice(idx, 1);
@@ -5231,7 +5306,8 @@ function removePendingUpload(idx) {
   }
   openRefModalWithPreview(); // re-render
 }
-async function confirmSaveMultiRef() {
+async function confirmSaveMultiRef(event) {
+  if (event) event.preventDefault();
   if (pendingUploadUrls.length === 0) {
     showToast('❌ ไม่มีรูป', 'error');
     return;
@@ -5526,9 +5602,9 @@ async function updateBoardTabs() {
   const currentBoard = document.getElementById('ref-board-filter').value;
   
   tabs.innerHTML = `
-    <button class="btn secondary" style="font-size:11px;padding:4px 10px;${!currentBoard ? 'background:var(--accent);color:white;' : ''}" onclick="document.getElementById('ref-board-filter').value='';renderRef();">📁 ทั้งหมด (${items.length})</button>
+    <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;${!currentBoard ? 'background:var(--accent);color:white;' : ''}" onclick="document.getElementById('ref-board-filter').value='';renderRef();">📁 ทั้งหมด (${items.length})</button>
     ${boards.map(b => `
-      <button class="btn secondary" style="font-size:11px;padding:4px 10px;${currentBoard === b ? 'background:var(--accent);color:white;' : ''}" onclick="document.getElementById('ref-board-filter').value='${b}';renderRef();">
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;${currentBoard === b ? 'background:var(--accent);color:white;' : ''}" onclick="document.getElementById('ref-board-filter').value='${b}';renderRef();">
         📁 ${b} (${items.filter(i => (i.board || 'uncategorized') === b).length})
       </button>
     `).join('')}
@@ -5970,13 +6046,14 @@ function openVisionModal() {
   clearEditMode('vision');
   
   // แสดง modal
-  document.getElementById('vision-modal').classList.add('show');
+  document.getElementById('vision-modal').classList.add('show'); preventBodyScroll(true);
 }
-async function confirmSaveVision() {
+async function confirmSaveVision(event) {
+  if (event) event.preventDefault();
   const title = document.getElementById('vision-input-title').value.trim();
   if (!title) { 
     alert('กรุณาใส่หัวข้อ'); 
-    return; 
+    return false; 
   }
   
   const relations = getVisionSelectedRelations();
@@ -6046,14 +6123,15 @@ async function editVision(id) {
   setEditMode('vision', id);
   
   // แสดง modal
-  document.getElementById('vision-modal').classList.add('show');
+  document.getElementById('vision-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmEditVision() {
+async function confirmEditVision(event) {
+  if (event) event.preventDefault();
   const editingId = getEditingId('vision');
   if (editingId === null) {
     showToast('❌ ไม่พบรายการที่กำลังแก้ไข', 'error');
-    return;
+    return false;
   }
   
   const title = document.getElementById('vision-input-title').value.trim();
@@ -6303,12 +6381,12 @@ async function renderVisionRelationCheckboxes(selectedIds = {}) {
       <div style="grid-column:1/-1;color:var(--muted);font-size:12px;text-align:center;padding:8px 0;">
         ยังไม่มีข้อมูล
         <div style="margin-top:6px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openVisionModal();">+ Vision</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openGoalModal();">+ Goal</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openStudyModal();">+ Study</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openFinanceModal();">+ Finance</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openWishModal();">+ Wish</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openProjectModal();">+ Project</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openVisionModal();">+ Vision</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openGoalModal();">+ Goal</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openStudyModal();">+ Study</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openFinanceModal();">+ Finance</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openWishModal();">+ Wish</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openProjectModal();">+ Project</button>
         </div>
       </div>
     `;
@@ -6426,12 +6504,13 @@ function openGoalModal() {
   document.getElementById('goal-modal').querySelector('h3').textContent = 'เพิ่มเป้าหมาย';
   document.getElementById('goal-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveGoal;
   clearEditMode('goal');
-  document.getElementById('goal-modal').classList.add('show');
+  document.getElementById('goal-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmSaveGoal() {
+async function confirmSaveGoal(event) {
+  if (event) event.preventDefault();
   const title = document.getElementById('goal-input-title').value.trim();
-  if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
+  if (!title) { alert('กรุณาใส่หัวข้อ'); return false; }
   
   const relations = getGoalSelectedRelations();
   const item = {
@@ -6604,7 +6683,7 @@ async function renderGoals() {
       <div class="item-footer">
         <span class="item-date">${item.deadline ? '📅 ' + new Date(item.deadline).toLocaleDateString('th-TH') : 'ไม่มีกำหนด'}</span>
         <div style="display:flex;gap:4px;align-items:center;">
-          ${isFinanceGoal ? `<button class="btn secondary" style="font-size:9px;padding:2px 8px;" onclick="event.stopPropagation();switchPageWithFilter('finance', 'finance')">💰 ดูการเงิน</button>` : ''}
+          ${isFinanceGoal ? `<button type="button" class="btn secondary" style="font-size:9px;padding:2px 8px;" onclick="event.stopPropagation();switchPageWithFilter('finance', 'finance')">💰 ดูการเงิน</button>` : ''}
           <span class="status-badge status-${item.status}" style="cursor:pointer;" onclick="event.stopPropagation();cycleGoalStatus(${item.id})">${STATUS_LABELS[item.status]} (คลิกเปลี่ยน)</span>
         </div>
       </div>
@@ -6691,12 +6770,12 @@ async function renderGoalRelationCheckboxes(selectedIds = {}) {
       <div style="grid-column:1/-1;color:var(--muted);font-size:12px;text-align:center;padding:8px 0;">
         ยังไม่มีข้อมูล
         <div style="margin-top:6px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openVisionModal();">+ Vision</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openGoalModal();">+ Goal</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openStudyModal();">+ Study</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openFinanceModal();">+ Finance</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openWishModal();">+ Wish</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openProjectModal();">+ Project</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openVisionModal();">+ Vision</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openGoalModal();">+ Goal</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openStudyModal();">+ Study</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openFinanceModal();">+ Finance</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openWishModal();">+ Wish</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openProjectModal();">+ Project</button>
         </div>
       </div>
     `;
@@ -6796,10 +6875,11 @@ function openFinanceModal() {
   document.getElementById('finance-modal').querySelector('h3').textContent = 'เพิ่มเป้าหมายการเงิน';
   document.getElementById('finance-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFinance;
   clearEditMode('finance');
-  document.getElementById('finance-modal').classList.add('show');
+  document.getElementById('finance-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmSaveFinance() {
+async function confirmSaveFinance(event) {
+  if (event) event.preventDefault();
   const name = document.getElementById('finance-input-name').value.trim();
   const target = parseFloat(document.getElementById('finance-input-target').value);
   if (!name || isNaN(target) || target <= 0) { alert('กรุณาใส่ชื่อและเป้าหมายที่ถูกต้อง'); return; }
@@ -6830,7 +6910,8 @@ async function updateFinanceSaved(id) {  // ← เพิ่ม async
   document.getElementById('finance-update-modal').classList.add('show');
 }
 
-async function confirmUpdateFinance() {
+async function confirmUpdateFinance(event) {
+  if (event) event.preventDefault();
   if (pendingFinanceId === null) return;
   const val = parseFloat(document.getElementById('finance-update-amount').value);
   if (isNaN(val) || val < 0) { alert('กรุณาใส่ตัวเลขที่ถูกต้อง'); return; }
@@ -7255,7 +7336,8 @@ function openImportCSVModal() {
   document.getElementById('import-csv-modal').classList.add('show');
 }
 
-async function confirmImportCSV() {
+async function confirmImportCSV(event) {
+  if (event) event.preventDefault();
   const fileInput = document.getElementById('csv-file-input');
   const file = fileInput.files[0];
   
@@ -7391,10 +7473,11 @@ function openTransactionModal() {
   document.getElementById('transaction-input-category').value = 'food';
   document.getElementById('transaction-input-amount').value = '';
   document.getElementById('transaction-input-note').value = '';
-  document.getElementById('transaction-modal').classList.add('show');
+  document.getElementById('transaction-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmSaveTransaction() {
+async function confirmSaveTransaction(event) {
+  if (event) event.preventDefault();
   const amount = parseFloat(document.getElementById('transaction-input-amount').value);
   if (isNaN(amount) || amount <= 0) {
     alert('กรุณาใส่จำนวนเงินที่ถูกต้อง');
@@ -7480,7 +7563,7 @@ async function renderFinanceTransactions() {
 function openBudgetModal() {
   document.getElementById('budget-input-month').value = new Date().toISOString().slice(0, 7);
   renderBudgetCategoryCheckboxes();
-  document.getElementById('budget-modal').classList.add('show');
+  document.getElementById('budget-modal').classList.add('show'); preventBodyScroll(true);
 }
 function renderBudgetCategoryCheckboxes() {
   const group = document.getElementById('budget-category-group');
@@ -7535,7 +7618,8 @@ function onRemoveCategory(key) {
   renderBudgetCategoryCheckboxes();
 }
 
-async function confirmSaveBudget() {
+async function confirmSaveBudget(event) {
+  if (event) event.preventDefault();
   const month = document.getElementById('budget-input-month').value;
   if (!month) { alert('กรุณาเลือกเดือน'); return; }
   
@@ -7640,7 +7724,7 @@ function openEditBudgetModal(id) {
     document.getElementById('budget-edit-input-month').value = item.month;
     document.getElementById('budget-edit-input-category').value = item.category;
     document.getElementById('budget-edit-input-limit').value = item.limit;
-    document.getElementById('budget-edit-modal').classList.add('show');
+    document.getElementById('budget-edit-modal').classList.add('show'); preventBodyScroll(true);
   });
 }
 
@@ -7648,7 +7732,8 @@ async function editBudget(id) {
   openEditBudgetModal(id);
 }
 
-async function confirmEditBudget() {
+async function confirmEditBudget(event) {
+  if (event) event.preventDefault();
   if (editingBudgetId === null) return;
   const limit = parseFloat(document.getElementById('budget-edit-input-limit').value);
   if (isNaN(limit) || limit <= 0) { alert('กรุณาใส่จำนวนเงินที่ถูกต้อง'); return; }
@@ -7681,7 +7766,8 @@ function openPresetSaveModal() {
   document.getElementById('preset-save-modal').classList.add('show');
 }
 
-async function confirmSavePreset() {
+async function confirmSavePreset(event) {
+  if (event) event.preventDefault();
   const name = document.getElementById('preset-input-name').value.trim();
   if (!name) { alert('กรุณาใส่ชื่อ Preset'); return; }
   
@@ -7727,10 +7813,11 @@ async function openPresetUseModal() {
   }
   
   document.getElementById('preset-input-month').value = new Date().toISOString().slice(0, 7);
-  document.getElementById('preset-use-modal').classList.add('show');
+  document.getElementById('preset-use-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmCreateFromPreset() {
+async function confirmCreateFromPreset(event) {
+  if (event) event.preventDefault();
   const presetId = parseInt(document.getElementById('preset-select').value);
   const month = document.getElementById('preset-input-month').value;
   
@@ -7785,8 +7872,8 @@ async function renderPresets() {
           <div class="preset-total">${p.items.length} หมวด · ${total.toLocaleString()} บาท/เดือน</div>
         </div>
         <div class="preset-actions">
-          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="usePreset(${p.id})">ใช้งาน</button>
-          <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editPresetName(${p.id})">✎</button>
+          <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="usePreset(${p.id})">ใช้งาน</button>
+          <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editPresetName(${p.id})">✎</button>
           <button class="del-x" style="font-size:12px;" onclick="deletePreset(${p.id})">✕</button>
         </div>
       </div>
@@ -8041,7 +8128,7 @@ async function renderFinanceGoals() {
       <div class="progress-label">${item.saved.toLocaleString()} / ${item.target.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
       <div class="item-footer">
         <span></span>
-        <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="event.stopPropagation();updateFinanceSaved(${item.id})">อัพเดตยอด</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="event.stopPropagation();updateFinanceSaved(${item.id})">อัพเดตยอด</button>
       </div>
     `;
     list.appendChild(card);
@@ -8119,8 +8206,8 @@ card.innerHTML = `
   <div class="item-footer">
     ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ดูลิงก์</a>` : '<span></span>'}
     <div style="display:flex;gap:4px;margin-left:auto;">
-      <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateWishSaved(${item.id})">อัพเดตยอด</button>
-      <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="toggleBought(${item.id})">${item.bought ? '↩ ยังไม่ได้ซื้อ' : '✓ ซื้อแล้ว'}</button>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateWishSaved(${item.id})">อัพเดตยอด</button>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="toggleBought(${item.id})">${item.bought ? '↩ ยังไม่ได้ซื้อ' : '✓ ซื้อแล้ว'}</button>
     </div>
   </div>
 `;
@@ -8179,12 +8266,13 @@ function openWishModal() {
   document.getElementById('wish-input-price').value = '';
   document.getElementById('wish-input-priority').value = 'medium';
   document.getElementById('wish-input-link').value = '';
-  document.getElementById('wish-modal').classList.add('show');
+  document.getElementById('wish-modal').classList.add('show'); preventBodyScroll(true);
   document.getElementById('wish-input-priority').value = 'important';
   document.getElementById('wish-input-saved').value = '';
 }
 
-async function confirmSaveWish() {
+async function confirmSaveWish(event) {
+  if (event) event.preventDefault();
   const name = document.getElementById('wish-input-name').value.trim();
   if (!name) { alert('กรุณาใส่ชื่อสิ่งของ'); return; }
 const item = {
@@ -8286,7 +8374,7 @@ const priorityFilter = priorityFilterEl ? priorityFilterEl.value : '';
           <div class="progress-label">${item.saved.toLocaleString()} / ${item.target.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
           <div class="item-footer">
             <span></span>
-            <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateFinanceSaved(${item.id})">อัพเดตยอด</button>
+            <button type="button" class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateFinanceSaved(${item.id})">อัพเดตยอด</button>
           </div>
         `
       });
@@ -8315,8 +8403,8 @@ if (filter === 'all' || filter === 'wishlist') {
         <div class="item-footer">
   ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ดูลิงก์</a>` : '<span></span>'}
   <div style="display:flex;gap:4px;margin-left:auto;">
-    <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateWishSaved(${item.id})">อัพเดตยอด</button>
-    <button class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="toggleBought(${item.id})">${item.bought ? '↩ ยังไม่ได้ซื้อ' : '✓ ซื้อแล้ว'}</button>
+    <button type="button" class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="updateWishSaved(${item.id})">อัพเดตยอด</button>
+    <button type="button" class="btn secondary" style="font-size:11px;padding:5px 10px;" onclick="toggleBought(${item.id})">${item.bought ? '↩ ยังไม่ได้ซื้อ' : '✓ ซื้อแล้ว'}</button>
   </div>
 </div>
       `
@@ -8364,7 +8452,8 @@ async function updateWishSaved(id) {
   document.getElementById('wish-update-modal').classList.add('show');
 }
 
-async function confirmUpdateWish() {
+async function confirmUpdateWish(event) {
+  if (event) event.preventDefault();
   if (pendingWishId === null) return;
   const val = parseFloat(document.getElementById('wish-update-amount').value);
   if (isNaN(val) || val < 0) { alert('กรุณาใส่ตัวเลขที่ถูกต้อง'); return; }
@@ -8422,12 +8511,13 @@ function openStudyModal() {
   document.getElementById('study-modal').querySelector('h3').textContent = 'เพิ่มแผนเรียน';
   document.getElementById('study-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveStudy;
   clearEditMode('study');
-  document.getElementById('study-modal').classList.add('show');
+  document.getElementById('study-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmSaveStudy() {
+async function confirmSaveStudy(event) {
+  if (event) event.preventDefault();
   const title = document.getElementById('study-input-title').value.trim();
-  if (!title) { alert('กรุณาใส่หัวข้อ'); return; }
+  if (!title) { alert('กรุณาใส่หัวข้อ'); return false; }
   const item = {
     id: Date.now(),
     title,
@@ -8594,13 +8684,14 @@ async function editStudy(id) {
   document.getElementById('study-modal').querySelector('h3').textContent = 'แก้ไขแผนเรียน';
   document.getElementById('study-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditStudy;
   setEditMode('study', id);
-  document.getElementById('study-modal').classList.add('show');
+  document.getElementById('study-modal').classList.add('show'); preventBodyScroll(true);
 }
-async function confirmEditStudy() {
-  const editingId = getEditingId('study');  // ← เปลี่ยน
+async function confirmEditStudy(event) {
+  if (event) event.preventDefault();
+  const editingId = getEditingId('study');
   if (editingId === null) {
     showToast('❌ ไม่พบรายการที่กำลังแก้ไข', 'error');
-    return;
+    return false;
   }
   
   const title = document.getElementById('study-input-title').value.trim();
@@ -8762,12 +8853,12 @@ async function renderRelationCheckboxes(selectedIds = {}) {
       <div style="grid-column:1/-1;color:var(--muted);font-size:12px;text-align:center;padding:8px 0;">
         ยังไม่มีข้อมูล
         <div style="margin-top:6px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openVisionModal();">+ Vision</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openGoalModal();">+ Goal</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openStudyModal();">+ Study</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openFinanceModal();">+ Finance</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openWishModal();">+ Wish</button>
-          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openProjectModal();">+ Project</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openVisionModal();">+ Vision</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openGoalModal();">+ Goal</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openStudyModal();">+ Study</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openFinanceModal();">+ Finance</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openWishModal();">+ Wish</button>
+          <button type="button" class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openProjectModal();">+ Project</button>
         </div>
       </div>
     `;
@@ -8817,15 +8908,16 @@ async function openProjectModal() {
   await renderRelationCheckboxes([]);
   document.getElementById('project-modal').querySelector('h3').textContent = '📋 เพิ่มโปรเจกต์ใหม่';
   document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveProject;
-  document.getElementById('project-modal').classList.add('show');
+  document.getElementById('project-modal').classList.add('show'); preventBodyScroll(true);
   editingProjectRefIds = [];
   tempProjectRefIds = [];
   await renderProjectRefPreview();
 }
 
-async function confirmSaveProject() {
+async function confirmSaveProject(event) {
+  if (event) event.preventDefault();
   const title = document.getElementById('project-input-title').value.trim();
-  if (!title) { alert('กรุณาใส่ชื่อโปรเจกต์'); return; }
+  if (!title) { alert('กรุณาใส่ชื่อโปรเจกต์'); return false; }
   
   const relations = getSelectedRelations();
   
@@ -9149,8 +9241,8 @@ function toggleEditProjectDesc() {
     const buttonDiv = document.createElement('div');
     buttonDiv.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
     buttonDiv.innerHTML = `
-      <button class="btn" onclick="saveInlineDesc()">💾 บันทึก</button>
-      <button class="btn secondary" onclick="cancelInlineDesc()">ยกเลิก</button>
+      <button type="button" class="btn" onclick="saveInlineDesc()">💾 บันทึก</button>
+      <button type="button" class="btn secondary" onclick="cancelInlineDesc()">ยกเลิก</button>
       <span style="flex:1;"></span>
       <span style="font-size:11px;color:var(--muted);align-self:center;">กด Ctrl+Enter เพื่อบันทึก</span>
     `;
@@ -9368,8 +9460,7 @@ async function editProject(id) {
   // Set modal
   document.getElementById('project-modal').querySelector('h3').textContent = '✎ แก้ไขโปรเจกต์';
   document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditProject;
-  document.getElementById('project-modal').classList.add('show');
-  
+  document.getElementById('project-modal').classList.add('show'); preventBodyScroll(true);
   // Ref IDs
   tempProjectRefIds = item.refIds || [];
   editingProjectRefIds = item.refIds || [];
@@ -9377,15 +9468,14 @@ async function editProject(id) {
   await renderProjectRefPreview();
 }
 
-async function confirmEditProject() {
-  // ✅ ใช้ editingProjectId
+async function confirmEditProject(event) {
+  if (event) event.preventDefault();
   const currentEditingId = editingProjectId;
   console.log('🔧 confirmEditProject - currentEditingId:', currentEditingId);
-  
   if (currentEditingId === null) {
     console.error('❌ editingProjectId is null!');
     showToast('❌ ไม่พบโปรเจกต์ที่กำลังแก้ไข', 'error');
-    return;
+    return false;
   }
   
   const title = document.getElementById('project-input-title').value.trim();
@@ -9560,12 +9650,17 @@ function openInboxModal() {
   document.getElementById('inbox-modal').querySelector('h3').textContent = '💡 พิมพ์ความคิดของคุณ';
   document.getElementById('inbox-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveInbox;
   clearEditMode('inbox');
-  document.getElementById('inbox-modal').classList.add('show');
+  document.getElementById('inbox-modal').classList.add('show'); preventBodyScroll(true);
   setTimeout(() => document.getElementById('inbox-input-text').focus(), 100);
 }
 
-async function confirmSaveInbox() {
+async function confirmSaveInbox(event) {
+  if (event) event.preventDefault();
   const text = document.getElementById('inbox-input-text').value.trim();
+  if (!text) { 
+    showToast('กรุณาพิมพ์ความคิด', 'error'); 
+    return; 
+  }
   if (!text) { showToast('กรุณาพิมพ์ความคิด', 'error'); return; }
   const tags = document.getElementById('inbox-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
   if (!tags.length) tags.push('#quick-idea');
@@ -9624,7 +9719,8 @@ async function openConvertInbox(id) {
   document.getElementById('inbox-convert-modal').classList.add('show');
 }
 
-async function confirmConvertInbox() {
+async function confirmConvertInbox(event) {
+  if (event) event.preventDefault();
   const modal = document.getElementById('inbox-convert-modal');
   const id = parseInt(modal.dataset.inboxId);
   const target = document.getElementById('inbox-convert-target').value;
@@ -9639,28 +9735,28 @@ async function confirmConvertInbox() {
   if (target === 'vision') {
     document.getElementById('vision-input-title').value = text;
     document.getElementById('vision-input-desc').value = '';
-    document.getElementById('vision-modal').classList.add('show');
+    document.getElementById('vision-modal').classList.add('show'); preventBodyScroll(true);
   } else if (target === 'goal') {
     document.getElementById('goal-input-title').value = text;
     document.getElementById('goal-input-note').value = '';
-    document.getElementById('goal-modal').classList.add('show');
+    document.getElementById('goal-modal').classList.add('show'); preventBodyScroll(true);
   } else if (target === 'project') {
     document.getElementById('project-input-title').value = text;
     document.getElementById('project-input-desc').value = '';
-    document.getElementById('project-modal').classList.add('show');
+    document.getElementById('project-modal').classList.add('show'); preventBodyScroll(true);
   } else if (target === 'study') {
     document.getElementById('study-input-title').value = text;
     document.getElementById('study-input-goal').value = '';
-    document.getElementById('study-modal').classList.add('show');
+    document.getElementById('study-modal').classList.add('show'); preventBodyScroll(true);
   } else if (target === 'wish') {
     document.getElementById('wish-input-name').value = text;
     document.getElementById('wish-input-price').value = '';
-    document.getElementById('wish-modal').classList.add('show');
+    document.getElementById('wish-modal').classList.add('show'); preventBodyScroll(true);
   } else if (target === 'daily') {
     // ✅ แปลงเป็น Daily Log
     document.getElementById('daily-input-content').value = text;
     document.getElementById('daily-input-date').value = new Date().toISOString().slice(0, 10);
-    document.getElementById('daily-modal').classList.add('show');
+    document.getElementById('daily-modal').classList.add('show'); preventBodyScroll(true);
   }
 
   renderInbox();
@@ -9725,7 +9821,7 @@ async function renderInbox() {
               <span style="font-size:10px;color:var(--muted);">${timeAgo}</span>
             </div>
             <div style="margin-top:6px;">
-              <button class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openConvertInbox(${item.id})">🔄 แปลง</button>
+              <button type="button" class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openConvertInbox(${item.id})">🔄 แปลง</button>
             </div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0;">
@@ -9768,10 +9864,11 @@ function openDailyModal(date) {
   document.getElementById('daily-modal').querySelector('h3').textContent = '📖 บันทึกประจำวัน';
   document.getElementById('daily-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveDaily;
   clearEditMode('daily');
-  document.getElementById('daily-modal').classList.add('show');
+  document.getElementById('daily-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmSaveDaily() {
+async function confirmSaveDaily(event) {
+  if (event) event.preventDefault();
   const content = document.getElementById('daily-input-content').value.trim();
   if (!content) { showToast('กรุณาใส่เนื้อหา', 'error'); return; }
   const tags = document.getElementById('daily-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
@@ -9831,7 +9928,7 @@ async function editDaily(id) {
   document.getElementById('daily-modal').querySelector('h3').textContent = '✎ แก้ไขบันทึก';
   document.getElementById('daily-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditDaily;
   setEditMode('daily', id);
-  document.getElementById('daily-modal').classList.add('show');
+  document.getElementById('daily-modal').classList.add('show'); preventBodyScroll(true);
 }
 
 // แก้ไข confirmEditDaily
@@ -10066,7 +10163,7 @@ async function editVision(id) {
   document.getElementById('vision-modal').querySelector('h3').textContent = '✎ แก้ไขวิสัยทัศน์';
   document.getElementById('vision-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditVision;
   setEditMode('vision', id);
-  document.getElementById('vision-modal').classList.add('show');
+  document.getElementById('vision-modal').classList.add('show'); preventBodyScroll(true);
   
   renderVisionRefPreview();
 }
@@ -10160,17 +10257,18 @@ async function editGoal(id) {
   document.getElementById('goal-modal').querySelector('h3').textContent = 'แก้ไขเป้าหมาย';
   document.getElementById('goal-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditGoal;
   setEditMode('goal', id);
-  document.getElementById('goal-modal').classList.add('show');
+  document.getElementById('goal-modal').classList.add('show'); preventBodyScroll(true);
   
   renderGoalRefPreview();
 }
 
 // แก้ไข confirmEditGoal
-async function confirmEditGoal() {
-  const editingId = getEditingId('goal');  // ← เปลี่ยน
+async function confirmEditGoal(event) {
+  if (event) event.preventDefault();
+  const editingId = getEditingId('goal');
   if (editingId === null) {
     showToast('❌ ไม่พบรายการที่กำลังแก้ไข', 'error');
-    return;
+    return false;
   }
   
   const title = document.getElementById('goal-input-title').value.trim();
@@ -10242,7 +10340,7 @@ async function editFinance(id) {
   document.getElementById('finance-modal').querySelector('h3').textContent = 'แก้ไขเป้าหมายการเงิน';
   document.getElementById('finance-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditFinance;
   setEditMode('finance', id);
-  document.getElementById('finance-modal').classList.add('show');
+  document.getElementById('finance-modal').classList.add('show'); preventBodyScroll(true);
 }
 
 async function confirmEditFinance() {
@@ -10310,7 +10408,7 @@ async function editWish(id) {
   document.getElementById('wish-modal').querySelector('h3').textContent = 'แก้ไขของที่อยากได้';
   document.getElementById('wish-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditWish;
   setEditMode('wish', id);
-  document.getElementById('wish-modal').classList.add('show');
+  document.getElementById('wish-modal').classList.add('show'); preventBodyScroll(true);
   document.getElementById('wish-input-priority').value = item.priority || 'important';
 }
 async function confirmEditWish() {
@@ -10398,7 +10496,7 @@ async function editRef(id) {
   document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditRef;
   
   setEditMode('ref', id);
-  document.getElementById('ref-modal').classList.add('show');
+  document.getElementById('ref-modal').classList.add('show'); preventBodyScroll(true);
 }
 
 async function confirmEditRef() {
@@ -11108,7 +11206,7 @@ async function editInbox(id) {
   document.getElementById('inbox-modal').querySelector('h3').textContent = '✎ แก้ไขความคิด';
   document.getElementById('inbox-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditInbox;
   setEditMode('inbox', id);
-  document.getElementById('inbox-modal').classList.add('show');
+  document.getElementById('inbox-modal').classList.add('show'); preventBodyScroll(true);
 }
 
 async function confirmEditInbox() {
@@ -11334,7 +11432,7 @@ function showDayItems(dateStr) {
             `).join('')}
           </div>
           <div style="margin-top:12px;text-align:center;">
-            <button class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="document.getElementById('calendar-popup').remove();">ปิด</button>
+            <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="document.getElementById('calendar-popup').remove();">ปิด</button>
           </div>
         `;
         document.body.appendChild(popup);
@@ -11391,9 +11489,9 @@ async function openCalendarPopup() {
       <button style="background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;" onclick="this.closest('#calendar-full-popup').remove()">✕</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(-1)">◀</button>
-      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(1)">▶</button>
-      <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="resetCalendar()">📅 วันนี้</button>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(-1)">◀</button>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(1)">▶</button>
+      <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="resetCalendar()">📅 วันนี้</button>
       <span style="font-size:11px;color:var(--muted);margin-left:auto;">
         <span id="calendar-popup-count">0</span> รายการ
       </span>
@@ -11404,7 +11502,7 @@ async function openCalendarPopup() {
       padding: 6px; border: 1px solid var(--border);
     "></div>
     <div style="margin-top:12px;text-align:center;">
-      <button class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="this.closest('#calendar-full-popup').remove()">ปิด</button>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="this.closest('#calendar-full-popup').remove()">ปิด</button>
     </div>
   `;
   
@@ -11647,7 +11745,7 @@ function showUndoBar(action) {
     bar.id = 'undo-bar';
     bar.innerHTML = `
       <span class="undo-msg" id="undo-msg">ดำเนินการแล้ว</span>
-      <button class="btn" onclick="undoLastAction()">↩ ยกเลิก</button>
+      <button type="button" class="btn" onclick="undoLastAction()">↩ ยกเลิก</button>
       <button class="btn-secondary" onclick="hideUndoBar()">✕</button>
     `;
     document.body.appendChild(bar);
@@ -12137,10 +12235,11 @@ function openIdeaModal() {
   document.getElementById('idea-modal').querySelector('h3').textContent = '💡 บันทึกไอเดีย';
   document.getElementById('idea-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveIdea;
   clearEditMode('idea');
-  document.getElementById('idea-modal').classList.add('show');
+  document.getElementById('idea-modal').classList.add('show');preventBodyScroll(true);
 }
 
-async function confirmSaveIdea() {
+async function confirmSaveIdea(event) {
+  if (event) event.preventDefault();
   const content = document.getElementById('idea-input-content').value.trim();
   if (!content) { showToast('กรุณาใส่ไอเดีย', 'error'); return; }
   
@@ -12183,7 +12282,7 @@ async function editIdea(id) {
   document.getElementById('idea-modal').querySelector('h3').textContent = '✎ แก้ไขไอเดีย';
   document.getElementById('idea-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditIdea;
   setEditMode('idea', id);
-  document.getElementById('idea-modal').classList.add('show');
+  document.getElementById('idea-modal').classList.add('show'); preventBodyScroll(true);
 }
 
 async function confirmEditIdea() {
@@ -12268,10 +12367,11 @@ function openKnowledgeModal() {
   document.getElementById('knowledge-modal').querySelector('h3').textContent = '📚 บันทึกความรู้';
   document.getElementById('knowledge-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveKnowledge;
   clearEditMode('knowledge');
-  document.getElementById('knowledge-modal').classList.add('show');
+  document.getElementById('knowledge-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmSaveKnowledge() {
+async function confirmSaveKnowledge(event) {
+  if (event) event.preventDefault();
   const title = document.getElementById('knowledge-input-title').value.trim();
   const content = document.getElementById('knowledge-input-content').value.trim();
   if (!title && !content) { showToast('กรุณาใส่หัวข้อหรือรายละเอียด', 'error'); return; }
@@ -12316,7 +12416,7 @@ async function editKnowledge(id) {
   document.getElementById('knowledge-modal').querySelector('h3').textContent = '✎ แก้ไขความรู้';
   document.getElementById('knowledge-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditKnowledge;
   setEditMode('knowledge', id);
-  document.getElementById('knowledge-modal').classList.add('show');
+  document.getElementById('knowledge-modal').classList.add('show'); preventBodyScroll(true);
 }
 
 async function confirmEditKnowledge() {
@@ -12449,10 +12549,11 @@ function openArtModal() {
   document.getElementById('art-modal').querySelector('h3').textContent = '🎨 บันทึกงานศิลปะ';
   document.getElementById('art-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveArt;
   clearEditMode('art');
-  document.getElementById('art-modal').classList.add('show');
+  document.getElementById('art-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmSaveArt() {
+async function confirmSaveArt(event) {
+  if (event) event.preventDefault();
   const title = document.getElementById('art-input-title').value.trim();
   if (!title) { showToast('กรุณาใส่ชื่อผลงาน', 'error'); return; }
   const tags = document.getElementById('art-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
@@ -12494,7 +12595,7 @@ async function editArt(id) {
   document.getElementById('art-modal').querySelector('h3').textContent = '✎ แก้ไขงานศิลปะ';
   document.getElementById('art-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditArt;
   setEditMode('art', id);
-  document.getElementById('art-modal').classList.add('show');
+  document.getElementById('art-modal').classList.add('show'); preventBodyScroll(true);
 }
 async function confirmEditArt() {
   const editingId = getEditingId('art');
@@ -12568,10 +12669,11 @@ function openFitModal() {
   document.getElementById('fit-modal').querySelector('h3').textContent = '💪 บันทึกออกกำลังกาย';
   document.getElementById('fit-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFit;
   clearEditMode('fit');
-  document.getElementById('fit-modal').classList.add('show');
+  document.getElementById('fit-modal').classList.add('show'); preventBodyScroll(true);
 }
 
-async function confirmSaveFit() {
+async function confirmSaveFit(event) {
+  if (event) event.preventDefault();
   const content = document.getElementById('fit-input-content').value.trim();
   if (!content) { showToast('กรุณาใส่รายละเอียด', 'error'); return; }
   const tags = document.getElementById('fit-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
@@ -12611,7 +12713,7 @@ async function editFit(id) {
   document.getElementById('fit-modal').querySelector('h3').textContent = '✎ แก้ไขออกกำลังกาย';
   document.getElementById('fit-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditFit;
   setEditMode('fit', id);
-  document.getElementById('fit-modal').classList.add('show');
+  document.getElementById('fit-modal').classList.add('show'); preventBodyScroll(true);
 }
 
 async function confirmEditFit() {
@@ -12831,7 +12933,7 @@ function switchGoalsTab(tab) {
       navDiv.style.cssText = 'display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:10px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;justify-content:center;';
       navDiv.innerHTML = `
         <button class="sub-nav-btn active" id="goals-sub-goals" onclick="switchGoalsTab('goals')">🎯 เป้าหมาย <span id="calendar-goal-count" style="background:var(--accent);color:white;border-radius:50%;padding:0 6px;font-size:10px;margin-left:4px;">0</span></button>
-        <button class="sub-nav-btn" id="goals-sub-study" onclick="switchGoalsTab('study')">📚 แผนเรียน</button>
+        <button type="button" class="sub-nav-btn" id="goals-sub-study" onclick="switchGoalsTab('study')">📚 แผนเรียน</button>
       `;
       container.insertBefore(navDiv, container.firstChild);
     }
