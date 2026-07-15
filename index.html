@@ -11,6 +11,15 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <!-- เพิ่มใน head -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<!-- ===== Favicon ===== -->
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="msapplication-TileColor" content="#0e0e12">
+<meta name="msapplication-TileImage" content="mstile-144x144.png">
+<meta name="theme-color" content="#0e0e12">
 <script>
 // ==========================================================
 // FIREBASE SETUP
@@ -1715,7 +1724,13 @@ body {
   border-color: var(--accent);
   color: var(--accent);
 }
-/* ===== Cloudinary Upload Widget Dark Theme ===== */
+/* ===== Cloudinary Widget Dark Theme Override ===== */
+/* ✅ ใช้ CSS เพื่อ override สีของ widget ใน iframe */
+#cloudinary-widget-iframe {
+  background: #0e0e12 !important;
+}
+
+/* ✅ ครอบคลุมทุก element ใน widget */
 .cloudinary-upload-widget {
   background: #0e0e12 !important;
   color: #e8e4dc !important;
@@ -1723,13 +1738,10 @@ body {
 }
 
 .cloudinary-upload-widget .upload-widget-modal {
-  background: #16161e !important;
+  background: #0e0e12 !important;
   border: 1px solid #2a2a3a !important;
   border-radius: 12px !important;
   box-shadow: 0 8px 40px rgba(0,0,0,0.8) !important;
-  max-width: 600px !important;
-  width: 90% !important;
-  max-height: 90vh !important;
 }
 
 .cloudinary-upload-widget .upload-widget-header {
@@ -1739,7 +1751,7 @@ body {
 }
 
 .cloudinary-upload-widget .upload-widget-body {
-  background: #1e1e2a !important;
+  background: #16161e !important;
   color: #e8e4dc !important;
 }
 
@@ -1802,7 +1814,6 @@ body {
   color: #e8e4dc !important;
 }
 
-/* ✅ ปรับแต่งปุ่ม Browse ใน widget */
 .cloudinary-upload-widget .upload-widget-browse-button {
   background: #7c6ef5 !important;
   color: #ffffff !important;
@@ -1824,6 +1835,26 @@ body {
   box-shadow: 0 4px 16px rgba(124, 110, 245, 0.4) !important;
 }
 
+/* ✅ ปรับแต่ง source buttons */
+.cloudinary-upload-widget .upload-widget-source-button {
+  background: #1e1e2a !important;
+  color: #e8e4dc !important;
+  border: 1px solid #2a2a3a !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.cloudinary-upload-widget .upload-widget-source-button:hover {
+  background: #2a2a3a !important;
+}
+
+.cloudinary-upload-widget .upload-widget-source-button.active {
+  background: #7c6ef5 !important;
+  color: #ffffff !important;
+  border-color: #7c6ef5 !important;
+}
+
 /* ✅ ปรับแต่งบนมือถือ */
 @media (max-width: 600px) {
   .cloudinary-upload-widget .upload-widget-modal {
@@ -1840,7 +1871,6 @@ body {
     width: 100% !important;
   }
   
-  /* ✅ ทำให้ปุ่ม Sources ใหญ่ขึ้นบนมือถือ */
   .cloudinary-upload-widget .upload-widget-source-button {
     padding: 12px 16px !important;
     font-size: 14px !important;
@@ -1853,12 +1883,6 @@ body {
   }
 }
 
-/* ✅ ปรับแต่ง dark theme สำหรับ iframe */
-.cloudinary-upload-widget iframe {
-  background: #0e0e12 !important;
-  border-radius: 12px !important;
-}
-
 /* ✅ ปรับแต่ง scrollbar */
 .cloudinary-upload-widget ::-webkit-scrollbar {
   width: 6px;
@@ -1869,44 +1893,6 @@ body {
 .cloudinary-upload-widget ::-webkit-scrollbar-thumb {
   background: #7c6ef5;
   border-radius: 3px;
-}
-/* ===== Upload Button Responsive ===== */
-#upload-btn {
-  white-space: nowrap;
-}
-
-@media (max-width: 480px) {
-  #upload-btn {
-    font-size: 12px !important;
-    padding: 8px 12px !important;
-  }
-  #upload-btn::before {
-    content: '📁 ';
-  }
-}
-
-/* ✅ ปรับบนมือถือ */
-@media (max-width: 600px) {
-  .widget-wrapper {
-    backdrop-filter: blur(2px);
-  }
-  .widget-wrapper iframe {
-    width: 92% !important;
-    max-width: 92% !important;
-    border-radius: 10px !important;
-    max-height: 85vh !important;
-    min-height: 250px !important;
-  }
-}
-
-@media (max-width: 400px) {
-  .widget-wrapper iframe {
-    width: 95% !important;
-    max-width: 95% !important;
-    border-radius: 8px !important;
-    max-height: 90vh !important;
-    min-height: 200px !important;
-  }
 }
 /* ===== Widget Overlay & Container ===== */
 #widget-overlay {
@@ -5012,7 +4998,7 @@ function openUploadWidget() {
   overlay.style.cssText = `
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.85);
     z-index: 9998;
     display: flex;
     align-items: center;
@@ -5052,7 +5038,7 @@ function openUploadWidget() {
   iframe.id = 'cloudinary-widget-iframe';
   iframe.style.cssText = `
     width: 100%;
-    height: ${isMobile ? '500px' : '520px'};
+    height: ${isMobile ? '480px' : '520px'};
     border: none;
     background: #0e0e12;
     display: block;
@@ -5113,122 +5099,39 @@ function openUploadWidget() {
   closeBtn.onmouseout = () => { closeBtn.style.color = '#8a8798'; };
   container.appendChild(closeBtn);
   
-  // ✅ ตั้งค่า widget
+  // ✅ ตั้งค่า widget - ใช้ minimal theme
   const widget = cloudinary.createUploadWidget({
-    cloud_name: 'und7u8m5',
-    upload_preset: 'zafp2wv4',
-    sources: ['local', 'url', 'camera'],
-    multiple: true,
-    maxFileSize: 10000000,
-    maxFiles: 30,
-    clientAllowedFormats: ['image/*'],
-    theme: 'dark',
-    text: {
-      en: {
-        browse: '📁 เลือกรูป',
-        local: '📱 อุปกรณ์ของฉัน',
-        url: '🔗 URL',
-        camera: '📷 กล้อง',
-        or: 'หรือ',
-        close: 'ปิด',
-        upload: 'อัปโหลด',
-        cancel: 'ยกเลิก',
-        next: 'ถัดไป',
-        done: 'เสร็จสิ้น',
-        error: 'เกิดข้อผิดพลาด',
-        success: 'อัปโหลดสำเร็จ',
-        choose_files: 'เลือกรูป',
-        choose_from: 'เลือกจาก',
-        upload_in_progress: 'กำลังอัปโหลด...',
-        upload_completed: 'อัปโหลดเสร็จสิ้น',
-        drop_files: 'วางไฟล์ที่นี่'
-      }
-    },
-    styles: {
-      modal: {
-        backgroundColor: '#0e0e12',
-        borderRadius: '12px',
-        maxWidth: '100%',
-        width: '100%',
-        maxHeight: '100%',
-        padding: '16px',
-        margin: '0'
-      },
-      button: {
-        backgroundColor: '#e05071',
-        color: '#ffffff',
-        borderRadius: '8px',
-        padding: '8px 16px',
-        fontWeight: '600',
-        fontSize: '13px'
-      },
-      buttonHover: {
-        backgroundColor: '#c0405e'
-      },
-      body: {
-        backgroundColor: '#16161e',
-        color: '#e8e4dc',
-        fontFamily: 'Segoe UI, sans-serif'
-      },
-      input: {
-        backgroundColor: '#1e1e2a',
-        borderColor: '#2a2a3a',
-        color: '#e8e4dc',
-        borderRadius: '6px',
-        padding: '6px 10px',
-        fontSize: '13px'
-      },
-      label: {
-        color: '#8a8798',
-        fontSize: '12px'
-      },
-      link: {
-        color: '#7c6ef5'
-      },
-      header: {
-        backgroundColor: '#16161e',
-        color: '#e8e4dc',
-        padding: '8px 0',
-        fontSize: '16px'
-      },
-      uploadButton: {
-        backgroundColor: '#e05071',
-        color: '#ffffff',
-        borderRadius: '8px',
-        padding: '8px 20px',
-        fontSize: '13px'
-      },
-      uploadButtonHover: {
-        backgroundColor: '#c0405e'
-      },
-      error: {
-        color: '#e05c5c'
-      },
-      success: {
-        color: '#4ecb71'
-      },
-      browseButton: {
-        backgroundColor: '#7c6ef5',
-        color: '#ffffff',
-        borderRadius: '8px',
-        padding: '10px 24px',
-        fontWeight: '600',
-        fontSize: '14px',
-        border: 'none',
-        cursor: 'pointer'
-      },
-      browseButtonHover: {
-        backgroundColor: '#6a5ce0'
-      },
-      closeButton: {
-        color: '#8a8798',
-        fontSize: '18px'
-      },
-      closeButtonHover: {
-        color: '#e8e4dc'
-      }
+  cloud_name: 'und7u8m5',
+  upload_preset: 'zafp2wv4',
+  sources: ['local', 'url', 'camera'],
+  multiple: true,
+  maxFileSize: 10000000,
+  maxFiles: 30,
+  // ✅ ลบ clientAllowedFormats ออก หรือคอมเม้นต์ไว้
+  // clientAllowedFormats: ['image/*'],
+  theme: 'minimal',
+  text: {
+    en: {
+      browse: '📁 เลือกรูป',
+      local: '📱 อุปกรณ์ของฉัน',
+      url: '🔗 URL',
+      camera: '📷 กล้อง',
+      or: 'หรือ',
+      close: 'ปิด',
+      upload: 'อัปโหลด',
+      cancel: 'ยกเลิก',
+      next: 'ถัดไป',
+      done: 'เสร็จสิ้น',
+      error: 'เกิดข้อผิดพลาด',
+      success: 'อัปโหลดสำเร็จ',
+      choose_files: 'เลือกรูป',
+      choose_from: 'เลือกจาก',
+      upload_in_progress: 'กำลังอัปโหลด...',
+      upload_completed: 'อัปโหลดเสร็จสิ้น',
+      drop_files: 'วางไฟล์ที่นี่'
     }
-  }, (error, result) => {
+  }
+}, (error, result) => {
     if (error) {
       console.warn('⚠️ Upload error:', error);
       showToast('❌ อัปโหลดไม่สำเร็จ: ' + (error.message || 'ไม่ทราบสาเหตุ'), 'error');
@@ -5239,7 +5142,6 @@ function openUploadWidget() {
       pendingUploadUrls.push(result.info.secure_url);
       pendingUploadCount++;
       
-      // ✅ ซ่อน loading ถ้ายังแสดงอยู่
       const loadingEl = document.querySelector('.widget-loading');
       if (loadingEl) loadingEl.style.display = 'none';
       
@@ -5256,7 +5158,6 @@ function openUploadWidget() {
     } else if (result.event === 'close') {
       closeUploadWidget();
     } else if (result.event === 'show') {
-      // ✅ เมื่อ widget แสดงแล้ว ซ่อน loading
       const loadingEl = document.querySelector('.widget-loading');
       if (loadingEl) {
         loadingEl.style.opacity = '0';
@@ -5272,6 +5173,7 @@ function openUploadWidget() {
     iframe: iframe
   });
 }
+
 // ===== Detect Mobile Viewport =====
 function isMobileViewport() {
   return window.innerWidth < 600;
