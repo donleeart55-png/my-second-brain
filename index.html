@@ -9,6 +9,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<!-- เพิ่มใน head -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 // ==========================================================
 // FIREBASE SETUP
@@ -36,6 +38,7 @@ firebase.auth().signInAnonymously().catch(err => {
 });
 </script>
 <style>
+  /* (CSS ทั้งหมดเหมือนเดิม ไม่มีการเปลี่ยนแปลง) */
   :root {
     --bg: #0e0e12; --surface: #16161e; --surface2: #1e1e2a; --border: #2a2a3a;
     --text: #e8e4dc; --muted: #8a8798; --accent: #7c6ef5; --accent2: #c8a96e;
@@ -1412,6 +1415,152 @@ body {
   margin-top: 4px;
   opacity: 0.7;
 }
+.item-card.archived {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+.item-card.archived .item-title {
+  text-decoration: line-through;
+}
+/* ===== Relation Collapsible ===== */
+.relation-section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+  background: var(--surface2);
+}
+.relation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+  font-size: 12px;
+  color: var(--text);
+}
+.relation-header:hover {
+  background: var(--surface);
+}
+.relation-header .arrow {
+  transition: transform 0.3s ease;
+  font-size: 12px;
+}
+.relation-header .arrow.collapsed {
+  transform: rotate(-90deg);
+}
+.relation-body {
+  padding: 8px 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  transition: max-height 0.3s ease;
+  border-top: 1px solid var(--border);
+}
+.relation-body.collapsed {
+  max-height: 0;
+  padding: 0 12px;
+  overflow: hidden;
+  border-top: none;
+}
+/* ===== Favourite ===== */
+.fav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 4px;
+  color: var(--muted);
+  transition: all 0.2s ease;
+}
+.fav-btn:hover {
+  transform: scale(1.2);
+}
+.fav-btn.active {
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+.fav-btn:active {
+  transform: scale(0.9);
+}
+
+.item-card.favourite {
+  border-left: 3px solid #ffd700;
+}
+
+/* ===== Filter Chip ===== */
+.filter-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.filter-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.filter-chip.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.filter-chip:active {
+  transform: scale(0.95);
+}
+
+/* ===== Undo Bar ===== */
+#undo-bar {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  z-index: 100;
+  font-size: 13px;
+  color: var(--text);
+  transition: all 0.4s ease;
+  opacity: 0;
+  pointer-events: none;
+  max-width: 90%;
+}
+#undo-bar.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+#undo-bar .undo-msg {
+  flex: 1;
+  min-width: 60px;
+}
+#undo-bar .btn {
+  font-size: 11px;
+  padding: 4px 14px;
+}
+#undo-bar .btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#undo-bar .btn-secondary:hover {
+  background: var(--surface);
+}
 </style>
 </head>
 <body>
@@ -1420,7 +1569,21 @@ body {
   <div class="sub">คลัง Ref + แผนที่ชีวิต + เป้าหมาย + การเงิน + Wishlist — ทุกอย่างที่เป็นตัวเรา</div>
 
 <div class="nav-wrapper" id="nav-wrapper">
-  <div class="nav" id="nav"></div>
+  <div style="display:flex;align-items:center;gap:4px;position:relative;">
+    <button class="nav-arrow" onclick="scrollNav(-1)" 
+            style="background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;flex-shrink:0;transition:all 0.2s;"
+            onmouseover="this.style.background='var(--surface2)'" 
+            onmouseout="this.style.background='var(--surface)'">
+      ◀
+    </button>
+    <div class="nav" id="nav" style="flex:1;overflow-x:auto;scroll-behavior:smooth;"></div>
+    <button class="nav-arrow" onclick="scrollNav(1)" 
+            style="background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;flex-shrink:0;transition:all 0.2s;"
+            onmouseover="this.style.background='var(--surface2)'" 
+            onmouseout="this.style.background='var(--surface)'">
+      ▶
+    </button>
+  </div>
 </div>
 
 <!-- ============ PAGE: Dashboard ============ -->
@@ -1532,7 +1695,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <div id="journal-inbox" class="journal-tab active">
     <div class="toolbar">
       <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openInboxModal()">📥 + พิมพ์ความคิด</button>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="filter-chip active" onclick="setInboxFilter('all')" id="inbox-filter-all">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setInboxFilter('fav')" id="inbox-filter-fav">⭐</button>
+        <button class="filter-chip" onclick="setInboxFilter('archived')" id="inbox-filter-archived">📦</button>
+      </div>
       <span style="font-size:14px;font-weight:600;margin-left:auto;">Inbox</span>
+      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
     </div>
     <div id="inbox-list"></div>
     <div class="empty" id="inbox-empty" style="display:none;">🎉 ไม่มี Inbox ค้าง!</div>
@@ -1542,7 +1711,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <div id="journal-daily" class="journal-tab">
     <div class="toolbar">
       <button class="btn" style="font-size:13px;padding:6px 16px;" onclick="openDailyModal()">📖 + บันทึกวันนี้</button>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+        <button class="filter-chip active" onclick="setDailyFilter('all')" id="daily-filter-all">ทั้งหมด</button>
+        <button class="filter-chip" onclick="setDailyFilter('fav')" id="daily-filter-fav">⭐</button>
+        <button class="filter-chip" onclick="setDailyFilter('archived')" id="daily-filter-archived">📦</button>
+      </div>
       <span style="font-size:14px;font-weight:600;margin-left:auto;">Daily Log</span>
+      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
     </div>
     <div id="daily-list"></div>
     <div class="empty" id="daily-empty" style="display:none;">ยังไม่มีบันทึก</div>
@@ -1570,6 +1745,10 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
                list="ref-board-filter-suggestions" style="max-width:150px;" 
                oninput="renderRef()" onchange="renderRef()">
         <datalist id="ref-board-filter-suggestions"></datalist>
+        <button class="filter-chip" id="fav-filter-ref" onclick="toggleFavFilter('ref')" 
+        style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:11px;cursor:pointer;color:var(--muted);transition:all 0.2s;">
+  ⭐
+</button>
         <select class="input" id="ref-sort" onchange="renderRef()" style="max-width:120px;">
           <option value="newest">ใหม่สุด</option>
           <option value="oldest">เก่าสุด</option>
@@ -1617,7 +1796,16 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 <div class="page" id="page-vision">
   <div class="toolbar">
     <button class="btn" onclick="openVisionModal()">+ เพิ่มวิสัยทัศน์</button>
-    <select class="input" id="vision-cat-filter" onchange="renderVision()">
+    
+    <!-- Filter Chips -->
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+      <button class="filter-chip active" onclick="setVisionFilter('all')" id="vision-filter-all">ทั้งหมด</button>
+      <button class="filter-chip" onclick="setVisionFilter('fav')" id="vision-filter-fav">⭐</button>
+      <button class="filter-chip" onclick="setVisionFilter('archived')" id="vision-filter-archived">📦</button>
+      <button class="filter-chip" onclick="setVisionFilter('priority')" id="vision-filter-priority">📊</button>
+    </div>
+    
+    <select class="input" id="vision-cat-filter" onchange="renderVision()" style="display:none;">
       <option value="">ทุกด้าน</option>
       <option value="career">อาชีพ/งาน</option>
       <option value="health">สุขภาพ</option>
@@ -1625,13 +1813,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <option value="growth">พัฒนาตนเอง</option>
       <option value="lifestyle">ไลฟ์สไตล์</option>
     </select>
-    <select class="input" id="vision-priority-filter" onchange="renderVision()">
-      <option value="">⭐ ทุกระดับ</option>
-      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-      <option value="low">☆ ทิ้ง/เลื่อน</option>
-    </select>
+    <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
   </div>
   <div id="vision-list"></div>
   <div class="empty" id="vision-empty" style="display:none;">ยังไม่มีวิสัยทัศน์ที่บันทึกไว้</div>
@@ -1667,27 +1849,36 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 </div>
   <div class="toolbar">
     <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
-    <select class="input" id="goal-cat-filter" onchange="renderGoals()">
-      <option value="">ทุกหมวดหมู่</option>
-      <option value="career">อาชีพ/งาน</option>
-      <option value="health">สุขภาพ</option>
-      <option value="finance">การเงิน</option>
-      <option value="skill">ทักษะ</option>
-      <option value="other">อื่นๆ</option>
-    </select>
-    <select class="input" id="goal-status-filter" onchange="renderGoals()">
-      <option value="">ทุกสถานะ</option>
-      <option value="not_started">ยังไม่เริ่ม</option>
-      <option value="in_progress">กำลังทำ</option>
-      <option value="done">สำเร็จแล้ว</option>
-    </select>
-    <select class="input" id="goal-priority-filter" onchange="renderGoals()">
-      <option value="">⭐ ทุกระดับ</option>
-      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-      <option value="low">☆ ทิ้ง/เลื่อน</option>
-    </select>
+  
+  <!-- Filter Chips -->
+  <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+    <button class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
+    <button class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
+    <button class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
+    <button class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
+  </div>
+  
+  <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
+    <option value="">ทุกหมวดหมู่</option>
+    <option value="career">อาชีพ/งาน</option>
+    <option value="health">สุขภาพ</option>
+    <option value="finance">การเงิน</option>
+    <option value="skill">ทักษะ</option>
+    <option value="other">อื่นๆ</option>
+  </select>
+  <select class="input" id="goal-status-filter" onchange="renderGoals()" style="display:none;">
+    <option value="">ทุกสถานะ</option>
+    <option value="not_started">ยังไม่เริ่ม</option>
+    <option value="in_progress">กำลังทำ</option>
+    <option value="done">สำเร็จแล้ว</option>
+  </select>
+  <select class="input" id="goal-priority-filter" onchange="renderGoals()" style="display:none;">
+    <option value="">⭐ ทุกระดับ</option>
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
   </div>
   <div id="goals-list"></div>
   <div class="empty" id="goals-empty" style="display:none;">ยังไม่มีเป้าหมายที่บันทึกไว้</div>
@@ -1733,6 +1924,11 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <option value="income">รายรับ</option>
         <option value="expense">รายจ่าย</option>
       </select>
+      <select class="input" id="transaction-archive-filter" onchange="renderFinanceTransactions()">
+        <option value="active">แสดงทั้งหมด</option>
+        <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+        <option value="all">แสดงทั้งหมด</option>
+      </select>
     </div>
     <div id="transaction-list"></div>
     <div class="empty" id="transaction-empty" style="display:none;">ยังไม่มีรายการ</div>
@@ -1747,6 +1943,11 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <select class="input" id="budget-month-filter" onchange="renderBudgets()">
     <option value="">เดือนนี้</option>
   </select>
+  <select class="input" id="budget-month-archive-filter" onchange="renderBudgets()">
+    <option value="active">แสดงทั้งหมด</option>
+    <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+    <option value="all">แสดงทั้งหมด</option>
+  </select>
 </div>
 <div id="budget-list"></div>
 <div class="empty" id="budget-empty" style="display:none;">ยังไม่มีงบประมาณ</div>
@@ -1755,17 +1956,43 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <!-- Tab: Goals -->
   <div id="finance-goals" class="finance-tab-content">
     <div class="toolbar">
-      <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
-      <button class="btn secondary" onclick="clearDateFilter()" id="clear-date-filter" style="display:none;">🗓️ ล้างวันที่</button>
-      <button class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
-      <select class="input" id="finance-priority-filter" onchange="renderFinanceGoals()">
-        <option value="">⭐ ทุกระดับ</option>
-        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-        <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-        <option value="low">☆ ทิ้ง/เลื่อน</option>
-      </select>
-    </div>
+  <button class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+  <button class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
+  
+  <!-- Filter Chips -->
+  <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+    <button class="filter-chip active" onclick="setFinanceFilter('all')" id="finance-filter-all">ทั้งหมด</button>
+    <button class="filter-chip" onclick="setFinanceFilter('fav')" id="finance-filter-fav">⭐</button>
+    <button class="filter-chip" onclick="setFinanceFilter('archived')" id="finance-filter-archived">📦</button>
+    <button class="filter-chip" onclick="setFinanceFilter('filter')" id="finance-filter-filter">📊</button>
+  </div>
+  
+  <select class="input" id="finance-priority-filter" onchange="renderFinanceGoals()" style="display:none;">
+    <option value="">⭐ ทุกระดับ</option>
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
+  <select class="input" id="finance-category-filter" onchange="renderFinanceGoals()" style="display:none;">
+    <option value="">ทุกหมวด</option>
+    <option value="emergency">🚨 กองทุนฉุกเฉิน</option>
+    <option value="saving">🏦 ออมทรัพย์</option>
+    <option value="investment">📈 ลงทุน</option>
+    <option value="debt">💳 หนี้สิน</option>
+    <option value="income">💵 รายได้</option>
+    <option value="big_purchase">🛒 ของใหญ่/ช้อปปิ้ง</option>
+    <option value="other">📦 อื่นๆ</option>
+  </select>
+  
+  <select class="input" id="finance-archive-filter" onchange="renderFinanceGoals()" style="display:none;">
+    <option value="active">แสดงทั้งหมด</option>
+    <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+    <option value="all">แสดงทั้งหมด</option>
+  </select>
+  
+  <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+</div>
     <div id="finance-goals-list"></div>
     <div class="empty" id="finance-goals-empty" style="display:none;">ยังไม่มีเป้าหมายการเงิน</div>
   </div>
@@ -1774,13 +2001,25 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <div id="finance-wishlist" class="finance-tab-content">
     <div class="toolbar">
       <button class="btn" onclick="openWishModal()">🛍️ + ของที่อยากได้</button>
-      <select class="input" id="wish-priority-filter" onchange="renderWishlist()">
-        <option value="">⭐ ทุกระดับ</option>
-        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-        <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-        <option value="low">☆ ทิ้ง/เลื่อน</option>
-      </select>
+      <!-- Filter Chips -->
+  <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+    <button class="filter-chip active" onclick="setWishFilter('all')" id="wish-filter-all">ทั้งหมด</button>
+    <button class="filter-chip" onclick="setWishFilter('fav')" id="wish-filter-fav">⭐</button>
+    <button class="filter-chip" onclick="setWishFilter('archived')" id="wish-filter-archived">📦</button>
+    <button class="filter-chip" onclick="setWishFilter('filter')" id="wish-filter-filter">📊</button>
+  </div>
+    <select class="input" id="wish-priority-filter" onchange="renderWishlist()" style="display:none;">
+    <option value="">⭐ ทุกระดับ</option>
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
+      <select class="input" id="wish-archive-filter" onchange="renderWishlist()" style="display:none;">
+    <option value="active">แสดงทั้งหมด</option>
+    <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+    <option value="all">แสดงทั้งหมด</option>
+  </select>
     </div>
     <div id="wishlist-list"></div>
     <div class="empty" id="wishlist-empty" style="display:none;">ยังไม่มี Wishlist</div>
@@ -1791,83 +2030,74 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 <div class="page" id="page-study">
   <div class="toolbar">
     <button class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
-    <select class="input" id="study-status-filter" onchange="renderStudy()">
+    
+    <!-- Filter Chips -->
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+      <button class="filter-chip active" onclick="setStudyFilter('all')" id="study-filter-all">ทั้งหมด</button>
+      <button class="filter-chip" onclick="setStudyFilter('fav')" id="study-filter-fav">⭐</button>
+      <button class="filter-chip" onclick="setStudyFilter('archived')" id="study-filter-archived">📦</button>
+      <button class="filter-chip" onclick="setStudyFilter('status')" id="study-filter-status">📊</button>
+    </div>
+    
+    <select class="input" id="study-status-filter" onchange="renderStudy()" style="display:none;">
       <option value="">ทุกสถานะ</option>
       <option value="planning">📝 วางแผน</option>
       <option value="studying">📖 กำลังเรียน</option>
       <option value="completed">✅ เสร็จแล้ว</option>
     </select>
-    <select class="input" id="study-priority-filter" onchange="renderStudy()">
+    <select class="input" id="study-priority-filter" onchange="renderStudy()" style="display:none;">
       <option value="">⭐ ทุกระดับ</option>
       <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
       <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
       <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
       <option value="low">☆ ทิ้ง/เลื่อน</option>
     </select>
+    <select class="input" id="study-archive-filter" onchange="renderStudy()" style="display:none;">
+      <option value="active">แสดงทั้งหมด</option>
+      <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+      <option value="all">แสดงทั้งหมด</option>
+    </select>
+    
+    <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
   </div>
   <div id="study-list"></div>
   <div class="empty" id="study-empty" style="display:none;">ยังไม่มีแผนเรียน</div>
-</div>
-
-<!-- Study Modal -->
-<div class="modal-overlay" id="study-modal">
-  <div class="modal" style="max-width: 600px; padding: 24px;">
-    <h3>เพิ่มแผนเรียน</h3>
-    <div class="field"><label>หัวข้อ</label>
-      <input class="input" id="study-input-title" placeholder="เช่น วาดรูป Anatomy">
-    </div>
-    <div class="field"><label>หมวดหมู่</label>
-      <select class="input" id="study-input-category">
-        <option value="art">🎨 ศิลปะ</option>
-        <option value="coding">💻 โค้ดดิ้ง</option>
-        <option value="language">🌍 ภาษา</option>
-        <option value="music">🎵 ดนตรี</option>
-        <option value="fitness">💪 ฟิตเนส</option>
-        <option value="other">📦 อื่นๆ</option>
-      </select>
-    </div>
-    <div class="field"><label>เป้าหมาย</label>
-      <input class="input" id="study-input-goal" placeholder="เช่น 30 นาที/วัน">
-    </div>
-    <div class="field"><label>โน้ต</label>
-      <textarea class="input" id="study-input-note"></textarea>
-    </div>
-    <div class="field"><label>⭐ ความสำคัญ</label>
-  <select class="input" id="study-input-priority">
-    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-    <option value="important" selected>⭐⭐ สำคัญ (ไม่เร่ง)</option>
-    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-    <option value="low">☆ ทิ้ง/เลื่อน</option>
-  </select>
-    <div class="field">
-    <label>🔗 ลิงก์ (ถ้ามี)</label>
-    <input class="input" id="study-input-link" placeholder="https://...">
-  </div>
-</div>
-    <div class="modal-actions">
-      <button class="btn secondary" onclick="closeModal('study-modal')">ยกเลิก</button>
-      <button class="btn" onclick="confirmSaveStudy()">บันทึก</button>
-    </div>
-  </div>
 </div>
 <!-- ============ PAGE: Project Board ============ -->
 <div class="page" id="page-projects">
   <div class="toolbar">
     <button class="btn" onclick="openProjectModal()">+ เพิ่มโปรเจกต์</button>
-    <select class="input" id="project-status-filter" onchange="renderProjects()">
+  
+    <!-- Filter Chips -->
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+      <button class="filter-chip active" onclick="setProjectFilter('all')" id="project-filter-all">ทั้งหมด</button>
+      <button class="filter-chip" onclick="setProjectFilter('fav')" id="project-filter-fav">⭐</button>
+      <button class="filter-chip" onclick="setProjectFilter('archived')" id="project-filter-archived">📦</button>
+      <button class="filter-chip" onclick="setProjectFilter('status')" id="project-filter-status">📊</button>
+    </div>
+  
+    <select class="input" id="project-status-filter" onchange="renderProjects()" style="display:none;">
       <option value="">ทุกสถานะ</option>
       <option value="planning">📝 วางแผน</option>
       <option value="active">🚀 กำลังทำ</option>
       <option value="review">🔍 ทบทวน</option>
       <option value="done">✅ เสร็จแล้ว</option>
     </select>
-    <select class="input" id="project-priority-filter" onchange="renderProjects()">
+    <select class="input" id="project-priority-filter" onchange="renderProjects()" style="display:none;">
       <option value="">⭐ ทุกระดับ</option>
       <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
       <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
       <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
       <option value="low">☆ ทิ้ง/เลื่อน</option>
     </select>
+  
+    <select class="input" id="project-archive-filter" onchange="renderProjects()" style="display:none;">
+      <option value="active">แสดงทั้งหมด</option>
+      <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+      <option value="all">แสดงทั้งหมด</option>
+    </select>
+      <button class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+
   </div>
   <div id="projects-list"></div>
   <div class="empty" id="projects-empty" style="display:none;">ยังไม่มีโปรเจกต์</div>
@@ -1881,13 +2111,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <input class="input" id="project-input-title" placeholder="เช่น เว็บพอร์ตโฟลิโอ">
     </div>
     <div class="field"><label>รายละเอียด</label>
-      <textarea class="input" id="project-input-desc" placeholder="อธิบายโปรเจกต์..." style="height:80px;resize:vertical;white-space:pre-wrap;"></textarea>
+      <textarea class="input" id="project-input-desc" placeholder="อธิบายโปรเจกต์..." style="height:80px;resize:vertical;white-space:pre-wrap;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
     </div>
     <div class="field"><label>Deadline</label>
       <input class="input" type="date" id="project-input-deadline">
     </div>
     <div class="field"><label>โน้ต</label>
-      <textarea class="input" id="project-input-note" style="height:60px;resize:vertical;white-space:pre-wrap;"></textarea>
+      <textarea class="input" id="project-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}" style="height:60px;resize:vertical;white-space:pre-wrap;"></textarea>
     </div>
     <div class="field"><label>⭐ ความสำคัญ</label>
       <select class="input" id="project-input-priority">
@@ -1912,8 +2142,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     </div>
     <!-- ... -->
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
-      <label style="font-weight:600;">🔗 เชื่อมโยงกับโมดูลอื่นๆ</label>
-      <div id="project-relations-container" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;font-size:12px;"></div>
+      <div class="relation-section">
+        <div class="relation-header" onclick="toggleRelation(this)">
+          <span>🔗 เชื่อมโยงกับโมดูลอื่นๆ (<span id="project-relation-count">0</span>)</span>
+          <span class="arrow collapsed">▼</span>
+        </div>
+        <div class="relation-body collapsed" id="project-relations-container" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;padding:8px 12px;"></div>
+      </div>
     </div>
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
       <label style="font-weight:600;">📁 Ref Library (<span id="project-ref-count">0</span> รูป)</label>
@@ -1998,7 +2233,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       </div>
     <div class="field">
       <label>โน้ต</label>
-      <textarea class="input" id="ref-input-note"></textarea>
+      <textarea class="input" id="ref-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('ref-modal')">ยกเลิก</button>
@@ -2025,7 +2260,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <input class="input" id="vision-input-title" placeholder="เช่น เป็นศิลปินที่เลี้ยงตัวเองได้จากงานศิลปะ">
       </div>
       <div class="field"><label>รายละเอียด</label>
-        <textarea class="input" id="vision-input-desc" placeholder="อธิบายภาพที่อยากเห็นในอนาคต..."></textarea>
+        <textarea class="input" id="vision-input-desc"  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}" placeholder="อธิบายภาพที่อยากเห็นในอนาคต..."></textarea>
       </div>
       <div class="field"><label>⭐ ความสำคัญ</label>
   <select class="input" id="vision-input-priority">
@@ -2041,8 +2276,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 </div>
       <!-- ✅ เพิ่มส่วนเชื่อมโยง -->
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
-      <label style="font-weight:600;">🔗 เชื่อมโยงกับโมดูลอื่นๆ</label>
-      <div id="vision-relations-container" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;font-size:12px;"></div>
+      <div class="relation-section">
+        <div class="relation-header" onclick="toggleRelation(this)">
+          <span>🔗 เชื่อมโยงกับโมดูลอื่นๆ (<span id="vision-relation-count">0</span>)</span>
+          <span class="arrow collapsed">▼</span>
+        </div>
+        <div class="relation-body collapsed" id="vision-relations-container" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;padding:8px 12px;"></div>
+      </div>
     </div>
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
       <label style="font-weight:600;">📁 Ref Library (<span id="vision-ref-count">0</span> รูป)</label>
@@ -2084,7 +2324,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
         <input class="input" type="date" id="goal-input-date">
       </div>
       <div class="field"><label>โน้ต</label>
-        <textarea class="input" id="goal-input-note"></textarea>
+        <textarea class="input" id="goal-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
       </div>
       <div class="field"><label>⭐ ความสำคัญ</label>
   <select class="input" id="goal-input-priority">
@@ -2096,8 +2336,13 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
 </div>
       <!-- ✅ เพิ่มส่วนเชื่อมโยง -->
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
-      <label style="font-weight:600;">🔗 เชื่อมโยงกับโมดูลอื่นๆ</label>
-      <div id="goal-relations-container" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;font-size:12px;"></div>
+      <div class="relation-section">
+        <div class="relation-header" onclick="toggleRelation(this)">
+          <span>🔗 เชื่อมโยงกับโมดูลอื่นๆ (<span id="goal-relation-count">0</span>)</span>
+          <span class="arrow collapsed">▼</span>
+        </div>
+        <div class="relation-body collapsed" id="goal-relations-container" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;padding:8px 12px;"></div>
+      </div>
     </div>
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
       <label style="font-weight:600;">📁 Ref Library (<span id="goal-ref-count">0</span> รูป)</label>
@@ -2235,6 +2480,47 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     </div>
   </div>
 </div>
+<!-- Study Modal -->
+<div class="modal-overlay" id="study-modal">
+  <div class="modal" style="max-width: 600px; padding: 24px;">
+    <h3>เพิ่มแผนเรียน</h3>
+    <div class="field"><label>หัวข้อ</label>
+      <input class="input" id="study-input-title" placeholder="เช่น วาดรูป Anatomy">
+    </div>
+    <div class="field"><label>หมวดหมู่</label>
+      <select class="input" id="study-input-category">
+        <option value="art">🎨 ศิลปะ</option>
+        <option value="coding">💻 โค้ดดิ้ง</option>
+        <option value="language">🌍 ภาษา</option>
+        <option value="music">🎵 ดนตรี</option>
+        <option value="fitness">💪 ฟิตเนส</option>
+        <option value="other">📦 อื่นๆ</option>
+      </select>
+    </div>
+    <div class="field"><label>เป้าหมาย</label>
+      <input class="input" id="study-input-goal" placeholder="เช่น 30 นาที/วัน">
+    </div>
+    <div class="field"><label>โน้ต</label>
+      <textarea class="input" id="study-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
+    </div>
+    <div class="field"><label>⭐ ความสำคัญ</label>
+      <select class="input" id="study-input-priority">
+        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+        <option value="important" selected>⭐⭐ สำคัญ (ไม่เร่ง)</option>
+        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+        <option value="low">☆ ทิ้ง/เลื่อน</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>🔗 ลิงก์ (ถ้ามี)</label>
+      <input class="input" id="study-input-link" placeholder="https://...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('study-modal')">ยกเลิก</button>
+      <button class="btn" onclick="confirmSaveStudy()">บันทึก</button>
+    </div>
+  </div>
+</div>
 
 <!-- Toast Notification -->
 <div id="toast" style="
@@ -2277,7 +2563,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
       <label>ความคิด</label>
       <textarea class="input" id="inbox-input-text" placeholder="คิดอะไรอยู่? พิมพ์เลย..." 
                 style="height:120px; min-height:100px; resize:vertical; font-size:14px; line-height:1.6;" 
-                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();confirmSaveInbox();}"></textarea>
+                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
     </div>
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค) — <span style="color:var(--muted);font-weight:normal;">auto: #quick-idea</span></label>
@@ -2302,7 +2588,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
     <div class="field">
       <label>เนื้อหา</label>
       <textarea class="input" id="daily-input-content" placeholder="วันนี้เกิดอะไรขึ้นบ้าง..." 
-                style="height:150px; min-height:120px; resize:vertical; font-size:14px; line-height:1.6;"></textarea>
+                style="height:150px; min-height:120px; resize:vertical; font-size:14px; line-height:1.6;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
     </div>
     <div class="field">
       <label>😊 อารมณ์</label>
@@ -2984,6 +3270,125 @@ function createFirestoreModule(collectionName, docId = 'items') {
 
   return { getItems, saveItems, onSnapshot, cleanup, migrateFromLocalStorage, docRef };
 }
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+let isSwiping = false;
+
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+  isSwiping = true;
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  if (!isSwiping) return;
+  // ถ้าเลื่อนแนวตั้งมากกว่าแนวนอน → ไม่ใช่ swipe
+  const diffX = Math.abs(e.changedTouches[0].screenX - touchStartX);
+  const diffY = Math.abs(e.changedTouches[0].screenY - touchStartY);
+  if (diffY > diffX) {
+    isSwiping = false;
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  if (!isSwiping) {
+    isSwiping = false;
+    return;
+  }
+  
+  touchEndX = e.changedTouches[0].screenX;
+  touchEndY = e.changedTouches[0].screenY;
+  
+  const diffX = touchStartX - touchEndX;
+  const diffY = Math.abs(touchStartY - touchEndY);
+  
+  // ต้องปัดแนวนอนเท่านั้น (diffX > diffY)
+  if (Math.abs(diffX) < 50 || diffY > Math.abs(diffX)) {
+    isSwiping = false;
+    return;
+  }
+  
+  const direction = diffX > 0 ? 'left' : 'right';
+  handleSwipe(direction);
+  isSwiping = false;
+}, { passive: true });
+
+function handleSwipe(direction) {
+  const currentPage = getCurrentPage();
+  
+  // ===== 1. JOURNAL (Inbox / Daily) =====
+  if (currentPage === 'journal') {
+    const activeTab = document.querySelector('.sub-nav-btn.active');
+    if (!activeTab) return;
+    const currentTab = activeTab.id.replace('sub-', '');
+    const tabs = ['inbox', 'daily'];
+    const idx = tabs.indexOf(currentTab);
+    
+    if (direction === 'left' && idx < tabs.length - 1) {
+      switchJournalTab(tabs[idx + 1]);
+      showToast(`📖 ${tabs[idx + 1] === 'inbox' ? 'Inbox' : 'Daily Log'}`, 'info', 1000);
+    } else if (direction === 'right' && idx > 0) {
+      switchJournalTab(tabs[idx - 1]);
+      showToast(`📖 ${tabs[idx - 1] === 'inbox' ? 'Inbox' : 'Daily Log'}`, 'info', 1000);
+    }
+    return;
+  }
+  
+  // ===== 2. FINANCE (Overview / Transactions / Budgets / Goals / Wishlist) =====
+  if (currentPage === 'finance') {
+    const activeTab = document.querySelector('.finance-tab.active');
+    if (!activeTab) return;
+    const currentTab = activeTab.textContent.trim().toLowerCase();
+    const tabs = ['overview', 'transactions', 'budgets', 'goals', 'wishlist'];
+    const idx = tabs.indexOf(currentTab);
+    
+    if (direction === 'left' && idx < tabs.length - 1) {
+      switchFinanceTab(tabs[idx + 1]);
+      showToast(`💰 ${tabs[idx + 1]}`, 'info', 1000);
+    } else if (direction === 'right' && idx > 0) {
+      switchFinanceTab(tabs[idx - 1]);
+      showToast(`💰 ${tabs[idx - 1]}`, 'info', 1000);
+    }
+    return;
+  }
+  
+  // ===== 3. MODULE TABS (เปลี่ยนหน้าไป module ถัดไป/ก่อนหน้า) =====
+  const pages = ['journal', 'dashboard', 'ref', 'vision', 'projects', 'goals', 'study', 'finance', 'settings'];
+  const currentIdx = pages.indexOf(currentPage);
+  
+  if (direction === 'left' && currentIdx < pages.length - 1) {
+    switchPage(pages[currentIdx + 1]);
+    showToast(`📱 ${PAGES.find(p => p.id === pages[currentIdx + 1])?.label || pages[currentIdx + 1]}`, 'info', 1000);
+  } else if (direction === 'right' && currentIdx > 0) {
+    switchPage(pages[currentIdx - 1]);
+    showToast(`📱 ${PAGES.find(p => p.id === pages[currentIdx - 1])?.label || pages[currentIdx - 1]}`, 'info', 1000);
+  }
+}
+function scrollNav(direction) {
+  const nav = document.getElementById('nav');
+  if (!nav) return;
+  const scrollAmount = nav.clientWidth * 0.7;
+  nav.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+}
+
+// Auto-hide arrows เมื่อไม่มีการ overflow
+function updateNavArrows() {
+  const nav = document.getElementById('nav');
+  const wrapper = nav?.closest('div[style*="display:flex"]');
+  if (!nav || !wrapper) return;
+  
+  const arrows = wrapper.querySelectorAll('.nav-arrow');
+  const hasOverflow = nav.scrollWidth > nav.clientWidth;
+  
+  arrows.forEach(arrow => {
+    arrow.style.display = hasOverflow ? 'block' : 'none';
+  });
+}
+
+// เรียกใน renderNav() และ resize
+window.addEventListener('resize', updateNavArrows);
 
 // ==========================================================
 // DASHBOARD
@@ -3885,6 +4290,7 @@ async function renderRef() {
   const boardFilter = document.getElementById('ref-board-filter').value;
   const catFilter = document.getElementById('ref-cat-filter').value;
   const sortBy = document.getElementById('ref-sort').value;
+  const state = filterStates.ref || { active: 'all' };
 
   let items = await getRefs();
 
@@ -3918,6 +4324,11 @@ async function renderRef() {
     // กรองตาม board
     if (boardFilter) {
       items = items.filter(i => (i.board || 'uncategorized').toLowerCase().includes(boardFilter.toLowerCase()));
+    }
+    
+    // ✅ Favourite filter
+    if (state.active === 'fav') {
+      items = items.filter(i => i.favourite);
     }
 
     // เรียงลำดับ
@@ -3955,6 +4366,7 @@ async function renderRef() {
           <div style="color:var(--accent2);font-weight:600;">📁 ${item.board || 'uncategorized'}</div>
           <div>${item.note || '<i>ไม่มีโน้ต</i>'}</div>
           <div class="tags"><span class="tag">${catLabel}</span>${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+          <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('ref', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
         </div>
       `;
       grid.appendChild(card);
@@ -4470,37 +4882,79 @@ async function confirmEditVision() {
 }
 
 async function deleteVision(id) {
-  // ป้องกัน event bubbling
   if (event) event.stopPropagation();
-  
   if (!confirm('ลบรายการนี้?')) return;
-
-  const projects = await getProjects();
-  projects.forEach(p => {
-    if (p.visionIds) p.visionIds = p.visionIds.filter(vid => vid !== id);
-  });
-  await saveProjects(projects);
-
-  const visions = await getVisions();
-  await saveVisions(visions.filter(i => i.id !== id));
   
+  const items = await getVisions();
+  const index = items.findIndex(i => i.id === id);
+  const item = items[index];
+  if (!item) return;
+  
+  // ✅ บันทึกสำหรับ undo
+  addAction({
+    type: 'delete',
+    module: 'vision',
+    data: item,
+    index: index,
+    message: `ลบ "${item.title}"`
+  });
+  
+  // ลบจริง
+  await saveVisions(items.filter(i => i.id !== id));
   renderVision();
   renderDashboard();
   showToast('🗑️ ลบวิสัยทัศน์แล้ว', 'error');
 }
 
+
 // ✅ renderVision - ตรวจสอบให้สมบูรณ์
+// ===== FIXED: renderVision() =====
 async function renderVision() {
   const list = document.getElementById('vision-list');
   const empty = document.getElementById('vision-empty');
-  const catFilter = document.getElementById('vision-cat-filter').value;
-  const priorityFilter = document.getElementById('vision-priority-filter').value;
+  
+  // ✅ เพิ่มการตรวจสอบ element
+  if (!list || !empty) {
+    console.warn('⚠️ vision-list or vision-empty not found in DOM');
+    return;
+  }
+  
+  const catFilter = document.getElementById('vision-cat-filter')?.value || '';
+  const priorityFilter = document.getElementById('vision-priority-filter')?.value || '';
+  const archiveFilter = document.getElementById('vision-archive-filter')?.value || 'active';
+  const state = filterStates.vision || { active: 'all' };
 
-  const items = await getVisions();
+  let items = await getVisions();
   let filteredItems = items;
   
-  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
-  if (catFilter) filteredItems = filteredItems.filter(i => i.category === catFilter);
+  // กรองตามหมวดหมู่ (ใช้ catFilter)
+  if (catFilter) {
+    filteredItems = filteredItems.filter(i => i.category === catFilter);
+  }
+  
+  // กรองตาม priority
+  if (priorityFilter) {
+    filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
+  }
+  
+  // Favourite filter
+  if (state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => i.favourite);
+  }
+  
+  // Archive filter
+  if (state.active === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  } else if (state.active !== 'fav') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  }
+  
+  // archive-filter เดิม (ถ้ามี)
+  if (archiveFilter === 'active') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  }
 
   list.innerHTML = '';
   empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
@@ -4539,6 +4993,7 @@ async function renderVision() {
     card.innerHTML = `
       <div class="item-top">
         <div style="flex:1;min-width:0;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('vision', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <span class="item-cat">${categoryLabel}</span>
           <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
           ${totalRelations > 0 ? `<span class="tag" style="background:rgba(78,203,113,.12);color:var(--green);font-size:8px;">🔗 ${totalRelations}</span>` : ''}
@@ -4549,6 +5004,7 @@ async function renderVision() {
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
           <button class="del-x" style="color:var(--accent);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();editVision(${item.id})">✎</button>
           <button class="del-x" style="font-size:16px;padding:4px 8px;" onclick="event.stopPropagation();deleteVision(${item.id})">✕</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('vision', ${item.id})">📦</button>
         </div>
       </div>
     `;
@@ -4564,15 +5020,25 @@ async function renderVisionRelationCheckboxes(selectedIds = {}) {
   const container = document.getElementById('vision-relations-container');
   if (!container) return;
   
-  const [goals, studies, finances, wishes, projects] = await Promise.all([
+  const [goals, studies, finances, wishes, projects, visions] = await Promise.all([
     getGoals(),
     getStudies(),
     getFinances(),
     getWishes(),
-    getProjects()
+    getProjects(),
+    getVisions()
   ]);
   
   let html = '';
+
+  // ✅ เพิ่ม Vision (module ตัวเอง)
+  if (visions.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent);margin-top:2px;">🗺️ Vision (ตัวเอง)</div>`;
+    visions.forEach(v => {
+      const checked = (selectedIds.visionIds || []).includes(v.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="vision" value="${v.id}" ${checked}> ${v.title}</label>`;
+    });
+  }
   
   // Goals
   if (goals.length) {
@@ -4619,8 +5085,20 @@ async function renderVisionRelationCheckboxes(selectedIds = {}) {
     });
   }
   
-  if (!goals.length && !studies.length && !finances.length && !wishes.length && !projects.length) {
-    html = `<div style="grid-column:1/-1;color:var(--muted);font-size:12px;">ยังไม่มีข้อมูลในโมดูลอื่นๆ</div>`;
+  if (!visions.length && !goals.length && !studies.length && !finances.length && !wishes.length && !projects.length) {
+    html = `
+      <div style="grid-column:1/-1;color:var(--muted);font-size:12px;text-align:center;padding:8px 0;">
+        ยังไม่มีข้อมูล
+        <div style="margin-top:6px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openVisionModal();">+ Vision</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openGoalModal();">+ Goal</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openStudyModal();">+ Study</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openFinanceModal();">+ Finance</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openWishModal();">+ Wish</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('vision-modal');openProjectModal();">+ Project</button>
+        </div>
+      </div>
+    `;
   }
   
   container.innerHTML = html;
@@ -4799,15 +5277,38 @@ async function deleteGoal(id) {
 async function renderGoals() {
   const list = document.getElementById('goals-list');
   const empty = document.getElementById('goals-empty');
-  const catFilter = document.getElementById('goal-cat-filter').value;
-  const statusFilter = document.getElementById('goal-status-filter').value;
-
-  const items = await getGoals();
-  const priorityFilter = document.getElementById('goal-priority-filter').value;
+  
+  const catFilter = document.getElementById('goal-cat-filter')?.value || '';
+  const statusFilter = document.getElementById('goal-status-filter')?.value || '';
+  const priorityFilter = document.getElementById('goal-priority-filter')?.value || '';
+  const archiveFilter = document.getElementById('goal-archive-filter')?.value || 'active';
+  const state = filterStates.goal || { active: 'all' };
+  
+  let items = await getGoals();
   let filteredItems = items;
+  
   if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
   if (catFilter) filteredItems = filteredItems.filter(i => i.category === catFilter);
   if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
+  
+  // Favourite filter
+  if (state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => i.favourite);
+  }
+  
+  // Archive filter
+  if (state.active === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  } else if (state.active !== 'fav') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  }
+  
+  // archive-filter เดิม
+  if (archiveFilter === 'active') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  }
   
   const dateFilter = document.getElementById('goal-deadline-filter')?.value;
   if (dateFilter) {
@@ -4860,6 +5361,7 @@ async function renderGoals() {
     card.innerHTML = `
       <div class="item-top">
         <div style="flex:1;min-width:0;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('goal', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <span class="item-cat">${categoryLabel}</span>
           <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
           ${isFinanceGoal ? `<span class="item-cat" style="background:rgba(78,203,113,.15);color:var(--green);font-size:8px;">💰 การเงิน</span>` : ''}
@@ -4870,7 +5372,8 @@ async function renderGoals() {
         <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
           <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 6px;" onclick="event.stopPropagation();editGoal(${item.id})">✎</button>
           <button class="del-x" style="font-size:16px;padding:2px 6px;" onclick="event.stopPropagation();deleteGoal(${item.id})">✕</button>
-        </div>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Goal', ${item.id})">📦</button>
+          </div>
       </div>
       <div class="item-footer">
         <span class="item-date">${item.deadline ? '📅 ' + new Date(item.deadline).toLocaleDateString('th-TH') : 'ไม่มีกำหนด'}</span>
@@ -4892,22 +5395,32 @@ async function renderGoalRelationCheckboxes(selectedIds = {}) {
   const container = document.getElementById('goal-relations-container');
   if (!container) return;
   
-  const [visions, studies, finances, wishes, projects] = await Promise.all([
+  const [visions, studies, finances, wishes, projects, goals] = await Promise.all([
     getVisions(),
     getStudies(),
     getFinances(),
     getWishes(),
-    getProjects()
+    getProjects(),
+    getGoals()  // ← เพิ่ม goals
   ]);
   
   let html = '';
   
-  // Life Map
+  // Vision
   if (visions.length) {
     html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent);margin-top:2px;">🗺️ Life Map</div>`;
     visions.forEach(v => {
       const checked = (selectedIds.visionIds || []).includes(v.id) ? 'checked' : '';
       html += `<label class="relation-checkbox"><input type="checkbox" data-type="vision" value="${v.id}" ${checked}> ${v.title}</label>`;
+    });
+  }
+  
+  // ✅ เพิ่ม Goal (module ตัวเอง)
+  if (goals.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent2);margin-top:2px;">🎯 Goal (ตัวเอง)</div>`;
+    goals.forEach(g => {
+      const checked = (selectedIds.goalIds || []).includes(g.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="goal" value="${g.id}" ${checked}> ${g.title}</label>`;
     });
   }
   
@@ -4947,8 +5460,20 @@ async function renderGoalRelationCheckboxes(selectedIds = {}) {
     });
   }
   
-  if (!visions.length && !studies.length && !finances.length && !wishes.length && !projects.length) {
-    html = `<div style="grid-column:1/-1;color:var(--muted);font-size:12px;">ยังไม่มีข้อมูลในโมดูลอื่นๆ</div>`;
+  if (!visions.length && !goals.length && !studies.length && !finances.length && !wishes.length && !projects.length) {
+    html = `
+      <div style="grid-column:1/-1;color:var(--muted);font-size:12px;text-align:center;padding:8px 0;">
+        ยังไม่มีข้อมูล
+        <div style="margin-top:6px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openVisionModal();">+ Vision</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openGoalModal();">+ Goal</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openStudyModal();">+ Study</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openFinanceModal();">+ Finance</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openWishModal();">+ Wish</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('goal-modal');openProjectModal();">+ Project</button>
+        </div>
+      </div>
+    `;
   }
   
   container.innerHTML = html;
@@ -5604,12 +6129,18 @@ async function renderFinanceTransactions() {
   const list = document.getElementById('transaction-list');
   const empty = document.getElementById('transaction-empty');
   const typeFilter = document.getElementById('transaction-type-filter').value;
+  const archiveFilter = document.getElementById('transaction-archive-filter')?.value || 'active';
   
   let items = await getTransactions();
   
   // Filter by type
   if (typeFilter !== 'all') {
     items = items.filter(i => i.type === typeFilter);
+  }
+  if (archiveFilter === 'active') {
+    items = items.filter(i => !i.archived);
+  } else if (archiveFilter === 'archived') {
+    items = items.filter(i => i.archived);
   }
   
   // Sort by date (newest first)
@@ -5627,11 +6158,13 @@ async function renderFinanceTransactions() {
     
     card.innerHTML = `
       <div class="transaction-info">
+        <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
         <div class="transaction-category">${categoryLabel} · ${new Date(item.date).toLocaleDateString('th-TH')}</div>
         <div class="transaction-note">${item.note || 'ไม่มีรายละเอียด'}</div>
       </div>
       <div class="transaction-amount ${item.type}">${amountDisplay} บาท</div>
       <button class="del-x" style="font-size:14px;margin-left:8px;" onclick="deleteTransaction(${item.id})">✕</button>
+      <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Transaction', ${item.id})">📦</button>
     `;
     
     list.appendChild(card);
@@ -5737,6 +6270,7 @@ async function renderBudgets() {
   const list = document.getElementById('budget-list');
   const empty = document.getElementById('budget-empty');
   const monthFilter = document.getElementById('budget-month-filter').value;
+  const archiveFilter = document.getElementById('budget-archive-filter')?.value || 'active';
   
   let items = await getBudgets();
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -5745,6 +6279,11 @@ async function renderBudgets() {
     items = items.filter(i => i.month === monthFilter);
   } else {
     items = items.filter(i => i.month === currentMonth);
+  }
+  if (archiveFilter === 'active') {
+    items = items.filter(i => !i.archived);
+  } else if (archiveFilter === 'archived') {
+    items = items.filter(i => i.archived);
   }
   
   // Group by category
@@ -5765,6 +6304,7 @@ async function renderBudgets() {
 card.className = 'budget-card';
 card.innerHTML = `
   <div class="budget-header">
+    <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
     <div class="budget-category">${catInfo ? catInfo.label : catKey}</div>
     <div class="budget-amount">${budgets.length} รายการ · ${totalLimit.toLocaleString()} บาท</div>
   </div>
@@ -5776,7 +6316,8 @@ card.innerHTML = `
         <div style="display:flex;gap:4px;">
           <button class="del-x" style="font-size:10px;color:var(--accent);" onclick="editBudget(${b.id})">✎</button>
           <button class="del-x" style="font-size:10px;" onclick="deleteBudget(${b.id})">✕</button>
-        </div>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Budget', ${b.id})">📦</button>
+          </div>
       </div>
     `).join('')}
   </div>
@@ -6035,6 +6576,7 @@ async function renderFinanceBudgets() {
     card.className = 'budget-card';
     card.innerHTML = `
       <div class="budget-header">
+        <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
         <div class="budget-category">${categoryLabel}</div>
         <div class="budget-amount">${spent.toLocaleString()} / ${item.limit.toLocaleString()} บาท</div>
       </div>
@@ -6124,18 +6666,32 @@ async function renderFinanceOverview() {
 async function renderFinanceGoals() {
   const list = document.getElementById('finance-goals-list');
   const empty = document.getElementById('finance-goals-empty');
-  const priorityFilter = document.getElementById('finance-priority-filter').value;
+  
+  const priorityFilter = document.getElementById('finance-priority-filter')?.value || '';
   const categoryFilter = document.getElementById('finance-category-filter')?.value || '';
+  const archiveFilter = document.getElementById('finance-archive-filter')?.value || 'active';
+  const state = filterStates.finance || { active: 'all' };
   
   let items = await getFinances();
+  let filteredItems = items;
   
-  if (priorityFilter) {
-    items = items.filter(i => i.priority === priorityFilter);
+  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
+  if (categoryFilter) filteredItems = filteredItems.filter(i => i.category === categoryFilter);
+  
+  if (state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => i.favourite);
   }
   
-  // ✅ กรองตามหมวดหมู่
-  if (categoryFilter) {
-    items = items.filter(i => i.category === categoryFilter);
+  if (state.active === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  } else if (state.active !== 'fav') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  }
+  
+  if (archiveFilter === 'active') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
   }
   
   list.innerHTML = '';
@@ -6161,6 +6717,7 @@ async function renderFinanceGoals() {
     card.innerHTML = `
       <div class="item-top">
         <div style="flex:1;min-width:0;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('finance', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <span class="item-cat">${categoryLabel}</span>
           <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
           ${categoryFilter === 'finance' ? `<span class="item-cat" style="background:rgba(78,203,113,.15);color:var(--green);font-size:8px;">🔗 จาก Goals</span>` : ''}
@@ -6170,7 +6727,8 @@ async function renderFinanceGoals() {
         <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
           <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="event.stopPropagation();editFinance(${item.id})">✎</button>
           <button class="del-x" style="font-size:16px;" onclick="event.stopPropagation();deleteFinance(${item.id})">✕</button>
-        </div>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Finance', ${item.id})">📦</button>
+          </div>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width:${pct}%;transition:width 0.5s;"></div>
@@ -6189,18 +6747,36 @@ async function renderFinanceGoals() {
 async function renderWishlist() {
   const list = document.getElementById('wishlist-list');
   const empty = document.getElementById('wishlist-empty');
-  const priorityFilter = document.getElementById('wish-priority-filter').value;
+  
+  const priorityFilter = document.getElementById('wish-priority-filter')?.value || '';
+  const archiveFilter = document.getElementById('wish-archive-filter')?.value || 'active';
+  const state = filterStates.wish || { active: 'all' };
   
   let items = await getWishes();
+  let filteredItems = items;
   
-  if (priorityFilter) {
-    items = items.filter(i => i.priority === priorityFilter);
+  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
+  
+  if (state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => i.favourite);
+  }
+  
+  if (state.active === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  } else if (state.active !== 'fav') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  }
+  
+  if (archiveFilter === 'active') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
   }
   
   list.innerHTML = '';
   empty.style.display = items.length === 0 ? 'block' : 'none';
   
-  items.forEach(item => {
+  filteredItems.forEach(item => {
     const saved = item.saved || 0;
     const price = item.price || 0;
     const pct = price > 0 ? Math.min(100, (saved / price) * 100) : 0;
@@ -6219,15 +6795,19 @@ async function renderWishlist() {
 card.innerHTML = `
   <div class="item-top">
     <div>
+      <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('wish', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
       <span class="item-cat">${categoryLabel}</span>
       <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
       <div class="item-title" style="margin-top:6px;${item.bought ? 'text-decoration:line-through;' : ''}">${item.name}${item.bought ? ' ✅' : ''}</div>
       ${tagsHtml}
     </div>
-    <div style="display:flex;gap:2px;align-items:center;">
+    
+    <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
       <button class="del-x" style="color:var(--accent);" onclick="editWish(${item.id})">✎</button>
       <button class="del-x" onclick="deleteWish(${item.id})">✕</button>
-    </div>
+      
+      <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('wish', ${item.id})">📦</button>
+      </div>
   </div>
   <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
   <div class="progress-label">${saved.toLocaleString()} / ${price.toLocaleString()} บาท (${pct.toFixed(0)}%)</div>
@@ -6449,7 +7029,8 @@ if (filter === 'all' || filter === 'wishlist') {
         <div style="display:flex;gap:4px;align-items:center;">
           <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="${item.type === 'finance' ? `editFinance(${item.id})` : `editWish(${item.id})`}">✎</button>
           <button class="del-x" style="font-size:16px;" onclick="${item.type === 'finance' ? `deleteFinance(${item.id})` : `deleteWish(${item.id})`}">✕</button>
-        </div>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Wish', ${item.id})">📦</button>
+          </div>
       </div>
       <div class="item-desc">${item.detail}</div>
       ${item.html}
@@ -6578,13 +7159,39 @@ async function deleteStudy(id) {
 async function renderStudy() {
   const list = document.getElementById('study-list');
   const empty = document.getElementById('study-empty');
-  const statusFilter = document.getElementById('study-status-filter').value;
+  
+  // ✅ เพิ่มการตรวจสอบ element
+  if (!list || !empty) {
+    console.warn('⚠️ study-list or study-empty not found in DOM');
+    return;
+  }
+  
+  const statusFilter = document.getElementById('study-status-filter')?.value || '';
+  const priorityFilter = document.getElementById('study-priority-filter')?.value || '';
+  const archiveFilter = document.getElementById('study-archive-filter')?.value || 'active';
+  const state = filterStates.study || { active: 'all' };
 
-  const items = await getStudies();
-  const priorityFilter = document.getElementById('study-priority-filter').value;
+  let items = await getStudies();
   let filteredItems = items;
+
   if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
   if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
+  
+  if (state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => i.favourite);
+  }
+  
+  if (state.active === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  } else if (state.active !== 'fav') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  }
+  
+  if (archiveFilter === 'active') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  }
 
   list.innerHTML = '';
   empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
@@ -6617,6 +7224,7 @@ async function renderStudy() {
     card.innerHTML = `
       <div class="item-top">
         <div style="flex:1;min-width:0;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('study', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <span class="item-cat">${STUDY_CAT_LABELS[item.category] || item.category}</span>
           <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
           <div class="item-title" style="margin-top:6px;">${item.title}</div>
@@ -6627,6 +7235,7 @@ async function renderStudy() {
         <div style="display:flex;gap:4px;flex-shrink:0;">
           <button class="del-x" style="color:var(--accent);" onclick="event.stopPropagation();editStudy(${item.id})">✎</button>
           <button class="del-x" onclick="event.stopPropagation();deleteStudy(${item.id})">✕</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Study', ${item.id})">📦</button>
         </div>
       </div>
       <div class="item-footer">
@@ -6748,14 +7357,15 @@ async function renderRelationCheckboxes(selectedIds = {}) {
     return;
   }
   
-  console.log('🔄 Rendering with selectedIds:', selectedIds);  // ← เพิ่ม debug
+  console.log('🔄 Rendering with selectedIds:', selectedIds);
   
-  const [visions, goals, studies, finances, wishes] = await Promise.all([
+  const [visions, goals, studies, finances, wishes, projects] = await Promise.all([
     getVisions(),
     getGoals(),
     getStudies(),
     getFinances(),
-    getWishes()
+    getWishes(),
+    getProjects()  // ← เพิ่ม projects
   ]);
   
   let html = '';
@@ -6765,7 +7375,7 @@ async function renderRelationCheckboxes(selectedIds = {}) {
     html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent);margin-top:2px;">🗺️ Life Map</div>`;
     visions.forEach(v => {
       const checked = (selectedIds.visionIds || []).includes(v.id) ? 'checked' : '';
-      console.log('  Vision:', v.id, v.title, checked ? '✅ checked' : '⬜ unchecked');  // ← เพิ่ม debug
+      console.log('  Vision:', v.id, v.title, checked ? '✅ checked' : '⬜ unchecked');
       html += `<label class="relation-checkbox"><input type="checkbox" data-type="vision" value="${v.id}" ${checked}> ${v.title}</label>`;
     });
   }
@@ -6775,7 +7385,7 @@ async function renderRelationCheckboxes(selectedIds = {}) {
     html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent2);margin-top:2px;">🎯 Goals</div>`;
     goals.forEach(g => {
       const checked = (selectedIds.goalIds || []).includes(g.id) ? 'checked' : '';
-      console.log('  Goal:', g.id, g.title, checked ? '✅ checked' : '⬜ unchecked');  // ← เพิ่ม debug
+      console.log('  Goal:', g.id, g.title, checked ? '✅ checked' : '⬜ unchecked');
       html += `<label class="relation-checkbox"><input type="checkbox" data-type="goal" value="${g.id}" ${checked}> ${g.title}</label>`;
     });
   }
@@ -6807,8 +7417,29 @@ async function renderRelationCheckboxes(selectedIds = {}) {
     });
   }
   
-  if (!visions.length && !goals.length && !studies.length && !finances.length && !wishes.length) {
-    html = `<div style="grid-column:1/-1;color:var(--muted);font-size:12px;">ยังไม่มีข้อมูลในโมดูลอื่นๆ สร้างข้อมูลก่อนแล้วค่อยกลับมาเชื่อมโยง</div>`;
+  // ✅ เพิ่ม Project (module ตัวเอง)
+  if (projects.length) {
+    html += `<div style="grid-column:1/-1;font-weight:600;font-size:11px;color:var(--accent);margin-top:2px;">📋 Project (ตัวเอง)</div>`;
+    projects.forEach(p => {
+      const checked = (selectedIds.projectIds || []).includes(p.id) ? 'checked' : '';
+      html += `<label class="relation-checkbox"><input type="checkbox" data-type="project" value="${p.id}" ${checked}> ${p.title}</label>`;
+    });
+  }
+  
+  if (!visions.length && !goals.length && !studies.length && !finances.length && !wishes.length && !projects.length) {
+    html = `
+      <div style="grid-column:1/-1;color:var(--muted);font-size:12px;text-align:center;padding:8px 0;">
+        ยังไม่มีข้อมูล
+        <div style="margin-top:6px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openVisionModal();">+ Vision</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openGoalModal();">+ Goal</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openStudyModal();">+ Study</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openFinanceModal();">+ Finance</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openWishModal();">+ Wish</button>
+          <button class="btn secondary" style="font-size:10px;padding:2px 10px;" onclick="closeModal('project-modal');openProjectModal();">+ Project</button>
+        </div>
+      </div>
+    `;
   }
   
   container.innerHTML = html;
@@ -6915,14 +7546,33 @@ async function deleteProject(id) {
 async function renderProjects() {
   const list = document.getElementById('projects-list');
   const empty = document.getElementById('projects-empty');
-  const statusFilter = document.getElementById('project-status-filter').value;
-
-  const items = await getProjects();
-  const priorityFilter = document.getElementById('project-priority-filter').value;
   
+  const statusFilter = document.getElementById('project-status-filter')?.value || '';
+  const priorityFilter = document.getElementById('project-priority-filter')?.value || '';
+  const archiveFilter = document.getElementById('project-archive-filter')?.value || 'active';
+  const state = filterStates.project || { active: 'all' };
+
+  let items = await getProjects();
   let filteredItems = items;
+  
   if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
   if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
+  
+  if (state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => i.favourite);
+  }
+  
+  if (state.active === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  } else if (state.active !== 'fav') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  }
+  
+  if (archiveFilter === 'active') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived);
+  }
 
   list.innerHTML = '';
   empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
@@ -6955,6 +7605,7 @@ async function renderProjects() {
     card.innerHTML = `
       <div class="item-top">
         <div style="flex:1;min-width:0;">
+          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('project', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
             <span class="item-cat" style="background:${item.status === 'done' ? 'rgba(78,203,113,.15)' : item.status === 'active' ? 'rgba(200,169,110,.15)' : 'rgba(138,135,152,.15)'}; color:${item.status === 'done' ? 'var(--green)' : item.status === 'active' ? 'var(--accent2)' : 'var(--muted)'}">
               ${statusLabel}
@@ -6967,10 +7618,10 @@ async function renderProjects() {
         </div>
         ${refsHtml}
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
-          <button class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openProjectDetail(${item.id})">📋</button>
           <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 4px;" onclick="editProject(${item.id})">✎</button>
           <button class="del-x" style="font-size:16px;padding:2px 4px;" onclick="deleteProject(${item.id})">✕</button>
-        </div>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Project', ${item.id})">📦</button>
+          </div>
       </div>
       ${item.desc ? `
     <div class="item-desc project-desc-truncate" style="font-size:12px;cursor:pointer;" onclick="openProjectDetail(${item.id})">
@@ -7659,13 +8310,22 @@ async function confirmConvertInbox() {
   showToast(`🔄 แปลง Inbox เป็น ${target} แล้ว`, 'success');
 }
 
+// ===== FIXED: renderInbox() =====
 async function renderInbox() {
   const list = document.getElementById('inbox-list');
   const empty = document.getElementById('inbox-empty');
   
+  // ✅ เพิ่มการตรวจสอบ element
+  if (!list || !empty) {
+    console.warn('⚠️ inbox-list or inbox-empty not found in DOM');
+    return;
+  }
+  
+  const state = filterStates.inbox || { active: 'all' };
+  
   try {
-    const allItems = await getInbox();
-    const items = allItems.filter(i => !i.processed);
+    let allItems = await getInbox();
+    let items = allItems.filter(i => !i.processed);
     const subBadge = document.getElementById('inbox-badge-sub');
     const count = items.length;
     if (subBadge) {
@@ -7675,6 +8335,18 @@ async function renderInbox() {
       } else {
         subBadge.style.display = 'none';
       }
+    }
+    
+    // Favourite filter
+    if (state.active === 'fav') {
+      items = items.filter(i => i.favourite);
+    }
+    
+    // Archive filter
+    if (state.active === 'archived') {
+      items = items.filter(i => i.archived);
+    } else if (state.active !== 'fav') {
+      items = items.filter(i => !i.archived);
     }
     
     list.innerHTML = '';
@@ -7687,12 +8359,12 @@ async function renderInbox() {
       card.innerHTML = `
         <div class="item-top">
           <div style="flex:1;">
+            <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('inbox', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
             <div style="font-size:13px;white-space:pre-wrap;word-break:break-word;">${item.text}</div>
             <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
               ${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}
               <span style="font-size:10px;color:var(--muted);">${timeAgo}</span>
             </div>
-            <!-- ✅ ปุ่มแปลง อยู่ข้างล่าง -->
             <div style="margin-top:6px;">
               <button class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openConvertInbox(${item.id})">🔄 แปลง</button>
             </div>
@@ -7700,6 +8372,7 @@ async function renderInbox() {
           <div style="display:flex;gap:4px;flex-shrink:0;">
             <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="editInbox(${item.id})">✎</button>
             <button class="del-x" style="font-size:14px;" onclick="deleteInbox(${item.id})">✕</button>
+            <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('inbox', ${item.id})">📦</button>
           </div>
         </div>
       `;
@@ -7707,9 +8380,10 @@ async function renderInbox() {
     });
   } catch (err) {
     console.warn('⚠️ renderInbox error:', err);
-    list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">โหลดข้อมูลไม่สำเร็จ</div>';
+    if (list) list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">โหลดข้อมูลไม่สำเร็จ</div>';
   }
 }
+
 // ==========================================================
 // MODULE: Daily Log (Firestore)
 // ==========================================================
@@ -7834,57 +8508,80 @@ function resetDailyModal() {
   document.getElementById('daily-input-image').value = '';
 }
 
+// ===== FIXED: renderDaily() =====
 async function renderDaily() {
   const list = document.getElementById('daily-list');
   const empty = document.getElementById('daily-empty');
+  
+  // ✅ เพิ่มการตรวจสอบ element
+  if (!list || !empty) {
+    console.warn('⚠️ daily-list or daily-empty not found in DOM');
+    return;
+  }
+  
+  const state = filterStates.daily || { active: 'all' };
+  
+  try {
+    let items = await getDaily();
+    
+    // Favourite filter
+    if (state.active === 'fav') {
+      items = items.filter(i => i.favourite);
+    }
+    
+    // Archive filter
+    if (state.active === 'archived') {
+      items = items.filter(i => i.archived);
+    } else if (state.active !== 'fav') {
+      items = items.filter(i => !i.archived);
+    }
 
-try {
-  const items = await getDaily();
+    list.innerHTML = '';
+    empty.style.display = items.length === 0 ? 'block' : 'none';
 
-  list.innerHTML = '';
-  empty.style.display = items.length === 0 ? 'block' : 'none';
+    // เรียงตามวันที่ (ใหม่สุดก่อน)
+    items.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
 
-  // เรียงตามวันที่ (ใหม่สุดก่อน)
-  items.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+    const moodEmojis = { happy: '😊', ok: '😐', tired: '😫', sad: '😢' };
 
-  const moodEmojis = { happy: '😊', ok: '😐', tired: '😫', sad: '😢' };
-
-  items.forEach(item => {
-    const card = document.createElement('div');
+    items.forEach(item => {
+      const card = document.createElement('div');
       card.className = 'item-card daily-item';
       card.style.cursor = 'pointer';
       card.onclick = (e) => {
-      if (e.target.closest('.del-x') || e.target.closest('.btn')) return;
-      openDailyDetail(item.id);
-    };
-    const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-    const moodEmoji = item.mood ? moodEmojis[item.mood] || '' : '';
-    card.innerHTML = `
-      <div class="item-top">
-        <div style="flex:1;">
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
-            ${moodEmoji ? `<span class="daily-mood">${moodEmoji}</span>` : ''}
+        if (e.target.closest('.del-x') || e.target.closest('.btn')) return;
+        openDailyDetail(item.id);
+      };
+      const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+      const moodEmoji = item.mood ? moodEmojis[item.mood] || '' : '';
+      card.innerHTML = `
+        <div class="item-top">
+          <div style="flex:1;">
+            <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('daily', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
+              ${moodEmoji ? `<span class="daily-mood">${moodEmoji}</span>` : ''}
+            </div>
+            <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content}</div>
+            <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+              ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            </div>
+            ${item.image ? `<img src="${item.image}" class="daily-image-thumb" onclick="openLightbox('${item.image}')">` : ''}
           </div>
-          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content}</div>
-          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
-            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+          <div style="display:flex;gap:4px;flex-shrink:0;">
+            <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="editDaily(${item.id})">✎</button>
+            <button class="del-x" style="font-size:14px;" onclick="deleteDaily(${item.id})">✕</button>
           </div>
-          ${item.image ? `<img src="${item.image}" class="daily-image-thumb" onclick="openLightbox('${item.image}')">` : ''}
         </div>
-        <div style="display:flex;gap:4px;flex-shrink:0;">
-          <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="editDaily(${item.id})">✎</button>
-          <button class="del-x" style="font-size:14px;" onclick="deleteDaily(${item.id})">✕</button>
-        </div>
-      </div>
-    `;
-    list.appendChild(card);
-  });
-} catch (err) {
+      `;
+      list.appendChild(card);
+    });
+  } catch (err) {
     console.warn('⚠️ renderDaily error:', err);
-    list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">โหลดข้อมูลไม่สำเร็จ</div>';
+    if (list) list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">โหลดข้อมูลไม่สำเร็จ</div>';
   }
 }
+
 // ==========================================================
 // JOURNAL (จด) — Sub-tabs
 // ==========================================================
@@ -7901,7 +8598,6 @@ function switchJournalTab(tab) {
   if (tab === 'inbox') renderInbox();
   else if (tab === 'daily') renderDaily();
 }
-
 // ==========================================================
 // EXPORT / IMPORT
 // ==========================================================
@@ -8066,7 +8762,7 @@ function resetVisionModal() {
 }
 
 async function editGoal(id) {
-  const items = await getGoals();
+  let items = await getGoals();
   const item = items.find(i => i.id === id);
   if (!item) return;
   
@@ -8423,15 +9119,109 @@ async function renderCalendar() {
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
   
-  // ✅ Get goals with deadlines - ประกาศตัวแปร goals
-  const allGoals = await getGoals();
-  const goalsWithDeadline = allGoals.filter(g => g.deadline);
+  // ✅ ดึงข้อมูลจากทุก module ที่มีวันที่
+  const [goals, projects, studies, finances, wishes] = await Promise.all([
+    getGoals(),
+    getProjects(),
+    getStudies(),
+    getFinances(),
+    getWishes()
+  ]);
   
-  // ✅ อัพเดตจำนวนเป้าหมาย
-  const totalGoals = goalsWithDeadline.length;
+  // ✅ รวมทุก item ที่มีวันที่
+  const allItems = [];
+  
+  goals.forEach(g => {
+    if (g.deadline) {
+      allItems.push({
+        ...g,
+        module: 'goal',
+        dateField: 'deadline',
+        label: '🎯',
+        moduleName: 'goals',
+        title: g.title,
+        detail: `(${STATUS_LABELS[g.status] || g.status})`
+      });
+    }
+  });
+  
+  projects.forEach(p => {
+    if (p.deadline) {
+      allItems.push({
+        ...p,
+        module: 'project',
+        dateField: 'deadline',
+        label: '📋',
+        moduleName: 'projects',
+        title: p.title,
+        detail: `(${PROJECT_STATUS_LABELS[p.status] || p.status})`
+      });
+    }
+  });
+  
+  studies.forEach(s => {
+    if (s.createdAt) {
+      const dateStr = s.createdAt.slice(0, 10);
+      allItems.push({
+        ...s,
+        module: 'study',
+        dateField: 'createdAt',
+        label: '📚',
+        moduleName: 'study',
+        title: s.title,
+        detail: `(${STUDY_STATUS_LABELS[s.status] || s.status})`,
+        date: dateStr
+      });
+    }
+  });
+  
+  finances.forEach(f => {
+    if (f.createdAt) {
+      const dateStr = f.createdAt.slice(0, 10);
+      allItems.push({
+        ...f,
+        module: 'finance',
+        dateField: 'createdAt',
+        label: '💰',
+        moduleName: 'finance',
+        title: f.name,
+        detail: `${f.saved.toLocaleString()}/${f.target.toLocaleString()} บาท`,
+        date: dateStr
+      });
+    }
+  });
+  
+  wishes.forEach(w => {
+    if (w.createdAt) {
+      const dateStr = w.createdAt.slice(0, 10);
+      allItems.push({
+        ...w,
+        module: 'wish',
+        dateField: 'createdAt',
+        label: '🛍️',
+        moduleName: 'finance',
+        title: w.name,
+        detail: w.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ',
+        date: dateStr
+      });
+    }
+  });
+  
+  // ✅ จัดกลุ่มตามวันที่
+  const itemsByDate = {};
+  allItems.forEach(item => {
+    const dateKey = item.date || item[item.dateField]?.slice(0, 10);
+    if (dateKey) {
+      if (!itemsByDate[dateKey]) itemsByDate[dateKey] = [];
+      itemsByDate[dateKey].push(item);
+    }
+  });
+  
+  // ✅ อัพเดตจำนวนเป้าหมายทั้งหมด
+  const totalItems = allItems.length;
   const goalCountEl = document.getElementById('calendar-goal-count');
   if (goalCountEl) {
-    goalCountEl.textContent = totalGoals;
+    goalCountEl.textContent = totalItems;
   }
   
   // Build grid
@@ -8448,26 +9238,25 @@ async function renderCalendar() {
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isToday = dateStr === todayStr;
-    const dayGoals = goalsWithDeadline.filter(g => g.deadline === dateStr);
-    const hasDeadline = dayGoals.length > 0;
+    const dayItems = itemsByDate[dateStr] || [];
+    const hasItems = dayItems.length > 0;
     
-    // ✅ ให้กดได้ทุกวัน (ไม่ต้องมี deadline)
     html += `
       <div style="
         text-align:center; padding:4px 2px; border-radius:4px;
-        background: ${isToday ? 'var(--accent)' : hasDeadline ? 'rgba(200,169,110,.15)' : 'var(--surface2)'};
-        color: ${isToday ? 'white' : hasDeadline ? 'var(--accent2)' : 'var(--text)'};
+        background: ${isToday ? 'var(--accent)' : hasItems ? 'rgba(200,169,110,.15)' : 'var(--surface2)'};
+        color: ${isToday ? 'white' : hasItems ? 'var(--accent2)' : 'var(--text)'};
         font-size:12px; cursor: pointer;
         position: relative; min-height:28px;
         transition: all 0.2s ease;
       "
       onmouseover="this.style.transform='scale(1.05)'"
       onmouseout="this.style.transform='scale(1)'"
-      onclick="showDayGoals('${dateStr}')">
+      onclick="showDayItems('${dateStr}')">
         ${day}
-        ${hasDeadline ? `<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:6px;">●</span>` : ''}
+        ${hasItems ? `<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:6px;">●</span>` : ''}
         ${isToday ? `<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:6px;">⬤</span>` : ''}
-        ${dayGoals.length > 0 ? `<span style="position:absolute;top:2px;right:2px;font-size:8px;color:var(--accent2);">${dayGoals.length}</span>` : ''}
+        ${hasItems ? `<span style="position:absolute;top:2px;right:2px;font-size:8px;color:var(--accent2);">${dayItems.length}</span>` : ''}
       </div>
     `;
   }
@@ -8478,21 +9267,28 @@ async function renderCalendar() {
 function changeMonth(delta) {
   calendarDate.setMonth(calendarDate.getMonth() + delta);
   renderCalendar();
+  
+  // ✅ ถ้า popup เปิดอยู่ ให้ refresh
+  if (document.getElementById('calendar-full-popup')) {
+    refreshCalendarPopup();
+  }
 }
 
 function resetCalendar() {
-  // ✅ ตั้งค่าวันที่กลับเป็นวันนี้
   calendarDate = new Date();
   
-  // ✅ รีเซ็ต filter วันที่ด้วย
   const filter = document.getElementById('goal-deadline-filter');
   if (filter) {
     filter.value = '';
     renderGoals();
   }
   
-  // ✅ render Calendar ใหม่
   renderCalendar();
+  
+  // ✅ ถ้า popup เปิดอยู่ ให้ refresh
+  if (document.getElementById('calendar-full-popup')) {
+    refreshCalendarPopup();
+  }
   
   showToast('📅 กลับมาวันนี้', 'info', 1500);
 }
@@ -8976,6 +9772,9 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// ==========================================================
+// CLEAR REF FILTERS
+// ==========================================================
 function clearRefFilters() {
   document.getElementById('ref-search').value = '';
   document.getElementById('ref-cat-filter').value = '';
@@ -8983,11 +9782,844 @@ function clearRefFilters() {
   document.getElementById('ref-back-btn').style.display = 'none';
   renderRef();
 }
+// หลังจาก render รายการ
+function enableDragSort(containerId, getItemsFn, saveItemsFn, renderFn) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  Sortable.create(container, {
+    animation: 150,
+    handle: '.drag-handle',
+    onEnd: async function(evt) {
+      const items = await getItemsFn();
+      const [removed] = items.splice(evt.oldIndex, 1);
+      items.splice(evt.newIndex, 0, removed);
+      await saveItemsFn(items);
+      renderFn();
+    }
+  });
+}
+function showDayItems(dateStr) {
+  // ✅ สร้าง popup แสดงรายการ
+  const existingPopup = document.getElementById('calendar-popup');
+  if (existingPopup) existingPopup.remove();
+  
+  // ✅ ไปที่หน้า Goals และแสดง filter วันที่
+  switchPage('goals');
+  
+  setTimeout(async () => {
+    // ✅ สร้าง filter วันที่ถ้ายังไม่มี
+    let filter = document.getElementById('goal-deadline-filter');
+    if (!filter) {
+      const toolbar = document.querySelector('#page-goals .toolbar');
+      if (toolbar) {
+        filter = document.createElement('input');
+        filter.className = 'input';
+        filter.id = 'goal-deadline-filter';
+        filter.type = 'date';
+        filter.style.maxWidth = '160px';
+        filter.placeholder = '📅 กำหนดวัน';
+        filter.oninput = renderGoals;
+        
+        const label = document.createElement('span');
+        label.style.cssText = 'font-size:11px;color:var(--muted);';
+        label.textContent = '📅 ';
+        
+        toolbar.appendChild(label);
+        toolbar.appendChild(filter);
+      }
+    }
+    
+    if (filter) {
+      filter.value = dateStr;
+      
+      // ✅ ดึงข้อมูลทุก module ที่มีวันที่นี้
+      const [goals, projects, studies, finances, wishes] = await Promise.all([
+        getGoals(), getProjects(), getStudies(), getFinances(), getWishes()
+      ]);
+      
+      const items = [];
+      goals.filter(g => g.deadline === dateStr).forEach(g => {
+        items.push({ label: '🎯', title: g.title, detail: STATUS_LABELS[g.status] || g.status, module: 'goals' });
+      });
+      projects.filter(p => p.deadline === dateStr).forEach(p => {
+        items.push({ label: '📋', title: p.title, detail: PROJECT_STATUS_LABELS[p.status] || p.status, module: 'projects' });
+      });
+      studies.filter(s => s.createdAt?.startsWith(dateStr)).forEach(s => {
+        items.push({ label: '📚', title: s.title, detail: STUDY_STATUS_LABELS[s.status] || s.status, module: 'study' });
+      });
+      finances.filter(f => f.createdAt?.startsWith(dateStr)).forEach(f => {
+        items.push({ label: '💰', title: f.name, detail: `${f.saved.toLocaleString()}/${f.target.toLocaleString()} บาท`, module: 'finance' });
+      });
+      wishes.filter(w => w.createdAt?.startsWith(dateStr)).forEach(w => {
+        items.push({ label: '🛍️', title: w.name, detail: w.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ', module: 'finance' });
+      });
+      
+      const dateObj = new Date(dateStr + 'T00:00:00');
+      const dateDisplay = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+      
+      if (items.length === 0) {
+        showToast(`📅 ${dateDisplay}: ไม่มีรายการ`, 'info', 2000);
+      } else {
+        // ✅ แสดง popup
+        const popup = document.createElement('div');
+        popup.id = 'calendar-popup';
+        popup.style.cssText = `
+          position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+          background: var(--surface); border: 1px solid var(--border);
+          border-radius: 12px; padding: 20px; max-width: 400px; width: 90%;
+          max-height: 70vh; overflow-y: auto; z-index: 1000;
+          box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        `;
+        popup.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 style="margin:0;font-size:16px;">📅 ${dateDisplay}</h3>
+            <button style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;" onclick="this.closest('#calendar-popup').remove()">✕</button>
+          </div>
+          <div>
+            ${items.map(item => `
+              <div style="padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="document.getElementById('calendar-popup').remove();switchPage('${item.module}')">
+                <span>${item.label}</span>
+                <span style="font-weight:600;">${item.title}</span>
+                <span style="font-size:11px;color:var(--muted);margin-left:6px;">${item.detail}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div style="margin-top:12px;text-align:center;">
+            <button class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="document.getElementById('calendar-popup').remove();">ปิด</button>
+          </div>
+        `;
+        document.body.appendChild(popup);
+        
+        // ✅ คลิกข้างนอกปิด
+        setTimeout(() => {
+          document.addEventListener('click', function closePopup(e) {
+            if (!popup.contains(e.target) && e.target.id !== 'calendar-popup') {
+              if (popup.parentNode) popup.remove();
+              document.removeEventListener('click', closePopup);
+            }
+          });
+        }, 10);
+        
+        showToast(`📅 ${dateDisplay}: ${items.length} รายการ`, 'success', 1500);
+      }
+      
+      // ✅ Highlight filter
+      filter.style.borderColor = 'var(--accent)';
+      setTimeout(() => {
+        filter.style.borderColor = '';
+      }, 2000);
+    }
+  }, 100);
+}
+async function openCalendarPopup() {
+  const existing = document.getElementById('calendar-full-popup');
+  if (existing) { existing.remove(); return; }
+  
+  const popup = document.createElement('div');
+  popup.id = 'calendar-full-popup';
+  popup.style.cssText = `
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; max-width: 500px; width: 95%;
+    max-height: 85vh; overflow-y: auto; z-index: 2000;
+    box-shadow: 0 8px 50px rgba(0,0,0,0.7);
+  `;
+  
+  const monthDisplay = document.getElementById('calendar-month').textContent;
+  
+  popup.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="margin:0;">📅 ${monthDisplay}</h3>
+      <button style="background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;" onclick="this.closest('#calendar-full-popup').remove()">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(-1)">◀</button>
+      <button class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="changeMonth(1)">▶</button>
+      <button class="btn" style="font-size:11px;padding:4px 12px;" onclick="resetCalendar()">📅 วันนี้</button>
+      <span style="font-size:11px;color:var(--muted);margin-left:auto;">
+        <span id="calendar-popup-count">0</span> รายการ
+      </span>
+    </div>
+    <div id="calendar-popup-grid" style="
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 2px; background: var(--surface2); border-radius: 8px;
+      padding: 6px; border: 1px solid var(--border);
+    "></div>
+    <div style="margin-top:12px;text-align:center;">
+      <button class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="this.closest('#calendar-full-popup').remove()">ปิด</button>
+    </div>
+  `;
+  
+  document.body.appendChild(popup);
+  
+  // ✅ รอ render calendar ใน popup
+  await renderCalendarPopup();
+}
+
+async function renderCalendarPopup() {
+  const grid = document.getElementById('calendar-popup-grid');
+  if (!grid) return;
+  
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  
+  const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+  let html = dayNames.map(d => `<div style="text-align:center;font-size:10px;color:var(--muted);padding:4px 0;">${d}</div>`).join('');
+  
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div style="padding:4px;"></div>`;
+  }
+  
+  // ✅ ดึงข้อมูลทุก module
+  const [goals, projects, studies, finances, wishes] = await Promise.all([
+    getGoals(), getProjects(), getStudies(), getFinances(), getWishes()
+  ]);
+  
+  const itemsByDate = {};
+  goals.filter(g => g.deadline).forEach(g => {
+    if (!itemsByDate[g.deadline]) itemsByDate[g.deadline] = [];
+    itemsByDate[g.deadline].push({ label: '🎯', title: g.title });
+  });
+  projects.filter(p => p.deadline).forEach(p => {
+    if (!itemsByDate[p.deadline]) itemsByDate[p.deadline] = [];
+    itemsByDate[p.deadline].push({ label: '📋', title: p.title });
+  });
+  studies.filter(s => s.createdAt).forEach(s => {
+    const dateStr = s.createdAt.slice(0, 10);
+    if (!itemsByDate[dateStr]) itemsByDate[dateStr] = [];
+    itemsByDate[dateStr].push({ label: '📚', title: s.title });
+  });
+  finances.filter(f => f.createdAt).forEach(f => {
+    const dateStr = f.createdAt.slice(0, 10);
+    if (!itemsByDate[dateStr]) itemsByDate[dateStr] = [];
+    itemsByDate[dateStr].push({ label: '💰', title: f.name });
+  });
+  wishes.filter(w => w.createdAt).forEach(w => {
+    const dateStr = w.createdAt.slice(0, 10);
+    if (!itemsByDate[dateStr]) itemsByDate[dateStr] = [];
+    itemsByDate[dateStr].push({ label: '🛍️', title: w.name });
+  });
+  
+  let totalCount = 0;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isToday = dateStr === todayStr;
+    const dayItems = itemsByDate[dateStr] || [];
+    const hasItems = dayItems.length > 0;
+    totalCount += dayItems.length;
+    
+    html += `
+      <div style="
+        text-align:center; padding:4px 2px; border-radius:4px;
+        background: ${isToday ? 'var(--accent)' : hasItems ? 'rgba(200,169,110,.15)' : 'var(--surface2)'};
+        color: ${isToday ? 'white' : hasItems ? 'var(--accent2)' : 'var(--text)'};
+        font-size:12px; cursor: pointer;
+        position: relative; min-height:28px;
+        transition: all 0.2s ease;
+      "
+      onclick="document.getElementById('calendar-full-popup').remove();showDayItems('${dateStr}')">
+        ${day}
+        ${hasItems ? `<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:6px;">●</span>` : ''}
+        ${isToday ? `<span style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:6px;">⬤</span>` : ''}
+        ${hasItems ? `<span style="position:absolute;top:2px;right:2px;font-size:8px;color:var(--accent2);">${dayItems.length}</span>` : ''}
+      </div>
+    `;
+  }
+  
+  grid.innerHTML = html;
+  
+  const countEl = document.getElementById('calendar-popup-count');
+  if (countEl) countEl.textContent = totalCount;
+}
+
+async function refreshCalendarPopup() {
+  await renderCalendarPopup();
+  // อัพเดต header
+  const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
+                      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  const header = document.querySelector('#calendar-full-popup h3');
+  if (header) {
+    header.textContent = `📅 ${monthNames[month]} ${year + 543}`;
+  }
+}
+function toggleRelation(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.arrow');
+  if (!body) return;
+  
+  body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('collapsed');
+}
+
+// ==========================================================
+// FAVOURITE
+// ==========================================================
+async function toggleFavourite(module, id) {
+  const moduleMap = {
+    'vision': { get: getVisions, save: saveVisions, render: renderVision },
+    'goal': { get: getGoals, save: saveGoals, render: renderGoals },
+    'study': { get: getStudies, save: saveStudies, render: renderStudy },
+    'finance': { get: getFinances, save: saveFinances, render: renderFinanceGoals },
+    'wish': { get: getWishes, save: saveWishes, render: renderWishlist },
+    'project': { get: getProjects, save: saveProjects, render: renderProjects },
+    'inbox': { get: getInbox, save: saveInbox, render: renderInbox },
+    'daily': { get: getDaily, save: saveDaily, render: renderDaily },
+    'ref': { get: getRefs, save: saveRefs, render: renderRef }
+  };
+  
+  const mod = moduleMap[module];
+  if (!mod) {
+    console.warn('⚠️ Unknown module:', module);
+    return;
+  }
+  
+  const items = await mod.get();
+  const item = items.find(i => i.id === id);
+  if (item) {
+    const wasFav = item.favourite;
+    item.favourite = !item.favourite;
+    await mod.save(items);
+    mod.render();
+    
+    // ✅ บันทึกสำหรับ undo
+    if (wasFav) {
+      // ถ้าเคย fav มาก่อน → กำลังลบ fav
+      addAction({
+        type: 'favourite',
+        module: module,
+        id: id,
+        message: `☆ ลบ favourites "${item.title || item.name}"`
+      });
+    } else {
+      // ถ้าไม่เคย fav → กำลังเพิ่ม fav
+      addAction({
+        type: 'favourite',
+        module: module,
+        id: id,
+        message: `⭐ เพิ่ม favourites "${item.title || item.name}"`
+      });
+    }
+    
+    showToast(item.favourite ? '⭐ เพิ่ม favourites แล้ว' : '☆ ลบ favourites แล้ว', 'info', 1500);
+  }
+}
+
+// ===== TOGGLE FAVOURITE FILTER =====
+let favFilterActive = {};
+
+function toggleFavFilter(module) {
+  if (module === 'xxx') {
+    console.warn('⚠️ Invalid filter module: xxx');
+    return;
+  }
+  
+  if (!filterStates[module]) {
+    console.warn(`⚠️ Unknown module for filter: ${module}`);
+    return;
+  }
+  
+  // สลับสถานะ active
+  const currentState = filterStates[module].active;
+  
+  if (currentState === 'fav') {
+    filterStates[module].active = 'all';
+  } else {
+    filterStates[module].active = 'fav';
+  }
+  
+  // อัพเดต UI ของปุ่ม
+  const btn = document.getElementById(`fav-filter-${module}`);
+  if (btn) {
+    const isActive = filterStates[module].active === 'fav';
+    btn.style.background = isActive ? 'var(--accent)' : 'var(--surface2)';
+    btn.style.color = isActive ? 'white' : 'var(--muted)';
+    btn.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
+  }
+  
+  // รีเฟรช module
+  const renderMap = {
+    'vision': renderVision,
+    'goal': renderGoals,
+    'study': renderStudy,
+    'finance': renderFinanceGoals,
+    'wish': renderWishlist,
+    'project': renderProjects,
+    'inbox': renderInbox,
+    'daily': renderDaily,
+    'ref': renderRef
+  };
+  
+  if (renderMap[module]) {
+    renderMap[module]();
+  }
+}
+// ==========================================================
+// UNDO / REDO
+// ==========================================================
+const actionHistory = {
+  stack: [],
+  maxSize: 30,
+  isRestoring: false
+};
+
+function addAction(action) {
+  if (actionHistory.isRestoring) return;
+  
+  actionHistory.stack.push({
+    ...action,
+    timestamp: Date.now()
+  });
+  
+  if (actionHistory.stack.length > actionHistory.maxSize) {
+    actionHistory.stack.shift();
+  }
+  
+  showUndoBar(action);
+}
+
+function showUndoBar(action) {
+  let bar = document.getElementById('undo-bar');
+  
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'undo-bar';
+    bar.innerHTML = `
+      <span class="undo-msg" id="undo-msg">ลบรายการแล้ว</span>
+      <button class="btn" onclick="undoLastAction()">↩ ยกเลิก</button>
+      <button class="btn-secondary" onclick="hideUndoBar()">✕</button>
+    `;
+    document.body.appendChild(bar);
+  }
+  
+  const msg = document.getElementById('undo-msg');
+  if (msg) msg.textContent = action.message || 'ดำเนินการแล้ว';
+  
+  bar.classList.add('show');
+  
+  clearTimeout(bar._timeout);
+  bar._timeout = setTimeout(hideUndoBar, 6000);
+}
+
+function hideUndoBar() {
+  const bar = document.getElementById('undo-bar');
+  if (bar) bar.classList.remove('show');
+}
+
+async function undoLastAction() {
+  const last = actionHistory.stack.pop();
+  if (!last) {
+    hideUndoBar();
+    return;
+  }
+  
+  actionHistory.isRestoring = true;
+  hideUndoBar();
+  
+  try {
+    if (last.type === 'delete') {
+      const mod = getModuleFunctions(last.module);
+      if (mod) {
+        const items = await mod.get();
+        items.splice(last.index || 0, 0, last.data);
+        await mod.save(items);
+        mod.render();
+        showToast(`↩ กู้คืน "${last.data.title || last.data.name || 'item'}" แล้ว`, 'success', 2000);
+      }
+    } else if (last.type === 'edit') {
+      const mod = getModuleFunctions(last.module);
+      if (mod) {
+        const items = await mod.get();
+        const item = items.find(i => i.id === last.id);
+        if (item) {
+          Object.assign(item, last.oldData);
+          await mod.save(items);
+          mod.render();
+          showToast(`↩ ยกเลิกการแก้ไขแล้ว`, 'info', 2000);
+        }
+      }
+    } else if (last.type === 'archive') {
+      const mod = getModuleFunctions(last.module);
+      if (mod) {
+        const items = await mod.get();
+        const item = items.find(i => i.id === last.id);
+        if (item) {
+          item.archived = false;
+          await mod.save(items);
+          mod.render();
+          showToast(`📂 แสดงรายการแล้ว`, 'info', 2000);
+        }
+      }
+    } else if (last.type === 'favourite') {
+      const mod = getModuleFunctions(last.module);
+      if (mod) {
+        const items = await mod.get();
+        const item = items.find(i => i.id === last.id);
+        if (item) {
+          item.favourite = false;
+          await mod.save(items);
+          mod.render();
+          showToast(`☆ ลบ favourites แล้ว`, 'info', 2000);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ Undo error:', err);
+    showToast('❌ ยกเลิกไม่สำเร็จ', 'error', 2000);
+  }
+  
+  actionHistory.isRestoring = false;
+}
+
+// ==========================================================
+// GET MODULE FUNCTIONS
+// ==========================================================
+function getModuleFunctions(module) {
+  const map = {
+    'vision': { get: getVisions, save: saveVisions, render: renderVision },
+    'goal': { get: getGoals, save: saveGoals, render: renderGoals },
+    'study': { get: getStudies, save: saveStudies, render: renderStudy },
+    'finance': { get: getFinances, save: saveFinances, render: renderFinanceGoals },
+    'wish': { get: getWishes, save: saveWishes, render: renderWishlist },
+    'project': { get: getProjects, save: saveProjects, render: renderProjects },
+    'inbox': { get: getInbox, save: saveInbox, render: renderInbox },
+    'daily': { get: getDaily, save: saveDaily, render: renderDaily },
+    'transaction': { get: getTransactions, save: saveTransactions, render: renderFinanceTransactions },
+    'budget': { get: getBudgets, save: saveBudgets, render: renderBudgets },
+    'ref': { get: getRefs, save: saveRefs, render: renderRef }
+  };
+  return map[module] || null;
+}
+
+// ==========================================================
+// TOGGLE ARCHIVE
+// ==========================================================
+async function toggleArchive(module, id) {
+  const mod = getModuleFunctions(module);
+  if (!mod) {
+    console.warn('⚠️ Unknown module:', module);
+    return;
+  }
+  
+  const items = await mod.get();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  const wasArchived = item.archived;
+  item.archived = !item.archived;
+  
+  // ✅ บันทึกสำหรับ undo
+  addAction({
+    type: 'archive',
+    module: module,
+    id: id,
+    message: wasArchived ? `แสดง "${item.title || item.name}"` : `ซ่อน "${item.title || item.name}"`
+  });
+  
+  await mod.save(items);
+  mod.render();
+  renderDashboard();
+  showToast(item.archived ? '📦 ซ่อนรายการแล้ว' : '📂 แสดงรายการแล้ว', 'info', 1500);
+}
+
+// ==========================================================
+// FILTER STATES
+// ==========================================================
+const filterStates = {
+  vision: { active: 'all', category: '', priority: '' },
+  goal: { active: 'all', category: '', status: '', priority: '' },
+  study: { active: 'all', status: '', priority: '' },
+  project: { active: 'all', status: '', priority: '' },
+  finance: { active: 'all', priority: '', category: '' },
+  wish: { active: 'all', priority: '' },
+  inbox: { active: 'all' },
+  daily: { active: 'all' },
+  ref: { active: 'all' }
+};
+// ===== Vision Filter =====
+function setVisionFilter(type) {
+  document.querySelectorAll('#page-vision .filter-chip').forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById('vision-filter-all');
+  const favBtn = document.getElementById('vision-filter-fav');
+  const archivedBtn = document.getElementById('vision-filter-archived');
+  const priorityBtn = document.getElementById('vision-filter-priority');
+  const catFilter = document.getElementById('vision-cat-filter');
+  const priorityFilter = document.getElementById('vision-priority-filter');
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    if (catFilter) catFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    filterStates.vision.active = 'all';
+    filterStates.vision.category = '';
+    filterStates.vision.priority = '';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    if (catFilter) catFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    filterStates.vision.active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    if (catFilter) catFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    filterStates.vision.active = 'archived';
+  } else if (type === 'priority') {
+    if (priorityBtn) priorityBtn.classList.add('active');
+    if (catFilter) catFilter.style.display = 'inline-block';
+    if (priorityFilter) priorityFilter.style.display = 'inline-block';
+    filterStates.vision.active = 'priority';
+  }
+  renderVision();
+}
+// ===== Inbox Filter =====
+function setInboxFilter(type) {
+  document.querySelectorAll('#journal-inbox .filter-chip').forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById('inbox-filter-all');
+  const favBtn = document.getElementById('inbox-filter-fav');
+  const archivedBtn = document.getElementById('inbox-filter-archived');
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    filterStates.inbox.active = 'all';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    filterStates.inbox.active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    filterStates.inbox.active = 'archived';
+  }
+  renderInbox();
+}
+
+// ===== Daily Filter =====
+function setDailyFilter(type) {
+  document.querySelectorAll('#journal-daily .filter-chip').forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById('daily-filter-all');
+  const favBtn = document.getElementById('daily-filter-fav');
+  const archivedBtn = document.getElementById('daily-filter-archived');
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    filterStates.daily.active = 'all';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    filterStates.daily.active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    filterStates.daily.active = 'archived';
+  }
+  renderDaily();
+}
+// ===== Goal Filter =====
+function setGoalFilter(type) {
+  document.querySelectorAll('#page-goals .filter-chip').forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById('goal-filter-all');
+  const favBtn = document.getElementById('goal-filter-fav');
+  const archivedBtn = document.getElementById('goal-filter-archived');
+  const statusBtn = document.getElementById('goal-filter-status');
+  
+  const catFilter = document.getElementById('goal-cat-filter');
+  const statusFilter = document.getElementById('goal-status-filter');
+  const priorityFilter = document.getElementById('goal-priority-filter');
+  const archiveFilter = document.getElementById('goal-archive-filter');
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    if (catFilter) catFilter.style.display = 'none';
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.goal.active = 'all';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    if (catFilter) catFilter.style.display = 'none';
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.goal.active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    if (catFilter) catFilter.style.display = 'none';
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'inline-block';
+    filterStates.goal.active = 'archived';
+  } else if (type === 'status') {
+    if (statusBtn) statusBtn.classList.add('active');
+    if (catFilter) catFilter.style.display = 'inline-block';
+    if (statusFilter) statusFilter.style.display = 'inline-block';
+    if (priorityFilter) priorityFilter.style.display = 'inline-block';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.goal.active = 'status';
+  }
+  renderGoals();
+}
+// ===== Study Filter =====
+function setStudyFilter(type) {
+  document.querySelectorAll('#page-study .filter-chip').forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById('study-filter-all');
+  const favBtn = document.getElementById('study-filter-fav');
+  const archivedBtn = document.getElementById('study-filter-archived');
+  const statusBtn = document.getElementById('study-filter-status');
+  
+  const statusFilter = document.getElementById('study-status-filter');
+  const priorityFilter = document.getElementById('study-priority-filter');
+  const archiveFilter = document.getElementById('study-archive-filter');
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.study.active = 'all';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.study.active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'inline-block';
+    filterStates.study.active = 'archived';
+  } else if (type === 'status') {
+    if (statusBtn) statusBtn.classList.add('active');
+    if (statusFilter) statusFilter.style.display = 'inline-block';
+    if (priorityFilter) priorityFilter.style.display = 'inline-block';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.study.active = 'status';
+  }
+  renderStudy();
+}
+// ===== Project Filter =====
+function setProjectFilter(type) {
+  document.querySelectorAll('#page-projects .filter-chip').forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById('project-filter-all');
+  const favBtn = document.getElementById('project-filter-fav');
+  const archivedBtn = document.getElementById('project-filter-archived');
+  const statusBtn = document.getElementById('project-filter-status');
+  
+  const statusFilter = document.getElementById('project-status-filter');
+  const priorityFilter = document.getElementById('project-priority-filter');
+  const archiveFilter = document.getElementById('project-archive-filter');
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.project.active = 'all';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.project.active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    if (statusFilter) statusFilter.style.display = 'none';
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (archiveFilter) archiveFilter.style.display = 'inline-block';
+    filterStates.project.active = 'archived';
+  } else if (type === 'status') {
+    if (statusBtn) statusBtn.classList.add('active');
+    if (statusFilter) statusFilter.style.display = 'inline-block';
+    if (priorityFilter) priorityFilter.style.display = 'inline-block';
+    if (archiveFilter) archiveFilter.style.display = 'none';
+    filterStates.project.active = 'status';
+  }
+  renderProjects();
+}
+function setFinanceFilter(type) {
+  document.querySelectorAll('#finance-goals .filter-chip').forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById('finance-filter-all');
+  const favBtn = document.getElementById('finance-filter-fav');
+  const archivedBtn = document.getElementById('finance-filter-archived');
+  
+  const priorityFilter = document.getElementById('finance-priority-filter');
+  const categoryFilter = document.getElementById('finance-category-filter');
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (categoryFilter) categoryFilter.style.display = 'none';
+    filterStates.finance.active = 'all';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (categoryFilter) categoryFilter.style.display = 'none';
+    filterStates.finance.active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    if (categoryFilter) categoryFilter.style.display = 'none';
+    filterStates.finance.active = 'archived';
+  } else if (type === 'filter') {
+    if (priorityFilter) priorityFilter.style.display = 'inline-block';
+    if (categoryFilter) categoryFilter.style.display = 'inline-block';
+    filterStates.finance.active = 'filter';
+  }
+  renderFinanceGoals();
+}
+function setWishFilter(type) {
+  document.querySelectorAll('#finance-wishlist .filter-chip').forEach(el => el.classList.remove('active'));
+  
+  const allBtn = document.getElementById('wish-filter-all');
+  const favBtn = document.getElementById('wish-filter-fav');
+  const archivedBtn = document.getElementById('wish-filter-archived');
+  
+  const priorityFilter = document.getElementById('wish-priority-filter');
+  
+  if (type === 'all') {
+    if (allBtn) allBtn.classList.add('active');
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    filterStates.wish.active = 'all';
+  } else if (type === 'fav') {
+    if (favBtn) favBtn.classList.add('active');
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    filterStates.wish.active = 'fav';
+  } else if (type === 'archived') {
+    if (archivedBtn) archivedBtn.classList.add('active');
+    if (priorityFilter) priorityFilter.style.display = 'none';
+    filterStates.wish.active = 'archived';
+  } else if (type === 'priority') {
+    // ไม่มีปุ่ม priority เฉพาะ ใช้ priority filter เดิม
+    if (priorityFilter) priorityFilter.style.display = 'inline-block';
+    filterStates.wish.active = 'priority';
+  }
+  renderWishlist();
+}
+
 
 // แก้ไข confirmSaveMultiRef() และ confirmEditRef() ให้เรียก collectTagSuggestionsFromInput()
 // ก่อนบันทึก
 // ---------- Init ----------
 async function initApp() {
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) {
+        const id = this.id;
+      // ถ้าเป็น project-detail-modal ให้ close เฉพาะ
+        closeModal(id);
+      }
+    });
+  });
   renderNav();
   // ใน initApp() เพิ่ม:
   updateRefCategorySuggestions();
@@ -9057,6 +10689,16 @@ async function initApp() {
     syncBottomTabActive();
     syncTopNavActive();  // ← เพิ่ม
   }, 200);
+  setTimeout(() => {
+  enableDragSort('vision-list', getVisions, saveVisions, renderVision);
+  enableDragSort('goals-list', getGoals, saveGoals, renderGoals);
+  enableDragSort('study-list', getStudies, saveStudies, renderStudy);
+  enableDragSort('projects-list', getProjects, saveProjects, renderProjects);
+  enableDragSort('finance-goals-list', getFinances, saveFinances, renderFinanceGoals);
+  enableDragSort('wishlist-list', getWishes, saveWishes, renderWishlist);
+  enableDragSort('inbox-list', getInbox, saveInbox, renderInbox);
+  enableDragSort('daily-list', getDaily, saveDaily, renderDaily);
+}, 500);
 
   const savedState = localStorage.getItem('calendar_collapsed');
   if (savedState === 'true') {
