@@ -1715,6 +1715,303 @@ body {
   border-color: var(--accent);
   color: var(--accent);
 }
+/* ===== Cloudinary Upload Widget Dark Theme ===== */
+.cloudinary-upload-widget {
+  background: #0e0e12 !important;
+  color: #e8e4dc !important;
+  font-family: 'Segoe UI', sans-serif !important;
+}
+
+.cloudinary-upload-widget .upload-widget-modal {
+  background: #16161e !important;
+  border: 1px solid #2a2a3a !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.8) !important;
+  max-width: 600px !important;
+  width: 90% !important;
+  max-height: 90vh !important;
+}
+
+.cloudinary-upload-widget .upload-widget-header {
+  background: #16161e !important;
+  color: #e8e4dc !important;
+  border-bottom: 1px solid #2a2a3a !important;
+}
+
+.cloudinary-upload-widget .upload-widget-body {
+  background: #1e1e2a !important;
+  color: #e8e4dc !important;
+}
+
+.cloudinary-upload-widget .upload-widget-footer {
+  background: #16161e !important;
+  border-top: 1px solid #2a2a3a !important;
+}
+
+.cloudinary-upload-widget .upload-widget-button {
+  background: #e05071 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px 20px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.cloudinary-upload-widget .upload-widget-button:hover {
+  background: #c0405e !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 16px rgba(224, 80, 113, 0.4) !important;
+}
+
+.cloudinary-upload-widget .upload-widget-input {
+  background: #1e1e2a !important;
+  border: 1px solid #2a2a3a !important;
+  color: #e8e4dc !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+}
+
+.cloudinary-upload-widget .upload-widget-input:focus {
+  border-color: #7c6ef5 !important;
+  outline: none !important;
+}
+
+.cloudinary-upload-widget .upload-widget-label {
+  color: #8a8798 !important;
+}
+
+.cloudinary-upload-widget .upload-widget-link {
+  color: #7c6ef5 !important;
+}
+
+.cloudinary-upload-widget .upload-widget-error {
+  color: #e05c5c !important;
+}
+
+.cloudinary-upload-widget .upload-widget-success {
+  color: #4ecb71 !important;
+}
+
+.cloudinary-upload-widget .upload-widget-close {
+  color: #8a8798 !important;
+}
+
+.cloudinary-upload-widget .upload-widget-close:hover {
+  color: #e8e4dc !important;
+}
+
+/* ✅ ปรับแต่งปุ่ม Browse ใน widget */
+.cloudinary-upload-widget .upload-widget-browse-button {
+  background: #7c6ef5 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 12px 28px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: inline-block !important;
+  min-width: 120px !important;
+  text-align: center !important;
+}
+
+.cloudinary-upload-widget .upload-widget-browse-button:hover {
+  background: #6a5ce0 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 16px rgba(124, 110, 245, 0.4) !important;
+}
+
+/* ✅ ปรับแต่งบนมือถือ */
+@media (max-width: 600px) {
+  .cloudinary-upload-widget .upload-widget-modal {
+    max-width: 95% !important;
+    width: 95% !important;
+    border-radius: 8px !important;
+    max-height: 95vh !important;
+  }
+  
+  .cloudinary-upload-widget .upload-widget-browse-button {
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  /* ✅ ทำให้ปุ่ม Sources ใหญ่ขึ้นบนมือถือ */
+  .cloudinary-upload-widget .upload-widget-source-button {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    min-height: 48px !important;
+  }
+  
+  .cloudinary-upload-widget .upload-widget-source-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+}
+
+/* ✅ ปรับแต่ง dark theme สำหรับ iframe */
+.cloudinary-upload-widget iframe {
+  background: #0e0e12 !important;
+  border-radius: 12px !important;
+}
+
+/* ✅ ปรับแต่ง scrollbar */
+.cloudinary-upload-widget ::-webkit-scrollbar {
+  width: 6px;
+}
+.cloudinary-upload-widget ::-webkit-scrollbar-track {
+  background: #1e1e2a;
+}
+.cloudinary-upload-widget ::-webkit-scrollbar-thumb {
+  background: #7c6ef5;
+  border-radius: 3px;
+}
+/* ===== Upload Button Responsive ===== */
+#upload-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  #upload-btn {
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+  }
+  #upload-btn::before {
+    content: '📁 ';
+  }
+}
+
+/* ✅ ปรับบนมือถือ */
+@media (max-width: 600px) {
+  .widget-wrapper {
+    backdrop-filter: blur(2px);
+  }
+  .widget-wrapper iframe {
+    width: 92% !important;
+    max-width: 92% !important;
+    border-radius: 10px !important;
+    max-height: 85vh !important;
+    min-height: 250px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .widget-wrapper iframe {
+    width: 95% !important;
+    max-width: 95% !important;
+    border-radius: 8px !important;
+    max-height: 90vh !important;
+    min-height: 200px !important;
+  }
+}
+/* ===== Widget Overlay & Container ===== */
+#widget-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.25s ease;
+}
+
+.widget-container {
+  position: relative;
+  width: 480px;
+  max-width: 92%;
+  max-height: 85vh;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 60px rgba(0, 0, 0, 0.8);
+  border: 1px solid #2a2a3a;
+  background: #0e0e12;
+  animation: fadeIn 0.3s ease;
+}
+
+.widget-container iframe {
+  width: 100%;
+  height: 520px;
+  border: none;
+  background: #0e0e12;
+  display: block;
+}
+
+.widget-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #8a8798;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+.widget-close-btn:hover {
+  color: #e8e4dc;
+}
+
+.widget-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0e0e12;
+  color: #8a8798;
+  font-size: 14px;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.widget-loading .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #2a2a3a;
+  border-top-color: #e05071;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ✅ Mobile */
+@media (max-width: 600px) {
+  .widget-container {
+    width: 92% !important;
+    max-width: 92% !important;
+    border-radius: 10px !important;
+  }
+  .widget-container iframe {
+    height: 480px !important;
+  }
+  .widget-close-btn {
+    top: 4px;
+    right: 6px;
+    font-size: 16px;
+    padding: 2px 8px;
+  }
+}
+
+@media (max-width: 400px) {
+  .widget-container iframe {
+    height: 420px !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1967,7 +2264,7 @@ box-shadow:0 8px 30px rgba(0,0,0,.4);
   <div style="min-height: calc(100vh - 200px); display: flex; flex-direction: column;">
     <div style="flex:1;">
       <div class="toolbar">
-        <button class="btn" onclick="openUploadWidget()">+ เพิ่มรูปใหม่</button>
+        <button class="btn" id="upload-btn" onclick="openUploadWidget()">📁 + เพิ่มรูป</button>
         <button class="btn secondary" id="ref-select-btn" onclick="toggleRefSelection()">✏️ Select</button>
         <button class="btn secondary" id="ref-select-all-btn" onclick="toggleSelectAll()" style="display:none;">SelectAll</button>
         <button class="btn secondary" id="ref-back-btn" onclick="clearRefFilters()" style="display:none;">📁 กลับไป Board</button>
@@ -4705,43 +5002,291 @@ function openUploadWidget() {
   pendingUploadTotal = 0;
   pendingUploadCount = 0;
   
+  // ✅ ตรวจสอบว่าอยู่ในโหมดมือถือหรือไม่
+  const isMobile = window.innerWidth < 600;
+  
+  // ✅ สร้าง Overlay ก่อนเปิด widget
+  const overlay = document.createElement('div');
+  overlay.className = 'widget-overlay';
+  overlay.id = 'widget-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.25s ease;
+  `;
+  
+  // ✅ คลิกที่ overlay เพื่อปิด
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeUploadWidget();
+    }
+  });
+  
+  document.body.appendChild(overlay);
+  
+  // ✅ สร้าง container สำหรับ iframe
+  const container = document.createElement('div');
+  container.className = 'widget-container';
+  container.style.cssText = `
+    position: relative;
+    width: ${isMobile ? '92%' : '480px'};
+    max-width: ${isMobile ? '92%' : '480px'};
+    max-height: 85vh;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 60px rgba(0, 0, 0, 0.8);
+    border: 1px solid #2a2a3a;
+    background: #0e0e12;
+    animation: fadeIn 0.3s ease;
+  `;
+  overlay.appendChild(container);
+  
+  // ✅ สร้าง iframe ภายใน container
+  const iframe = document.createElement('iframe');
+  iframe.id = 'cloudinary-widget-iframe';
+  iframe.style.cssText = `
+    width: 100%;
+    height: ${isMobile ? '500px' : '520px'};
+    border: none;
+    background: #0e0e12;
+    display: block;
+  `;
+  container.appendChild(iframe);
+  
+  // ✅ สร้าง loading indicator
+  const loading = document.createElement('div');
+  loading.className = 'widget-loading';
+  loading.style.cssText = `
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0e0e12;
+    color: #8a8798;
+    font-size: 14px;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+    flex-direction: column;
+    gap: 12px;
+  `;
+  loading.innerHTML = `
+    <div style="
+      width: 32px;
+      height: 32px;
+      border: 3px solid #2a2a3a;
+      border-top-color: #e05071;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    "></div>
+    <span>กำลังโหลด...</span>
+  `;
+  container.appendChild(loading);
+  
+  // ✅ สร้าง close button
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'widget-close-btn';
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    color: #8a8798;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    line-height: 1;
+  `;
+  closeBtn.textContent = '✕';
+  closeBtn.onclick = closeUploadWidget;
+  closeBtn.onmouseover = () => { closeBtn.style.color = '#e8e4dc'; };
+  closeBtn.onmouseout = () => { closeBtn.style.color = '#8a8798'; };
+  container.appendChild(closeBtn);
+  
+  // ✅ ตั้งค่า widget
   const widget = cloudinary.createUploadWidget({
     cloud_name: 'und7u8m5',
     upload_preset: 'zafp2wv4',
     sources: ['local', 'url', 'camera'],
-    multiple: true, // ← เปลี่ยนเป็น true
+    multiple: true,
     maxFileSize: 10000000,
+    maxFiles: 30,
+    clientAllowedFormats: ['image/*'],
+    theme: 'dark',
+    text: {
+      en: {
+        browse: '📁 เลือกรูป',
+        local: '📱 อุปกรณ์ของฉัน',
+        url: '🔗 URL',
+        camera: '📷 กล้อง',
+        or: 'หรือ',
+        close: 'ปิด',
+        upload: 'อัปโหลด',
+        cancel: 'ยกเลิก',
+        next: 'ถัดไป',
+        done: 'เสร็จสิ้น',
+        error: 'เกิดข้อผิดพลาด',
+        success: 'อัปโหลดสำเร็จ',
+        choose_files: 'เลือกรูป',
+        choose_from: 'เลือกจาก',
+        upload_in_progress: 'กำลังอัปโหลด...',
+        upload_completed: 'อัปโหลดเสร็จสิ้น',
+        drop_files: 'วางไฟล์ที่นี่'
+      }
+    },
+    styles: {
+      modal: {
+        backgroundColor: '#0e0e12',
+        borderRadius: '12px',
+        maxWidth: '100%',
+        width: '100%',
+        maxHeight: '100%',
+        padding: '16px',
+        margin: '0'
+      },
+      button: {
+        backgroundColor: '#e05071',
+        color: '#ffffff',
+        borderRadius: '8px',
+        padding: '8px 16px',
+        fontWeight: '600',
+        fontSize: '13px'
+      },
+      buttonHover: {
+        backgroundColor: '#c0405e'
+      },
+      body: {
+        backgroundColor: '#16161e',
+        color: '#e8e4dc',
+        fontFamily: 'Segoe UI, sans-serif'
+      },
+      input: {
+        backgroundColor: '#1e1e2a',
+        borderColor: '#2a2a3a',
+        color: '#e8e4dc',
+        borderRadius: '6px',
+        padding: '6px 10px',
+        fontSize: '13px'
+      },
+      label: {
+        color: '#8a8798',
+        fontSize: '12px'
+      },
+      link: {
+        color: '#7c6ef5'
+      },
+      header: {
+        backgroundColor: '#16161e',
+        color: '#e8e4dc',
+        padding: '8px 0',
+        fontSize: '16px'
+      },
+      uploadButton: {
+        backgroundColor: '#e05071',
+        color: '#ffffff',
+        borderRadius: '8px',
+        padding: '8px 20px',
+        fontSize: '13px'
+      },
+      uploadButtonHover: {
+        backgroundColor: '#c0405e'
+      },
+      error: {
+        color: '#e05c5c'
+      },
+      success: {
+        color: '#4ecb71'
+      },
+      browseButton: {
+        backgroundColor: '#7c6ef5',
+        color: '#ffffff',
+        borderRadius: '8px',
+        padding: '10px 24px',
+        fontWeight: '600',
+        fontSize: '14px',
+        border: 'none',
+        cursor: 'pointer'
+      },
+      browseButtonHover: {
+        backgroundColor: '#6a5ce0'
+      },
+      closeButton: {
+        color: '#8a8798',
+        fontSize: '18px'
+      },
+      closeButtonHover: {
+        color: '#e8e4dc'
+      }
+    }
   }, (error, result) => {
     if (error) {
       console.warn('⚠️ Upload error:', error);
+      showToast('❌ อัปโหลดไม่สำเร็จ: ' + (error.message || 'ไม่ทราบสาเหตุ'), 'error');
+      closeUploadWidget();
       return;
     }
     if (result.event === 'success') {
       pendingUploadUrls.push(result.info.secure_url);
       pendingUploadCount++;
       
-      // อัพเดตสถานะ
-      const statusEl = document.getElementById('upload-status');
-      if (statusEl) {
-        statusEl.textContent = `⏳ อัพโหลด ${pendingUploadCount} / ${pendingUploadTotal} รูป...`;
-      }
+      // ✅ ซ่อน loading ถ้ายังแสดงอยู่
+      const loadingEl = document.querySelector('.widget-loading');
+      if (loadingEl) loadingEl.style.display = 'none';
       
-      // ถ้าครบทุกรูปแล้ว → เปิด modal
-      if (pendingUploadCount >= pendingUploadTotal) {
+      if (pendingUploadCount >= pendingUploadTotal && pendingUploadTotal > 0) {
         openRefModalWithPreview();
+        closeUploadWidget();
       }
     } else if (result.event === 'queues-end') {
-      // Cloudinary ส่ง event นี้เมื่อ upload ทุกตัวเสร็จ
       if (pendingUploadTotal === 0 && pendingUploadUrls.length > 0) {
-        // กรณีเลือกแค่รูปเดียว
         pendingUploadTotal = pendingUploadUrls.length;
         openRefModalWithPreview();
+        closeUploadWidget();
+      }
+    } else if (result.event === 'close') {
+      closeUploadWidget();
+    } else if (result.event === 'show') {
+      // ✅ เมื่อ widget แสดงแล้ว ซ่อน loading
+      const loadingEl = document.querySelector('.widget-loading');
+      if (loadingEl) {
+        loadingEl.style.opacity = '0';
+        setTimeout(() => {
+          loadingEl.style.display = 'none';
+        }, 300);
       }
     }
   });
   
-  widget.open();
+  // ✅ เปิด widget ใน iframe ที่สร้างไว้
+  widget.open({
+    iframe: iframe
+  });
 }
+// ===== Detect Mobile Viewport =====
+function isMobileViewport() {
+  return window.innerWidth < 600;
+}
+
+// เพิ่ม event listener สำหรับ resize
+window.addEventListener('resize', function() {
+  // ถ้า widget เปิดอยู่ ให้ปรับขนาด
+  const widgetIframes = document.querySelectorAll('iframe[src*="upload-widget"]');
+  widgetIframes.forEach(iframe => {
+    const isMobile = isMobileViewport();
+    iframe.style.maxWidth = isMobile ? '95%' : '600px';
+    iframe.style.width = isMobile ? '95%' : '90%';
+  });
+});
 function openRefModalWithPreview() {
   // แสดง preview grid
   const previewContainer = document.getElementById('upload-preview-grid');
@@ -12782,6 +13327,33 @@ function switchNavPage(direction) {
   switchPage(newPage);
   showToast(`📱 ${PAGES.find(p => p.id === newPage)?.label || newPage}`, 'info', 1000);
 }
+
+// ===== Close Upload Widget =====
+function closeUploadWidget() {
+  const overlay = document.getElementById('widget-overlay');
+  if (overlay) {
+    overlay.style.transition = 'opacity 0.25s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.remove();
+    }, 300);
+  }
+  
+  // ✅ ถ้ามีรูปที่ upload แล้วให้เปิด modal
+  if (pendingUploadUrls.length > 0 && pendingUploadTotal > 0) {
+    openRefModalWithPreview();
+  }
+}
+
+// ===== Close widget ด้วยปุ่ม ESC =====
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const wrapper = document.querySelector('.widget-wrapper');
+    if (wrapper) {
+      closeUploadWidget();
+    }
+  }
+});
 
 // แก้ไข confirmSaveMultiRef() และ confirmEditRef() ให้เรียก collectTagSuggestionsFromInput()
 // ก่อนบันทึก
