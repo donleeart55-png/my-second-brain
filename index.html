@@ -1724,18 +1724,18 @@ body {
 
 <div class="nav-wrapper" id="nav-wrapper">
   <div style="display:flex;align-items:center;gap:4px;position:relative;">
-    <button class="nav-arrow" onclick="scrollNav(-1)" 
-            style="background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;flex-shrink:0;transition:all 0.2s;"
-            onmouseover="this.style.background='var(--surface2)'" 
-            onmouseout="this.style.background='var(--surface)'">
+    <button class="nav-arrow" onclick="switchNavPage(-1)" 
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;flex-shrink:0;transition:all 0.2s;"
+        onmouseover="this.style.background='var(--surface2)'" 
+        onmouseout="this.style.background='var(--surface)'">
       ◀
     </button>
     <div class="nav" id="nav" style="flex:1;overflow-x:auto;scroll-behavior:smooth;"></div>
-    <button class="nav-arrow" onclick="scrollNav(1)" 
-            style="background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;flex-shrink:0;transition:all 0.2s;"
-            onmouseover="this.style.background='var(--surface2)'" 
-            onmouseout="this.style.background='var(--surface)'">
-      ▶
+    <button class="nav-arrow" onclick="switchNavPage(1)" 
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;flex-shrink:0;transition:all 0.2s;"
+        onmouseover="this.style.background='var(--surface2)'" 
+        onmouseout="this.style.background='var(--surface)'">
+     ▶
     </button>
   </div>
 </div>
@@ -3846,20 +3846,20 @@ document.addEventListener('touchend', (e) => {
 function handleSwipe(direction) {
   const currentPage = getCurrentPage();
   
-  // ===== 1. JOURNAL (Inbox / Daily) =====
+  // ===== 1. JOURNAL (Inbox / Daily / Idea / Knowledge / Art / Fit) =====
   if (currentPage === 'journal') {
     const activeTab = document.querySelector('.sub-nav-btn.active');
     if (!activeTab) return;
     const currentTab = activeTab.id.replace('sub-', '');
-    const tabs = ['inbox', 'daily'];
+    const tabs = ['inbox', 'daily', 'idea', 'knowledge', 'art', 'fit'];
     const idx = tabs.indexOf(currentTab);
     
     if (direction === 'left' && idx < tabs.length - 1) {
       switchJournalTab(tabs[idx + 1]);
-      showToast(`📖 ${tabs[idx + 1] === 'inbox' ? 'Inbox' : 'Daily Log'}`, 'info', 1000);
+      showToast(`📖 ${tabs[idx + 1]}`, 'info', 1000);
     } else if (direction === 'right' && idx > 0) {
       switchJournalTab(tabs[idx - 1]);
-      showToast(`📖 ${tabs[idx - 1] === 'inbox' ? 'Inbox' : 'Daily Log'}`, 'info', 1000);
+      showToast(`📖 ${tabs[idx - 1]}`, 'info', 1000);
     }
     return;
   }
@@ -3882,8 +3882,32 @@ function handleSwipe(direction) {
     return;
   }
   
-  // ===== 3. MODULE TABS (เปลี่ยนหน้าไป module ถัดไป/ก่อนหน้า) =====
-  const pages = ['journal', 'dashboard', 'ref', 'vision', 'projects', 'goals', 'study', 'finance', 'settings'];
+  // ===== 3. GOALS (Goals / Study) =====
+  if (currentPage === 'goals') {
+    const activeTab = document.querySelector('#page-goals .sub-nav-btn.active');
+    if (!activeTab) return;
+    const currentTab = activeTab.id.replace('goals-sub-', '');
+    const tabs = ['goals', 'study'];
+    const idx = tabs.indexOf(currentTab);
+    
+    if (direction === 'left' && idx < tabs.length - 1) {
+      switchGoalsTab(tabs[idx + 1]);
+      showToast(`📚 ${tabs[idx + 1] === 'goals' ? 'เป้าหมาย' : 'แผนเรียน'}`, 'info', 1000);
+    } else if (direction === 'right' && idx > 0) {
+      switchGoalsTab(tabs[idx - 1]);
+      showToast(`📚 ${tabs[idx - 1] === 'goals' ? 'เป้าหมาย' : 'แผนเรียน'}`, 'info', 1000);
+    }
+    return;
+  }
+  
+  // ===== 4. REF (Board Overview / Grid View) =====
+  if (currentPage === 'ref') {
+    // Ref มีการเลื่อนใน grid ไม่ต้องเปลี่ยนหน้า
+    return;
+  }
+  
+  // ===== 5. MODULE TABS (เปลี่ยนหน้าไป module ถัดไป/ก่อนหน้า) =====
+  const pages = ['journal', 'dashboard', 'ref', 'vision', 'projects', 'goals', 'finance', 'settings'];
   const currentIdx = pages.indexOf(currentPage);
   
   if (direction === 'left' && currentIdx < pages.length - 1) {
@@ -3908,13 +3932,11 @@ function updateNavArrows() {
   if (!nav || !wrapper) return;
   
   const arrows = wrapper.querySelectorAll('.nav-arrow');
-  const hasOverflow = nav.scrollWidth > nav.clientWidth;
-  
+  // ให้แสดงปุ่มลูกศรเสมอ (เปลี่ยนจากซ่อนเป็นแสดง)
   arrows.forEach(arrow => {
-    arrow.style.display = hasOverflow ? 'block' : 'none';
+    arrow.style.display = 'block';
   });
 }
-
 // เรียกใน renderNav() และ resize
 window.addEventListener('resize', updateNavArrows);
 
@@ -12743,6 +12765,22 @@ function addWishCategoryPrompt() {
     addWishCategory(label.trim());
     showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
   }
+}
+// ===== Switch Nav Page with Arrow Buttons =====
+function switchNavPage(direction) {
+  const currentPage = getCurrentPage();
+  const pages = ['journal', 'dashboard', 'ref', 'vision', 'projects', 'goals', 'finance', 'settings'];
+  const currentIdx = pages.indexOf(currentPage);
+  
+  if (currentIdx === -1) return;
+  
+  let newIdx = currentIdx + direction;
+  if (newIdx < 0) newIdx = pages.length - 1;
+  if (newIdx >= pages.length) newIdx = 0;
+  
+  const newPage = pages[newIdx];
+  switchPage(newPage);
+  showToast(`📱 ${PAGES.find(p => p.id === newPage)?.label || newPage}`, 'info', 1000);
 }
 
 // แก้ไข confirmSaveMultiRef() และ confirmEditRef() ให้เรียก collectTagSuggestionsFromInput()
