@@ -1999,6 +1999,16 @@ body {
     height: 420px !important;
   }
 }
+textarea.input {
+  white-space: pre-wrap;
+  word-break: break-word;
+  resize: vertical;
+}
+/* เพิ่ม CSS */
+.status-planning { background: rgba(138,135,152,.15); color: var(--muted); }
+.status-active { background: rgba(200,169,110,.15); color: var(--accent2); }
+.status-review { background: rgba(124,110,245,.15); color: var(--accent); }
+.status-studying { background: rgba(200,169,110,.15); color: var(--accent2); }
 </style>
 </head>
 <body>
@@ -2299,8 +2309,8 @@ body {
         <input class="input" id="batch-tags" placeholder="แทนที่" 
        list="ref-tag-suggestions" 
        oninput="handleBatchTagInput(this)" 
-       onfocus="showAllSuggestions(this)" 
-       onclick="showAllSuggestions(this)">
+       onfocus="showAllSuggestions(this, 'ref-tag-suggestions')"
+        onclick="showAllSuggestions(this, 'ref-tag-suggestions')"
         <datalist id="ref-tag-suggestions"></datalist>
       </div>
       <div class="batch-row" style="margin-top:4px;">
@@ -2386,15 +2396,12 @@ body {
     
     <div class="toolbar">
       <button type="button" class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
-      
-      <!-- Filter Chips -->
       <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-        <button class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
+        <button type="button" class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
         <button type="button" class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
         <button type="button" class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
         <button type="button" class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
       </div>
-      
       <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
         <option value="">ทุกหมวดหมู่</option>
         <option value="career">อาชีพ/งาน</option>
@@ -2421,10 +2428,8 @@ body {
         <option value="archived">แสดงเฉพาะที่ซ่อน</option>
         <option value="all">แสดงทั้งหมด</option>
       </select>
-      
       <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
     </div>
-    
     <div id="goals-list"></div>
     <div class="empty" id="goals-empty" style="display:none;">ยังไม่มีเป้าหมายที่บันทึกไว้</div>
   </div>
@@ -2432,37 +2437,33 @@ body {
   <!-- Study Content -->
   <div id="goals-tab-study" class="goals-tab">
     <div class="toolbar">
-      <button type="button" class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
-      
-      <!-- Filter Chips -->
-      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-        <button class="filter-chip active" onclick="setStudyFilter('all')" id="study-filter-all">ทั้งหมด</button>
-        <button type="button" class="filter-chip" onclick="setStudyFilter('fav')" id="study-filter-fav">⭐</button>
-        <button type="button" class="filter-chip" onclick="setStudyFilter('archived')" id="study-filter-archived">📦</button>
-        <button type="button" class="filter-chip" onclick="setStudyFilter('status')" id="study-filter-status">📊</button>
-      </div>
-      
-      <select class="input" id="study-status-filter" onchange="renderStudy()" style="display:none;">
-        <option value="">ทุกสถานะ</option>
-        <option value="planning">📝 วางแผน</option>
-        <option value="studying">📖 กำลังเรียน</option>
-        <option value="completed">✅ เสร็จแล้ว</option>
-      </select>
-      <select class="input" id="study-priority-filter" onchange="renderStudy()" style="display:none;">
-        <option value="">⭐ ทุกระดับ</option>
-        <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-        <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-        <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-        <option value="low">☆ ทิ้ง/เลื่อน</option>
-      </select>
-      <select class="input" id="study-archive-filter" onchange="renderStudy()" style="display:none;">
-        <option value="active">แสดงทั้งหมด</option>
-        <option value="archived">แสดงเฉพาะที่ซ่อน</option>
-        <option value="all">แสดงทั้งหมด</option>
-      </select>
-      
-      <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
-    </div>
+  <button type="button" class="btn" onclick="openStudyModal()">+ เพิ่มแผนเรียน</button>
+  <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+    <button type="button" class="filter-chip active" onclick="setStudyFilter('all')" id="study-filter-all">ทั้งหมด</button>
+    <button type="button" class="filter-chip" onclick="setStudyFilter('fav')" id="study-filter-fav">⭐</button>
+    <button type="button" class="filter-chip" onclick="setStudyFilter('archived')" id="study-filter-archived">📦</button>
+    <button type="button" class="filter-chip" onclick="setStudyFilter('status')" id="study-filter-status">📊</button>
+  </div>
+  <select class="input" id="study-status-filter" onchange="renderStudy()" style="display:none;">
+    <option value="">ทุกสถานะ</option>
+    <option value="planning">📝 วางแผน</option>
+    <option value="studying">📖 กำลังเรียน</option>
+    <option value="completed">✅ เสร็จแล้ว</option>
+  </select>
+  <select class="input" id="study-priority-filter" onchange="renderStudy()" style="display:none;">
+    <option value="">⭐ ทุกระดับ</option>
+    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+    <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+    <option value="low">☆ ทิ้ง/เลื่อน</option>
+  </select>
+  <select class="input" id="study-archive-filter" onchange="renderStudy()" style="display:none;">
+    <option value="active">แสดงทั้งหมด</option>
+    <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+    <option value="all">แสดงทั้งหมด</option>
+  </select>
+  <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+</div>
     <div id="study-list"></div>
     <div class="empty" id="study-empty" style="display:none;">ยังไม่มีแผนเรียน</div>
   </div>
@@ -2539,85 +2540,41 @@ body {
 </div>
   <!-- Tab: Goals -->
   <div id="finance-goals" class="finance-tab-content">
-    <div class="toolbar">
-  <button type="button" class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
-  
-  <!-- Filter Chips -->
-  <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-    <button class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
-    <button type="button" class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
-    <button type="button" class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
-    <button type="button" class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
+  <div class="toolbar">
+    <button type="button" class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+      <button type="button" class="filter-chip active" onclick="setFinanceFilter('all')" id="finance-filter-all">ทั้งหมด</button>
+      <button type="button" class="filter-chip" onclick="setFinanceFilter('fav')" id="finance-filter-fav">⭐</button>
+      <button type="button" class="filter-chip" onclick="setFinanceFilter('archived')" id="finance-filter-archived">📦</button>
+      <button type="button" class="filter-chip" onclick="setFinanceFilter('filter')" id="finance-filter-filter">📊</button>
+    </div>
+    <select class="input" id="finance-priority-filter" onchange="renderFinanceGoals()" style="display:none;">
+      <option value="">⭐ ทุกระดับ</option>
+      <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+      <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+      <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+      <option value="low">☆ ทิ้ง/เลื่อน</option>
+    </select>
+    <select class="input" id="finance-category-filter" onchange="renderFinanceGoals()" style="display:none;">
+      <option value="">ทุกหมวด</option>
+      <option value="emergency">🚨 กองทุนฉุกเฉิน</option>
+      <option value="saving">🏦 ออมทรัพย์</option>
+      <option value="investment">📈 ลงทุน</option>
+      <option value="debt">💳 หนี้สิน</option>
+      <option value="income">💵 รายได้</option>
+      <option value="big_purchase">🛒 ของใหญ่/ช้อปปิ้ง</option>
+      <option value="other">📦 อื่นๆ</option>
+    </select>
+    <select class="input" id="finance-archive-filter" onchange="renderFinanceGoals()" style="display:none;">
+      <option value="active">แสดงทั้งหมด</option>
+      <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+      <option value="all">แสดงทั้งหมด</option>
+    </select>
+    <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
   </div>
-  
-  <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
-    <option value="">ทุกหมวดหมู่</option>
-    <option value="career">อาชีพ/งาน</option>
-    <option value="health">สุขภาพ</option>
-    <option value="finance">การเงิน</option>
-    <option value="skill">ทักษะ</option>
-    <option value="other">อื่นๆ</option>
-  </select>
-  <select class="input" id="goal-status-filter" onchange="renderGoals()" style="display:none;">
-    <option value="">ทุกสถานะ</option>
-    <option value="not_started">ยังไม่เริ่ม</option>
-    <option value="in_progress">กำลังทำ</option>
-    <option value="done">สำเร็จแล้ว</option>
-  </select>
-  <select class="input" id="goal-priority-filter" onchange="renderGoals()" style="display:none;">
-    <option value="">⭐ ทุกระดับ</option>
-    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-    <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-    <option value="low">☆ ทิ้ง/เลื่อน</option>
-  </select>
-  <select class="input" id="goal-archive-filter" onchange="renderGoals()" style="display:none;">
-    <option value="active">แสดงทั้งหมด</option>
-    <option value="archived">แสดงเฉพาะที่ซ่อน</option>
-    <option value="all">แสดงทั้งหมด</option>
-  </select>
-  
-  <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+  <div id="finance-goals-list"></div>
+  <div class="empty" id="finance-goals-empty" style="display:none;">ยังไม่มีเป้าหมายการเงิน</div>
 </div>
-  <button type="button" class="btn" onclick="openFinanceModal()">💰 + เป้าหมายการเงิน</button>
-  
-  <!-- Filter Chips -->
-  <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-    <button class="filter-chip active" onclick="setFinanceFilter('all')" id="finance-filter-all">ทั้งหมด</button>
-    <button type="button" class="filter-chip" onclick="setFinanceFilter('fav')" id="finance-filter-fav">⭐</button>
-    <button type="button" class="filter-chip" onclick="setFinanceFilter('archived')" id="finance-filter-archived">📦</button>
-    <button type="button" class="filter-chip" onclick="setFinanceFilter('filter')" id="finance-filter-filter">📊</button>
-  </div>
-  
-  <select class="input" id="finance-priority-filter" onchange="renderFinanceGoals()" style="display:none;">
-    <option value="">⭐ ทุกระดับ</option>
-    <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-    <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-    <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-    <option value="low">☆ ทิ้ง/เลื่อน</option>
-  </select>
-  <select class="input" id="finance-category-filter" onchange="renderFinanceGoals()" style="display:none;">
-    <option value="">ทุกหมวด</option>
-    <option value="emergency">🚨 กองทุนฉุกเฉิน</option>
-    <option value="saving">🏦 ออมทรัพย์</option>
-    <option value="investment">📈 ลงทุน</option>
-    <option value="debt">💳 หนี้สิน</option>
-    <option value="income">💵 รายได้</option>
-    <option value="big_purchase">🛒 ของใหญ่/ช้อปปิ้ง</option>
-    <option value="other">📦 อื่นๆ</option>
-  </select>
-  
-  <select class="input" id="finance-archive-filter" onchange="renderFinanceGoals()" style="display:none;">
-    <option value="active">แสดงทั้งหมด</option>
-    <option value="archived">แสดงเฉพาะที่ซ่อน</option>
-    <option value="all">แสดงทั้งหมด</option>
-  </select>
-  
-  <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
-</div>
-    <div id="finance-goals-list"></div>
-    <div class="empty" id="finance-goals-empty" style="display:none;">ยังไม่มีเป้าหมายการเงิน</div>
-  </div>
 
   <!-- Tab: Wishlist -->
   <div id="finance-wishlist" class="finance-tab-content">
@@ -2689,15 +2646,12 @@ body {
 <div class="page" id="page-projects">
   <div class="toolbar">
     <button type="button" class="btn" onclick="openProjectModal()">+ เพิ่มโปรเจกต์</button>
-  
-    <!-- Filter Chips -->
     <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-      <button class="filter-chip active" onclick="setProjectFilter('all')" id="project-filter-all">ทั้งหมด</button>
+      <button type="button" class="filter-chip active" onclick="setProjectFilter('all')" id="project-filter-all">ทั้งหมด</button>
       <button type="button" class="filter-chip" onclick="setProjectFilter('fav')" id="project-filter-fav">⭐</button>
       <button type="button" class="filter-chip" onclick="setProjectFilter('archived')" id="project-filter-archived">📦</button>
       <button type="button" class="filter-chip" onclick="setProjectFilter('status')" id="project-filter-status">📊</button>
     </div>
-  
     <select class="input" id="project-status-filter" onchange="renderProjects()" style="display:none;">
       <option value="">ทุกสถานะ</option>
       <option value="planning">📝 วางแผน</option>
@@ -2712,18 +2666,19 @@ body {
       <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
       <option value="low">☆ ทิ้ง/เลื่อน</option>
     </select>
-  
     <select class="input" id="project-archive-filter" onchange="renderProjects()" style="display:none;">
       <option value="active">แสดงทั้งหมด</option>
       <option value="archived">แสดงเฉพาะที่ซ่อน</option>
       <option value="all">แสดงทั้งหมด</option>
     </select>
-      <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
-
+    <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
   </div>
+  
+  <!-- ⬇️ content ต้องอยู่ภายใน #page-projects ⬇️ -->
   <div id="projects-list"></div>
   <div class="empty" id="projects-empty" style="display:none;">ยังไม่มีโปรเจกต์</div>
-</div>
+  
+</div><!-- ✅ ปิด div.page ที่นี่เท่านั้น -->
 
 <!-- Project Modal -->
 <div class="modal-overlay" id="project-modal">
@@ -2733,13 +2688,13 @@ body {
       <input class="input" id="project-input-title" placeholder="เช่น เว็บพอร์ตโฟลิโอ">
     </div>
     <div class="field"><label>รายละเอียด</label>
-      <textarea class="input" id="project-input-desc" placeholder="อธิบายโปรเจกต์..." style="height:80px;resize:vertical;white-space:pre-wrap;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
+      <textarea class="input" id="project-input-desc" placeholder="อธิบายโปรเจกต์..." style="height:80px;resize:vertical;white-space:pre-wrap;" ></textarea>
     </div>
     <div class="field"><label>Deadline</label>
       <input class="input" type="date" id="project-input-deadline">
     </div>
     <div class="field"><label>โน้ต</label>
-      <textarea class="input" id="project-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}" style="height:60px;resize:vertical;white-space:pre-wrap;"></textarea>
+      <textarea class="input" id="project-input-note"  style="height:60px;resize:vertical;white-space:pre-wrap;"></textarea>
     </div>
     <div class="field"><label>⭐ ความสำคัญ</label>
       <select class="input" id="project-input-priority">
@@ -2759,11 +2714,11 @@ body {
   <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="project-input-tags" placeholder="design, web, freelance" 
-       list="project-tag-suggestions" 
+       list="global-tag-suggestions-project" 
        oninput="handleProjectTagInput(this)" 
-       onfocus="showAllSuggestions(this)" 
-       onclick="showAllSuggestions(this)">
-      <datalist id="global-tag-suggestions"></datalist>
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-project')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-project')">
+      <datalist id="global-tag-suggestions-project"></datalist>
     </div>
     <!-- ... -->
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
@@ -2855,13 +2810,13 @@ body {
       <input class="input" id="ref-input-tags" placeholder="เช่น มือ, ท่านั่ง" 
        list="ref-tag-suggestions" 
        oninput="handleTagInput(this)" 
-       onfocus="showAllSuggestions(this)" 
-       onclick="showAllSuggestions(this)">
+       onfocus="showAllSuggestions(this, 'ref-tag-suggestions')"
+        onclick="showAllSuggestions(this, 'ref-tag-suggestions')"
         <datalist id="ref-tag-suggestions"></datalist>
       </div>
     <div class="field">
       <label>โน้ต</label>
-      <textarea class="input" id="ref-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
+      <textarea class="input" id="ref-input-note" ></textarea>
     </div>
     <div class="modal-actions">
       <button type="button" class="btn secondary" onclick="closeModal('ref-modal')">ยกเลิก</button>
@@ -2890,7 +2845,7 @@ body {
         <input class="input" id="vision-input-title" placeholder="เช่น เป็นศิลปินที่เลี้ยงตัวเองได้จากงานศิลปะ">
       </div>
       <div class="field"><label>รายละเอียด</label>
-        <textarea class="input" id="vision-input-desc"  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}" placeholder="อธิบายภาพที่อยากเห็นในอนาคต..."></textarea>
+        <textarea class="input" id="vision-input-desc" placeholder="อธิบายภาพที่อยากเห็นในอนาคต..."></textarea>
       </div>
       <div class="field"><label>⭐ ความสำคัญ</label>
   <select class="input" id="vision-input-priority">
@@ -2956,7 +2911,7 @@ body {
         <input class="input" type="date" id="goal-input-date">
       </div>
       <div class="field"><label>โน้ต</label>
-        <textarea class="input" id="goal-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
+        <textarea class="input" id="goal-input-note" ></textarea>
       </div>
       <div class="field"><label>⭐ ความสำคัญ</label>
   <select class="input" id="goal-input-priority">
@@ -3020,12 +2975,13 @@ body {
     </div>
     <div class="field">
   <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
-  <input class="input" id="finance-input-tags" placeholder="เช่น emergency, 3-month" 
-       list="global-tag-suggestions" 
+  <!-- Finance Modal -->
+<input class="input" id="finance-input-tags" placeholder="emergency, 3-month" 
+       list="global-tag-suggestions-finance" 
        oninput="handleFinanceTagInput(this)" 
-       onfocus="showAllSuggestions(this)" 
-       onclick="showAllSuggestions(this)">
-       <datalist id="global-tag-suggestions"></datalist>
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-finance')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-finance')">
+       <datalist id="global-tag-suggestions-finance"></datalist>
   </div>
     <div class="field"><label>⭐ ความสำคัญ</label>
   <select class="input" id="finance-input-priority">
@@ -3071,12 +3027,12 @@ body {
     </div>
     <div class="field">
   <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
-  <input class="input" id="wish-input-tags" placeholder="เช่น tech, gadget" 
-       list="global-tag-suggestions" 
+  <input class="input" id="wish-input-tags" placeholder="tech, gadget" 
+       list="global-tag-suggestions-wish" 
        oninput="handleWishlistTagInput(this)" 
-       onfocus="showAllSuggestions(this)" 
-       onclick="showAllSuggestions(this)">
-      <datalist id="global-tag-suggestions"></datalist>
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-wish')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-wish')">
+      <datalist id="global-tag-suggestions-wish"></datalist>
   </div>
     <div class="field"><label>ความสำคัญ</label>
       <select class="input" id="wish-input-priority">
@@ -3150,7 +3106,7 @@ body {
       <input class="input" id="study-input-goal" placeholder="เช่น 30 นาที/วัน">
     </div>
     <div class="field"><label>โน้ต</label>
-      <textarea class="input" id="study-input-note" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
+      <textarea class="input" id="study-input-note" ></textarea>
     </div>
     <div class="field"><label>⭐ ความสำคัญ</label>
       <select class="input" id="study-input-priority">
@@ -3187,11 +3143,11 @@ body {
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="idea-input-tags" placeholder="#idea, #creative" 
-             list="global-tag-suggestions" 
-             oninput="handleIdeaTagInput(this)" 
-             onfocus="showAllSuggestions(this)" 
-             onclick="showAllSuggestions(this)">
-      <datalist id="global-tag-suggestions"></datalist>
+       list="global-tag-suggestions-idea" 
+       oninput="handleIdeaTagInput(this)" 
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-idea')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-idea')">
+      <datalist id="global-tag-suggestions-idea"></datalist>
     </div>
     <div class="field">
       <label>🔗 ลิงก์ (ถ้ามี)</label>
@@ -3225,11 +3181,11 @@ body {
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="knowledge-input-tags" placeholder="#knowledge, #learn" 
-             list="global-tag-suggestions" 
-             oninput="handleKnowledgeTagInput(this)" 
-             onfocus="showAllSuggestions(this)" 
-             onclick="showAllSuggestions(this)">
-      <datalist id="global-tag-suggestions"></datalist>
+       list="global-tag-suggestions-knowledge" 
+       oninput="handleKnowledgeTagInput(this)" 
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-knowledge')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-knowledge')">
+      <datalist id="global-tag-suggestions-knowledge"></datalist>
     </div>
     <div class="field">
       <label>🔗 ลิงก์ (ถ้ามี)</label>
@@ -3267,11 +3223,11 @@ body {
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="art-input-tags" placeholder="#drawing, #painting" 
-             list="global-tag-suggestions" 
-             oninput="handleArtTagInput(this)" 
-             onfocus="showAllSuggestions(this)" 
-             onclick="showAllSuggestions(this)">
-      <datalist id="global-tag-suggestions"></datalist>
+       list="global-tag-suggestions-art" 
+       oninput="handleArtTagInput(this)" 
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-art')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-art')">
+      <datalist id="global-tag-suggestions-art"></datalist>
     </div>
     <div class="modal-actions">
       <button type="button" class="btn secondary" onclick="closeModal('art-modal')">ยกเลิก</button>
@@ -3307,16 +3263,15 @@ body {
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="fit-input-tags" placeholder="#fitness, #workout" 
-             list="global-tag-suggestions" 
-             oninput="handleFitTagInput(this)" 
-             onfocus="showAllSuggestions(this)" 
-             onclick="showAllSuggestions(this)">
-      <datalist id="global-tag-suggestions"></datalist>
+       list="global-tag-suggestions-fit" 
+       oninput="handleFitTagInput(this)" 
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-fit')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-fit')">
+      <datalist id="global-tag-suggestions-fit"></datalist>
     </div>
     <div class="modal-actions">
       <button type="button" class="btn secondary" onclick="closeModal('fit-modal')">ยกเลิก</button>
       <button type="button" class="btn" onclick="confirmSaveFit(event)">💾 บันทึก</button>
-
     </div>
   </div>
 </div>
@@ -3362,16 +3317,16 @@ body {
       <label>ความคิด</label>
       <textarea class="input" id="inbox-input-text" placeholder="คิดอะไรอยู่? พิมพ์เลย..." 
                 style="height:120px; min-height:100px; resize:vertical; font-size:14px; line-height:1.6;" 
-                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
+                 ></textarea>
     </div>
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค) — <span style="color:var(--muted);font-weight:normal;">auto: #quick-idea</span></label>
       <input class="input" id="inbox-input-tags" placeholder="#quick-idea, #inspiration" 
-       list="global-tag-suggestions" 
+       list="global-tag-suggestions-inbox" 
        oninput="handleInboxTagInput(this)" 
-       onfocus="showAllSuggestions(this)" 
-       onclick="showAllSuggestions(this)">
-      <datalist id="global-tag-suggestions"></datalist>
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-inbox')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-inbox')">
+      <datalist id="global-tag-suggestions-inbox"></datalist>
     </div>
     <div class="modal-actions">
       <button type="button" class="btn secondary" onclick="closeModal('inbox-modal')">ยกเลิก</button>
@@ -3391,7 +3346,7 @@ body {
     <div class="field">
       <label>เนื้อหา</label>
       <textarea class="input" id="daily-input-content" placeholder="วันนี้เกิดอะไรขึ้นบ้าง..." 
-                style="height:150px; min-height:120px; resize:vertical; font-size:14px; line-height:1.6;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"></textarea>
+                style="height:150px; min-height:120px; resize:vertical; font-size:14px; line-height:1.6;" ></textarea>
     </div>
     <div class="field">
       <label>😊 อารมณ์</label>
@@ -3406,11 +3361,11 @@ body {
     <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="daily-input-tags" placeholder="#work, #personal" 
-       list="global-tag-suggestions" 
+       list="global-tag-suggestions-daily" 
        oninput="handleDailyTagInput(this)" 
-       onfocus="showAllSuggestions(this)" 
-       onclick="showAllSuggestions(this)">
-      <datalist id="global-tag-suggestions"></datalist>
+       onfocus="showAllSuggestions(this, 'global-tag-suggestions-daily')" 
+       onclick="showAllSuggestions(this, 'global-tag-suggestions-daily')">
+      <datalist id="global-tag-suggestions-daily"></datalist>
     </div>
     <div class="field">
       <label>📷 รูป (URL)</label>
@@ -3440,6 +3395,10 @@ body {
         <option value="study">📚 Study</option>
         <option value="wish">🛍️ Wishlist</option>
         <option value="daily">📖 Daily Log</option>
+        <option value="idea">💡 Idea</option>
+        <option value="knowledge">📚 Knowledge</option>
+        <option value="art">🎨 Art</option>
+        <option value="fit">💪 Fit</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -3669,6 +3628,129 @@ function preventBodyScroll(shouldPrevent) {
     document.body.classList.remove('modal-open');
   }
 }
+// ==========================================================
+// MODAL HELPERS - ใช้แทนการเรียก classList.add('show') โดยตรง
+// ==========================================================
+
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return false;
+  
+  // ถ้า modal เปิดอยู่แล้ว ไม่ต้องทำอะไร
+  if (modal.classList.contains('show')) return true;
+  
+  modal.classList.add('show');
+  preventBodyScroll(true);
+  return true;
+}
+
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal || !modal.classList.contains('show')) return;
+  
+  modal.classList.remove('show');
+  preventBodyScroll(false);
+  
+  // รีเซ็ต modal ตาม type
+  handleModalReset(id);
+  
+  return true;
+}
+
+// ==========================================================
+// MODAL RESET HANDLER (แยกตามประเภท)
+// ==========================================================
+
+function handleModalReset(id) {
+  switch(id) {
+    case 'vision-modal':
+      resetVisionModal();
+      clearEditMode('vision');
+      tempVisionRefIds = [];
+      editingVisionRefIds = [];
+      renderVisionRefPreview();
+      break;
+    case 'goal-modal':
+      resetGoalModal();
+      clearEditMode('goal');
+      break;
+    case 'finance-modal':
+      resetFinanceModal();
+      clearEditMode('finance');
+      break;
+    case 'wish-modal':
+      resetWishModal();
+      clearEditMode('wish');
+      break;
+    case 'ref-modal':
+      resetRefModal();
+      clearEditMode('ref');
+      break;
+    case 'study-modal':
+      resetStudyModal();
+      clearEditMode('study');
+      break;
+    case 'project-modal':
+      resetProjectModal();
+      clearEditMode('project');
+      editingProjectId = null;
+      break;
+    case 'inbox-modal':
+      resetInboxModal();
+      clearEditMode('inbox');
+      break;
+    case 'daily-modal':
+      resetDailyModal();
+      clearEditMode('daily');
+      break;
+    case 'idea-modal':
+      resetIdeaModal();
+      clearEditMode('idea');
+      break;
+    case 'knowledge-modal':
+      resetKnowledgeModal();
+      clearEditMode('knowledge');
+      break;
+    case 'art-modal':
+      resetArtModal();
+      clearEditMode('art');
+      break;
+    case 'fit-modal':
+      resetFitModal();
+      clearEditMode('fit');
+      break;
+    case 'finance-update-modal':
+      pendingFinanceId = null;
+      document.getElementById('finance-update-amount').value = '';
+      break;
+    case 'wish-update-modal':
+      pendingWishId = null;
+      document.getElementById('wish-update-amount').value = '';
+      break;
+    case 'transaction-modal':
+      pendingTransactionId = null;
+      document.getElementById('transaction-input-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('transaction-input-type').value = 'expense';
+      document.getElementById('transaction-input-category').value = 'food';
+      document.getElementById('transaction-input-amount').value = '';
+      document.getElementById('transaction-input-note').value = '';
+      break;
+    case 'budget-edit-modal':
+      editingBudgetId = null;
+      document.getElementById('budget-edit-input-month').value = '';
+      document.getElementById('budget-edit-input-category').value = 'food';
+      document.getElementById('budget-edit-input-limit').value = '';
+      break;
+    case 'import-csv-modal':
+      document.getElementById('csv-file-input').value = '';
+      break;
+    case 'project-detail-modal':
+      // ไม่ต้องรีเซ็ตอะไร
+      break;
+    default:
+      break;
+  }
+}
 
 function closeModal(id) {
   const modal = document.getElementById(id);
@@ -3690,6 +3772,10 @@ function closeModal(id) {
     resetGoalModal();
     clearEditMode('goal');
   }
+  if (id === 'study-modal') {
+    resetStudyModal();
+    clearEditMode('study');
+}
   if (id === 'finance-modal') {
     resetFinanceModal();
     clearEditMode('finance');
@@ -3927,6 +4013,22 @@ function switchPage(pageId) {
       scrollToActiveNav();
     }
   }, 50);
+}
+// ===== Switch Nav Page with Arrow Buttons =====
+function switchNavPage(direction) {
+  const currentPage = getCurrentPage();
+  const pages = ['journal', 'dashboard', 'ref', 'vision', 'projects', 'goals', 'finance', 'settings'];
+  const currentIdx = pages.indexOf(currentPage);
+  
+  if (currentIdx === -1) return;
+  
+  let newIdx = currentIdx + direction;
+  if (newIdx < 0) newIdx = pages.length - 1;
+  if (newIdx >= pages.length) newIdx = 0;
+  
+  const newPage = pages[newIdx];
+  switchPage(newPage);
+  showToast(`📱 ${PAGES.find(p => p.id === newPage)?.label || newPage}`, 'info', 1000);
 }
 // ===== เปลี่ยนหน้า + ตั้งค่า filter =====
 function switchPageWithFilter(pageId, filterValue) {
@@ -4218,6 +4320,14 @@ function handleSwipe(direction) {
     } else if (direction === 'right' && idx > 0) {
       switchJournalTab(tabs[idx - 1]);
       showToast(`📖 ${tabs[idx - 1]}`, 'info', 1000);
+    } else if (direction === 'right' && idx === 0) {
+      // จาก Inbox ไป Dashboard
+      switchPage('dashboard');
+      showToast(`📊 Dashboard`, 'info', 1000);
+    } else if (direction === 'left' && idx === tabs.length - 1) {
+      // จาก Fit ไป Dashboard
+      switchPage('dashboard');
+      showToast(`📊 Dashboard`, 'info', 1000);
     }
     return;
   }
@@ -4236,6 +4346,12 @@ function handleSwipe(direction) {
     } else if (direction === 'right' && idx > 0) {
       switchFinanceTab(tabs[idx - 1]);
       showToast(`💰 ${tabs[idx - 1]}`, 'info', 1000);
+    } else if (direction === 'right' && idx === 0) {
+      switchPage('projects');
+      showToast(`📋 Projects`, 'info', 1000);
+    } else if (direction === 'left' && idx === tabs.length - 1) {
+      switchPage('settings');
+      showToast(`⚙️ ตั้งค่า`, 'info', 1000);
     }
     return;
   }
@@ -4254,17 +4370,17 @@ function handleSwipe(direction) {
     } else if (direction === 'right' && idx > 0) {
       switchGoalsTab(tabs[idx - 1]);
       showToast(`📚 ${tabs[idx - 1] === 'goals' ? 'เป้าหมาย' : 'แผนเรียน'}`, 'info', 1000);
+    } else if (direction === 'right' && idx === 0) {
+      switchPage('vision');
+      showToast(`🗺️ Life Map`, 'info', 1000);
+    } else if (direction === 'left' && idx === tabs.length - 1) {
+      switchPage('finance');
+      showToast(`💰 Finance`, 'info', 1000);
     }
     return;
   }
   
-  // ===== 4. REF (Board Overview / Grid View) =====
-  if (currentPage === 'ref') {
-    // Ref มีการเลื่อนใน grid ไม่ต้องเปลี่ยนหน้า
-    return;
-  }
-  
-  // ===== 5. MODULE TABS (เปลี่ยนหน้าไป module ถัดไป/ก่อนหน้า) =====
+  // ===== 4. MODULE TABS (เปลี่ยนหน้าไป module ถัดไป/ก่อนหน้า) =====
   const pages = ['journal', 'dashboard', 'ref', 'vision', 'projects', 'goals', 'finance', 'settings'];
   const currentIdx = pages.indexOf(currentPage);
   
@@ -4299,21 +4415,44 @@ function updateNavArrows() {
 window.addEventListener('resize', updateNavArrows);
 
 // ==========================================================
-// DASHBOARD
+// MODULE 6: Finance Transactions (ประกาศก่อน Dashboard)
 // ==========================================================
-async function renderDashboard() {
-  const [refs, visions, goals, finances, wishes, studies, projects, inbox] = await Promise.all([
-    getRefs(),
-    getVisions(),
-    getGoals(),
-    getFinances(),
-    getWishes(),
-    getStudies(),
-    getProjects(),
-    getInbox()
+const transactionModule = createFirestoreModule('transactions');
+let transactionListeners = [];
+
+const TRANSACTION_CAT_LABELS = {
+  food: '🍜 อาหาร',
+  transport: '🚗 เดินทาง',
+  entertainment: '🎬 บันเทิง',
+  shopping: '🛍️ ช้อปปิ้ง',
+  health: '💊 สุขภาพ',
+  education: '📚 การศึกษา',
+  bills: '📄 บิล/ค่าครองชีพ',
+  salary: '💼 เงินเดือน',
+  freelance: '💻 ฟรีแลนซ์',
+  investment: '📈 ลงทุน',
+  other: '📦 อื่นๆ'
+};
+
+async function getTransactions() { return transactionModule.getItems(); }
+async function saveTransactions(items) { return transactionModule.saveItems(items); }
+function onTransactionsSnapshot(callback) {
+  const unsub = transactionModule.onSnapshot(callback);
+  transactionListeners.push(unsub);
+  return unsub;
+}
+transactionModule.migrateFromLocalStorage('finance_transactions');
+// ==========================================================
+// DASHBOARD - แยกฟังก์ชันย่อย
+// ==========================================================
+
+// 1. สถิติหลัก
+async function renderDashboardStats() {
+  const [refs, visions, goals, finances, wishes, studies, projects] = await Promise.all([
+    getRefs(), getVisions(), getGoals(), getFinances(), 
+    getWishes(), getStudies(), getProjects()
   ]);
   
-  // ===== สถิติ =====
   document.getElementById('dash-ref-count').textContent = refs.length;
   document.getElementById('dash-vision-count').textContent = visions.length;
   document.getElementById('dash-goal-count').textContent = goals.length;
@@ -4321,8 +4460,14 @@ async function renderDashboard() {
   document.getElementById('dash-project-count').textContent = projects.length;
   document.getElementById('dash-finance-count').textContent = finances.length;
   document.getElementById('dash-wish-count').textContent = wishes.length;
+}
 
-  // ===== สถิติความสำคัญ (Priority) =====
+// 2. Priority Statistics
+async function renderDashboardPriority() {
+  const [visions, goals, finances, wishes, studies, projects] = await Promise.all([
+    getVisions(), getGoals(), getFinances(), getWishes(), getStudies(), getProjects()
+  ]);
+  
   function countPriority(items) {
     const counts = { critical: 0, important: 0, urgent: 0, low: 0 };
     items.forEach(i => {
@@ -4332,21 +4477,14 @@ async function renderDashboard() {
     return counts;
   }
 
-  const visionPriority = countPriority(visions);
-  const goalPriority = countPriority(goals);
-  const financePriority = countPriority(finances);
-  const wishPriority = countPriority(wishes);
-  const studyPriority = countPriority(studies);
-  const projectPriority = countPriority(projects);
-
   const totalPriority = { critical: 0, important: 0, urgent: 0, low: 0 };
-  [visionPriority, goalPriority, financePriority, wishPriority, studyPriority, projectPriority].forEach(p => {
+  [visions, goals, finances, wishes, studies, projects].forEach(items => {
+    const p = countPriority(items);
     totalPriority.critical += p.critical;
     totalPriority.important += p.important;
     totalPriority.urgent += p.urgent;
     totalPriority.low += p.low;
   });
-
   const priorityDiv = document.getElementById('dash-priority-stats');
   if (totalPriority.critical + totalPriority.important + totalPriority.urgent + totalPriority.low === 0) {
     priorityDiv.innerHTML = `<span style="color:var(--muted);font-size:12px;">ยังไม่มีข้อมูล priority</span>`;
@@ -4374,161 +4512,249 @@ async function renderDashboard() {
       </div>
     `;
   }
-  
-  // ===== สถานะเป้าหมาย =====
-  const statusCount = { not_started: 0, in_progress: 0, done: 0 };
-  goals.forEach(g => statusCount[g.status]++);
-  
+}
+
+
+// 3. Goal Status
+async function renderDashboardGoalStatus() {
+  const goals = await getGoals();
   const statusDiv = document.getElementById('dash-goal-status');
+  
   if (goals.length === 0) {
     statusDiv.innerHTML = `
       <span style="color:var(--muted);font-size:13px;">ยังไม่มีเป้าหมาย</span>
       <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
     `;
-  } else {
-    const totalGoals = goals.length;
-    const donePercent = Math.round((statusCount.done / totalGoals) * 100);
-    
-    statusDiv.innerHTML = `
-      <span class="status-badge status-not_started" onclick="switchPageWithFilter('goals', 'not_started')" title="คลิกเพื่อดูเป้าหมายที่ยังไม่เริ่ม">
-        ⏳ ยังไม่เริ่ม ${statusCount.not_started}
-      </span>
-      <span class="status-badge status-in_progress" onclick="switchPageWithFilter('goals', 'in_progress')" title="คลิกเพื่อดูเป้าหมายที่กำลังทำ">
-        🔄 กำลังทำ ${statusCount.in_progress}
-      </span>
-      <span class="status-badge status-done" onclick="switchPageWithFilter('goals', 'done')" title="คลิกเพื่อดูเป้าหมายที่สำเร็จแล้ว">
-        ✅ สำเร็จแล้ว ${statusCount.done}
-      </span>
-      <span style="font-size:11px;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--surface2);" onclick="switchPage('goals')">
-        รวม ${totalGoals} เป้าหมาย (${donePercent}% สำเร็จ) →
-      </span>
-    `;
+    return;
   }
+
+  const statusCount = { not_started: 0, in_progress: 0, done: 0 };
+  goals.forEach(g => statusCount[g.status]++);
+  const totalGoals = goals.length;
+  const donePercent = Math.round((statusCount.done / totalGoals) * 100);
   
-  // ===== กิจกรรมล่าสุด (รวมทุกโมดูล) =====
-const [transactions, budgets, inboxItems, dailyLogs] = await Promise.all([
-  getTransactions(),
-  getBudgets(),
-  getInbox(),
-  getDaily()
-]);
+  statusDiv.innerHTML = `
+    <span class="status-badge status-not_started" onclick="switchPageWithFilter('goals', 'not_started')">
+      ⏳ ยังไม่เริ่ม ${statusCount.not_started}
+    </span>
+    <span class="status-badge status-in_progress" onclick="switchPageWithFilter('goals', 'in_progress')">
+      🔄 กำลังทำ ${statusCount.in_progress}
+    </span>
+    <span class="status-badge status-done" onclick="switchPageWithFilter('goals', 'done')">
+      ✅ สำเร็จแล้ว ${statusCount.done}
+    </span>
+    <span style="font-size:11px;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--surface2);" onclick="switchPage('goals')">
+      รวม ${totalGoals} เป้าหมาย (${donePercent}% สำเร็จ) →
+    </span>
+  `;
+}
 
-const recent = [];
+// 4. Recent Activity (Main Dashboard)
+async function renderDashboardRecent() {
+  const [refs, visions, goals, finances, wishes, studies, projects, inbox, daily, transactions, budgets] = await Promise.all([
+    getRefs(), getVisions(), getGoals(), getFinances(), getWishes(),
+    getStudies(), getProjects(), getInbox(), getDaily(),
+    getTransactions(), getBudgets()
+  ]);
 
-refs.slice(0, 5).forEach(i => recent.push({ 
-  type: '📁', label: 'Ref', 
-  title: i.note || 'รูปอ้างอิง', 
-  detail: i.board || 'uncategorized',
-  time: i.createdAt, module: 'ref'
-}));
+  const recent = [];
 
-visions.slice(0, 5).forEach(i => recent.push({ 
-  type: '🗺️', label: 'Vision', 
-  title: i.title, 
-  detail: VISION_CAT_LABELS[i.category] || i.category,
-  time: i.createdAt, module: 'vision'
-}));
+  refs.slice(0, 5).forEach(i => recent.push({ 
+    type: '📁', label: 'Ref', 
+    title: i.note || 'รูปอ้างอิง', 
+    detail: i.board || 'uncategorized',
+    time: i.createdAt, module: 'ref'
+  }));
 
-goals.slice(0, 5).forEach(i => recent.push({ 
-  type: '🎯', label: 'Goal', 
-  title: i.title, 
-  detail: STATUS_LABELS[i.status] || i.status,
-  time: i.createdAt, module: 'goals'
-}));
+  visions.slice(0, 5).forEach(i => recent.push({ 
+    type: '🗺️', label: 'Vision', 
+    title: i.title, 
+    detail: VISION_CAT_LABELS[i.category] || i.category,
+    time: i.createdAt, module: 'vision'
+  }));
 
-studies.slice(0, 5).forEach(i => recent.push({ 
-  type: '📚', label: 'Study', 
-  title: i.title, 
-  detail: STUDY_STATUS_LABELS[i.status] || i.status,
-  time: i.createdAt, module: 'study'
-}));
+  goals.slice(0, 5).forEach(i => recent.push({ 
+    type: '🎯', label: 'Goal', 
+    title: i.title, 
+    detail: STATUS_LABELS[i.status] || i.status,
+    time: i.createdAt, module: 'goals'
+  }));
 
-projects.slice(0, 5).forEach(i => recent.push({ 
-  type: '📋', label: 'Project', 
-  title: i.title, 
-  detail: PROJECT_STATUS_LABELS[i.status] || i.status,
-  time: i.createdAt, module: 'projects'
-}));
+  studies.slice(0, 5).forEach(i => recent.push({ 
+    type: '📚', label: 'Study', 
+    title: i.title, 
+    detail: STUDY_STATUS_LABELS[i.status] || i.status,
+    time: i.createdAt, module: 'study'
+  }));
 
-finances.slice(0, 3).forEach(i => recent.push({ 
-  type: '💰', label: 'Finance', 
-  title: i.name, 
-  detail: FINANCE_CAT_LABELS[i.category] || i.category || 'อื่นๆ',
-  time: i.createdAt, module: 'finance', filter: 'finance'
-}));
+  projects.slice(0, 5).forEach(i => recent.push({ 
+    type: '📋', label: 'Project', 
+    title: i.title, 
+    detail: PROJECT_STATUS_LABELS[i.status] || i.status,
+    time: i.createdAt, module: 'projects'
+  }));
 
-wishes.slice(0, 3).forEach(i => recent.push({ 
-  type: '🛍️', label: 'Wish', 
-  title: i.name, 
-  detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ',
-  time: i.createdAt, module: 'finance', filter: 'wishlist'
-}));
+  finances.slice(0, 3).forEach(i => recent.push({ 
+    type: '💰', label: 'Finance', 
+    title: i.name, 
+    detail: FINANCE_CAT_LABELS[i.category] || i.category || 'อื่นๆ',
+    time: i.createdAt, module: 'finance', filter: 'finance'
+  }));
 
-// ===== เพิ่มโมดูลใหม่ =====
-transactions.slice(0, 5).forEach(i => {
-  const amountDisplay = i.type === 'income' ? `+${i.amount.toLocaleString()}` : `-${i.amount.toLocaleString()}`;
-  recent.push({ 
-    type: i.type === 'income' ? '💵' : '💸', 
-    label: i.type === 'income' ? 'รายรับ' : 'รายจ่าย', 
-    title: i.note || TRANSACTION_CAT_LABELS[i.category] || i.category,
-    detail: `${amountDisplay} บาท`,
-    time: i.createdAt, module: 'finance', filter: 'transactions'
+  wishes.slice(0, 3).forEach(i => recent.push({ 
+    type: '🛍️', label: 'Wish', 
+    title: i.name, 
+    detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ',
+    time: i.createdAt, module: 'finance', filter: 'wishlist'
+  }));
+
+  transactions.slice(0, 5).forEach(i => {
+    const amountDisplay = i.type === 'income' ? `+${i.amount.toLocaleString()}` : `-${i.amount.toLocaleString()}`;
+    recent.push({ 
+      type: i.type === 'income' ? '💵' : '💸', 
+      label: i.type === 'income' ? 'รายรับ' : 'รายจ่าย', 
+      title: i.note || TRANSACTION_CAT_LABELS[i.category] || i.category,
+      detail: `${amountDisplay} บาท`,
+      time: i.createdAt, module: 'finance', filter: 'transactions'
+    });
   });
-});
 
-budgets.slice(0, 3).forEach(i => {
-  const catInfo = getAllBudgetCategories().find(c => c.key === i.category);
-  recent.push({ 
-    type: '📊', label: 'Budget', 
-    title: catInfo ? catInfo.label : i.category,
-    detail: `${i.limit.toLocaleString()} บาท (${i.month})`,
-    time: i.createdAt, module: 'finance', filter: 'budgets'
+  budgets.slice(0, 3).forEach(i => {
+    const catInfo = getAllBudgetCategories().find(c => c.key === i.category);
+    recent.push({ 
+      type: '📊', label: 'Budget', 
+      title: catInfo ? catInfo.label : i.category,
+      detail: `${i.limit.toLocaleString()} บาท (${i.month})`,
+      time: i.createdAt, module: 'finance', filter: 'budgets'
+    });
   });
-});
 
-inboxItems.filter(i => !i.processed).slice(0, 3).forEach(i => {
-  recent.push({ 
-    type: '📥', label: 'Inbox', 
-    title: i.text.substring(0, 40) + (i.text.length > 40 ? '...' : ''),
-    detail: (i.tags && i.tags[0]) || '#quick-idea',
-    time: i.createdAt, module: 'journal'
+  inbox.filter(i => !i.processed).slice(0, 3).forEach(i => {
+    recent.push({ 
+      type: '📥', label: 'Inbox', 
+      title: i.text.substring(0, 40) + (i.text.length > 40 ? '...' : ''),
+      detail: (i.tags && i.tags[0]) || '#quick-idea',
+      time: i.createdAt, module: 'journal'
+    });
   });
-});
 
-dailyLogs.slice(0, 3).forEach(i => {
-  recent.push({ 
-    type: '📖', label: 'Daily', 
-    title: `บันทึก ${new Date(i.date).toLocaleDateString('th-TH')}`,
-    detail: i.content.substring(0, 30) + (i.content.length > 30 ? '...' : ''),
-    time: i.createdAt, module: 'journal'
+  daily.slice(0, 3).forEach(i => {
+    recent.push({ 
+      type: '📖', label: 'Daily', 
+      title: `บันทึก ${new Date(i.date).toLocaleDateString('th-TH')}`,
+      detail: i.content.substring(0, 30) + (i.content.length > 30 ? '...' : ''),
+      time: i.createdAt, module: 'journal'
+    });
   });
-});
 
-// เรียงตามเวลา (ใหม่สุดก่อน)
-recent.sort((a, b) => b.time.localeCompare(a.time));
-const topRecent = recent.slice(0, 15);
+  recent.sort((a, b) => b.time.localeCompare(a.time));
+  const topRecent = recent.slice(0, 15);
 
-const recentDiv = document.getElementById('dash-recent');
-if (topRecent.length === 0) {
-  recentDiv.innerHTML = `
-    <div class="empty" style="padding:20px 0;">
-      ยังไม่มีกิจกรรม
-      <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-        <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="openUploadWidget()">📁 เพิ่มรูปแรก</button>
-        <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">🎯 เพิ่มเป้าหมายแรก</button>
+  const recentDiv = document.getElementById('dash-recent');
+  if (topRecent.length === 0) {
+    recentDiv.innerHTML = `
+      <div class="empty" style="padding:20px 0;">
+        ยังไม่มีกิจกรรม
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="openUploadWidget()">📁 เพิ่มรูปแรก</button>
+          <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="openGoalModal()">🎯 เพิ่มเป้าหมายแรก</button>
+        </div>
       </div>
+    `;
+  } else {
+    recentDiv.innerHTML = topRecent.map(r => `
+      <div class="dash-recent-item" onclick="${r.filter ? `switchPageWithFilter('${r.module}', '${r.filter}')` : `switchPage('${r.module}')`}">
+        <span style="font-size:12px;font-weight:600;">${r.type}</span>
+        <span style="font-size:12px;margin-left:4px;">${r.title}</span>
+        <span style="font-size:10px;color:var(--muted);margin-left:6px;">· ${r.detail}</span>
+        <span style="font-size:10px;color:var(--muted);float:right;">${getTimeAgo(r.time)}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// 5. Finance Snapshot
+async function renderFinanceSnapshot() {
+  const container = document.getElementById('finance-snapshot');
+  if (!container) return;
+  
+  const [transactions, budgets, finances, wishes] = await Promise.all([
+    getTransactions(),
+    getBudgets(),
+    getFinances(),
+    getWishes()
+  ]);
+  
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const monthTx = transactions.filter(t => t.date.startsWith(currentMonth));
+  const income = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const expense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const balance = income - expense;
+
+  const overBudget = budgets.filter(b => {
+    if (b.month !== currentMonth) return false;
+    const spent = monthTx.filter(t => t.type === 'expense' && t.category === b.category).reduce((s, t) => s + t.amount, 0);
+    return spent > b.limit;
+  }).length;
+
+  const nearGoals = [...finances, ...wishes]
+    .filter(i => {
+      const target = i.target || i.price || 0;
+      const saved = i.saved || 0;
+      const pct = target > 0 ? (saved / target) * 100 : 0;
+      return pct >= 70 && pct < 100 && !i.bought;
+    })
+    .slice(0, 3);
+
+  let html = `
+    <div class="dash-card" style="border-color:var(--green);padding:10px;">
+      <div style="font-size:16px;font-weight:700;color:var(--green);">+${income.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">รายรับ</div>
+    </div>
+    <div class="dash-card" style="border-color:var(--red);padding:10px;">
+      <div style="font-size:16px;font-weight:700;color:var(--red);">-${expense.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">รายจ่าย</div>
+    </div>
+    <div class="dash-card" style="border-color:var(--accent);padding:10px;">
+      <div style="font-size:16px;font-weight:700;color:var(--accent);">${balance >= 0 ? '+' : ''}${balance.toLocaleString()}</div>
+      <div style="color:var(--muted);font-size:10px;">คงเหลือ</div>
     </div>
   `;
-} else {
-  recentDiv.innerHTML = topRecent.map(r => `
-    <div class="dash-recent-item" onclick="${r.filter ? `switchPageWithFilter('${r.module}', '${r.filter}')` : `switchPage('${r.module}')`}">
-      <span style="font-size:12px;font-weight:600;">${r.type}</span>
-      <span style="font-size:12px;margin-left:4px;">${r.title}</span>
-      <span style="font-size:10px;color:var(--muted);margin-left:6px;">· ${r.detail}</span>
-      <span style="font-size:10px;color:var(--muted);float:right;">${getTimeAgo(r.time)}</span>
-    </div>
-  `).join('');
+
+  if (overBudget > 0) {
+    html += `
+      <div class="dash-card" style="border-color:var(--red);padding:10px;">
+        <div style="font-size:16px;font-weight:700;color:var(--red);">⚠️ ${overBudget}</div>
+        <div style="color:var(--muted);font-size:10px;">เกินงบ</div>
+      </div>
+    `;
+  }
+
+  if (nearGoals.length > 0) {
+    html += `
+      <div class="dash-card" style="grid-column:1/-1;text-align:left;padding:10px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">🎯 ใกล้สำเร็จ</div>
+        ${nearGoals.map(g => {
+          const target = g.target || g.price || 0;
+          const pct = target > 0 ? Math.round((g.saved / target) * 100) : 0;
+          return `<div style="font-size:12px;">${g.name}: ${pct}%</div>`;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
 }
+
+// 6. Main Dashboard - เรียกฟังก์ชันย่อย (ใช้ครั้งเดียว)
+async function renderDashboard() {
+  await Promise.all([
+    renderDashboardStats(),
+    renderDashboardPriority(),
+    renderDashboardGoalStatus(),
+    renderDashboardRecent(),
+    renderFinanceSnapshot()
+  ]);
 }
 // ===== Enhanced Stats with Month-over-Month =====
 async function renderEnhancedStats() {
@@ -4578,21 +4804,6 @@ async function renderEnhancedStats() {
       changeEl.className = `dash-stat-change ${changeClass}`;
     }
   });
-}
-// ===== Helper: แสดงเวลาผ่านไป =====
-function getTimeAgo(dateString) {
-  const now = new Date();
-  const past = new Date(dateString);
-  const diffMs = now - past;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  
-  if (diffMins < 1) return 'เมื่อสักครู่';
-  if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`;
-  if (diffHours < 24) return `${diffHours} ชั่วโมงที่แล้ว`;
-  if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
-  return past.toLocaleDateString('th-TH');
 }
 // ===== Focus This Week =====
 async function renderFocusThisWeek() {
@@ -4659,122 +4870,6 @@ async function renderOverdueGoals() {
       </div>
     `;
   }).join('');
-}
-
-// ===== Recent Activity (แยกจาก renderDashboard) =====
-async function renderRecentActivity() {
-  const container = document.getElementById('dash-recent');
-  if (!container) return;
-
-  const [refs, visions, goals, finances, wishes, studies, projects, inbox, daily, transactions, budgets] = await Promise.all([
-    getRefs(), getVisions(), getGoals(), getFinances(), getWishes(),
-    getStudies(), getProjects(), getInbox(), getDaily(),
-    getTransactions(), getBudgets()
-  ]);
-
-  const recent = [];
-
-  refs.slice(0, 3).forEach(i => recent.push({ type: '📁', title: i.note || 'รูป', detail: i.board || '', time: i.createdAt, module: 'ref' }));
-  visions.slice(0, 3).forEach(i => recent.push({ type: '🗺️', title: i.title, detail: VISION_CAT_LABELS[i.category] || i.category, time: i.createdAt, module: 'vision' }));
-  goals.slice(0, 3).forEach(i => recent.push({ type: '🎯', title: i.title, detail: STATUS_LABELS[i.status] || i.status, time: i.createdAt, module: 'goals' }));
-  studies.slice(0, 3).forEach(i => recent.push({ type: '📚', title: i.title, detail: STUDY_STATUS_LABELS[i.status] || i.status, time: i.createdAt, module: 'study' }));
-  projects.slice(0, 3).forEach(i => recent.push({ type: '📋', title: i.title, detail: PROJECT_STATUS_LABELS[i.status] || i.status, time: i.createdAt, module: 'projects' }));
-  finances.slice(0, 2).forEach(i => recent.push({ type: '💰', title: i.name, detail: FINANCE_CAT_LABELS[i.category] || i.category, time: i.createdAt, module: 'finance' }));
-  wishes.slice(0, 2).forEach(i => recent.push({ type: '️', title: i.name, detail: i.bought ? '✅ ซื้อแล้ว' : '⏳ ยังไม่ได้ซื้อ', time: i.createdAt, module: 'finance' }));
-  transactions.slice(0, 3).forEach(i => {
-    const amt = i.type === 'income' ? `+${i.amount.toLocaleString()}` : `-${i.amount.toLocaleString()}`;
-    recent.push({ type: i.type === 'income' ? '💵' : '💸', title: i.note || TRANSACTION_CAT_LABELS[i.category] || i.category, detail: `${amt} บาท`, time: i.createdAt, module: 'finance' });
-  });
-  budgets.slice(0, 2).forEach(i => recent.push({ type: '📊', title: BUDGET_CATEGORIES.find(c => c.key === i.category)?.label || i.category, detail: `${i.limit.toLocaleString()} บาท (${i.month})`, time: i.createdAt, module: 'finance' }));
-  inbox.filter(i => !i.processed).slice(0, 2).forEach(i => recent.push({ type: '📥', title: i.text.substring(0, 30) + (i.text.length > 30 ? '...' : ''), detail: (i.tags?.[0]) || '#idea', time: i.createdAt, module: 'journal' }));
-  daily.slice(0, 2).forEach(i => recent.push({ type: '📖', title: `บันทึก ${new Date(i.date).toLocaleDateString('th-TH')}`, detail: i.content.substring(0, 25) + (i.content.length > 25 ? '...' : ''), time: i.createdAt, module: 'journal' }));
-
-  recent.sort((a, b) => b.time.localeCompare(a.time));
-  const top = recent.slice(0, 10);
-
-  if (top.length === 0) {
-    container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0;">ยังไม่มีกิจกรรม</div>';
-    return;
-  }
-
-  container.innerHTML = top.map(r => `
-    <div class="dash-recent-item" onclick="switchPage('${r.module}')">
-      <span style="font-size:12px;font-weight:600;">${r.type}</span>
-      <span style="font-size:12px;margin-left:6px;flex:1;">${r.title}</span>
-      <span style="font-size:10px;color:var(--muted);margin-left:6px;">· ${r.detail}</span>
-      <span style="font-size:10px;color:var(--muted);float:right;">${getTimeAgo(r.time)}</span>
-    </div>
-  `).join('');
-}
-
-// ===== Finance Snapshot =====
-async function renderFinanceSnapshot() {
-  const container = document.getElementById('finance-snapshot');
-  if (!container) return;
-
-  const [transactions, budgets, finances, wishes] = await Promise.all([
-    getTransactions(), getBudgets(), getFinances(), getWishes()
-  ]);
-
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const monthTx = transactions.filter(t => t.date.startsWith(currentMonth));
-  const income = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const expense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const balance = income - expense;
-
-  const overBudget = budgets.filter(b => {
-    if (b.month !== currentMonth) return false;
-    const spent = monthTx.filter(t => t.type === 'expense' && t.category === b.category).reduce((s, t) => s + t.amount, 0);
-    return spent > b.limit;
-  }).length;
-
-  const nearGoals = [...finances, ...wishes]
-    .filter(i => {
-      const target = i.target || i.price || 0;
-      const saved = i.saved || 0;
-      const pct = target > 0 ? (saved / target) * 100 : 0;
-      return pct >= 70 && pct < 100 && !i.bought;
-    })
-    .slice(0, 3);
-
-  let html = `
-    <div class="dash-card" style="border-color:var(--green);padding:10px;">
-      <div style="font-size:16px;font-weight:700;color:var(--green);">+${income.toLocaleString()}</div>
-      <div style="color:var(--muted);font-size:10px;">รายรับ</div>
-    </div>
-    <div class="dash-card" style="border-color:var(--red);padding:10px;">
-      <div style="font-size:16px;font-weight:700;color:var(--red);">-${expense.toLocaleString()}</div>
-      <div style="color:var(--muted);font-size:10px;">รายจ่าย</div>
-    </div>
-    <div class="dash-card" style="border-color:var(--accent);padding:10px;">
-      <div style="font-size:16px;font-weight:700;color:var(--accent);">${balance >= 0 ? '+' : ''}${balance.toLocaleString()}</div>
-      <div style="color:var(--muted);font-size:10px;">คงเหลือ</div>
-    </div>
-  `;
-
-  if (overBudget > 0) {
-    html += `
-      <div class="dash-card" style="border-color:var(--red);padding:10px;">
-        <div style="font-size:16px;font-weight:700;color:var(--red);">⚠️ ${overBudget}</div>
-        <div style="color:var(--muted);font-size:10px;">เกินงบ</div>
-      </div>
-    `;
-  }
-
-  if (nearGoals.length > 0) {
-    html += `
-      <div class="dash-card" style="grid-column:1/-1;text-align:left;padding:10px;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">🎯 ใกล้สำเร็จ</div>
-        ${nearGoals.map(g => {
-          const target = g.target || g.price || 0;
-          const pct = target > 0 ? Math.round((g.saved / target) * 100) : 0;
-          return `<div style="font-size:12px;">${g.name}: ${pct}%</div>`;
-        }).join('')}
-      </div>
-    `;
-  }
-
-  container.innerHTML = html;
 }
 // ==========================================================
 // GLOBAL SEARCH
@@ -4867,8 +4962,8 @@ const PRIORITY_LABELS = {
   low: '☆ ทิ้ง/เลื่อน'
 };
 
-function getRefs() { return refModule.getItems(); }
-function saveRefs(items) { return refModule.saveItems(items); }
+async function getRefs() { return refModule.getItems(); }
+async function saveRefs(items) { return refModule.saveItems(items); }
 function onRefsSnapshot(callback) {
   const unsub = refModule.onSnapshot(callback);
   refListeners.push(unsub);
@@ -4992,7 +5087,6 @@ function addNewRefBoard() {
 function getRefTagSuggestions() {
   try {
     const data = JSON.parse(localStorage.getItem('ref_tag_suggestions') || '[]');
-    console.log('📋 Tags from localStorage:', data);  // ← เพิ่ม debug
     return data;
   } catch { return []; }
 }
@@ -5243,10 +5337,7 @@ function openUploadWidget() {
     }
   });
   
-  // ✅ เปิด widget ใน iframe ที่สร้างไว้
-  widget.open({
-    iframe: iframe
-  });
+  widget.open();
 }
 
 // ===== Detect Mobile Viewport =====
@@ -5295,7 +5386,7 @@ function openRefModalWithPreview() {
     `💾 บันทึก ${pendingUploadUrls.length} รูป`;
   document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveMultiRef;
   
-  document.getElementById('ref-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('ref-modal');
 }
 function removePendingUpload(idx) {
   pendingUploadUrls.splice(idx, 1);
@@ -5353,7 +5444,11 @@ async function confirmSaveMultiRef(event) {
 
 // ฟังก์ชันเดิมสำหรับรูปเดียว (ยังเก็บไว้เผื่อใช้)
 async function confirmSaveRef() {
-  if (!pendingUploadUrl) return;
+  // ✅ เปลี่ยนจาก pendingUploadUrl เป็น pendingUploadUrls[0]
+  if (!pendingUploadUrls || pendingUploadUrls.length === 0) {
+    showToast('❌ ไม่มีรูปที่จะบันทึก', 'error');
+    return;
+  }
   
   // แปลง category label → key
   const catLabel = document.getElementById('ref-input-category').value.trim();
@@ -5361,9 +5456,10 @@ async function confirmSaveRef() {
   const catObj = allCats.find(c => c.label === catLabel);
   const category = catObj ? catObj.key : catLabel; // ถ้าไม่เจอ → ใช้ label เป็น key (custom)
   
+  // ✅ ใช้ pendingUploadUrls[0] แทน pendingUploadUrl
   const item = {
     id: Date.now(),
-    url: url,
+    url: pendingUploadUrls[0],  // ← เปลี่ยนตรงนี้
     category,  // ← ใช้ key ที่แปลงแล้ว
     board: document.getElementById('ref-input-board').value.trim() || 'uncategorized',
     tags: document.getElementById('ref-input-tags').value.split(',').map(t => t.trim()).filter(Boolean),
@@ -5376,7 +5472,7 @@ async function confirmSaveRef() {
   await saveRefs(items);
   
   closeModal('ref-modal');
-  pendingUploadUrl = null;
+  pendingUploadUrls = [];  // ✅ เคลียร์หลังจากบันทึก
   renderRef();
   renderDashboard();
   showToast('✅ เพิ่มรูปอ้างอิงสำเร็จ', 'success');
@@ -5812,9 +5908,17 @@ function saveGlobalTagSuggestions(tags) {
   localStorage.setItem('global_tag_suggestions', JSON.stringify(tags));
 }
 
-function updateGlobalTagSuggestions() {
-  const datalist = document.getElementById('global-tag-suggestions');
-  if (!datalist) return;
+function updateGlobalTagSuggestions(module = 'default') {
+  const datalist = document.getElementById(`global-tag-suggestions-${module}`);
+  if (!datalist) {
+    // ถ้าไม่พบ ID ที่ระบุ ให้ลองใช้ default
+    const defaultDatalist = document.getElementById('global-tag-suggestions-default');
+    if (defaultDatalist) {
+      const tags = getGlobalTagSuggestions();
+      defaultDatalist.innerHTML = tags.map(t => `<option value="${t}">`).join('');
+    }
+    return;
+  }
   const tags = getGlobalTagSuggestions();
   datalist.innerHTML = tags.map(t => `<option value="${t}">`).join('');
 }
@@ -5826,6 +5930,15 @@ function addGlobalTagSuggestion(tag) {
     tags.push(trimmed);
     saveGlobalTagSuggestions(tags);
     updateGlobalTagSuggestions();
+    updateGlobalTagSuggestions('project');  // สำหรับ project modal
+updateGlobalTagSuggestions('finance'); // สำหรับ finance modal
+updateGlobalTagSuggestions('wish');    // สำหรับ wish modal
+updateGlobalTagSuggestions('inbox');   // สำหรับ inbox modal
+updateGlobalTagSuggestions('daily');   // สำหรับ daily modal
+updateGlobalTagSuggestions('idea');    // สำหรับ idea modal
+updateGlobalTagSuggestions('knowledge'); // สำหรับ knowledge modal
+updateGlobalTagSuggestions('art');     // สำหรับ art modal
+updateGlobalTagSuggestions('fit');     // สำหรับ fit modal
   }
 }
 function handleInboxTagInput(input) {
@@ -5896,31 +6009,36 @@ function handleDailyTagInput(input) {
 // ==========================================================
 // SHOW ALL TAG SUGGESTIONS
 // ==========================================================
-function showAllSuggestions(input) {
+function showAllSuggestions(input, datalistId) {
   if (!input) return;
+  
+  // ถ้ามีการระบุ datalistId ให้เชื่อมโยง datalist กับ input
+  if (datalistId) {
+    const datalist = document.getElementById(datalistId);
+    if (datalist) {
+      // ใช้ list attribute เพื่อเชื่อมต่อกับ datalist
+      input.setAttribute('list', datalistId);
+    }
+  }
   
   const currentValue = input.value;
   const trimmed = currentValue.trim();
   
-  // ตรวจสอบว่าต้องการแสดง suggestion ทั้งหมดหรือไม่
   const shouldShowAll = trimmed.endsWith(',') || 
                         trimmed.endsWith('#') ||
                         currentValue.length === 0;
   
   if (shouldShowAll) {
-    // ✅ ต้องมี space หลัง , เพื่อให้ datalist แสดงทุก tag
     if (!currentValue.endsWith(' ')) {
       input.value = currentValue + ' ';
     }
     
-    // ✅ ใช้ setTimeout เพื่อให้ datalist โหลดเสร็จ
     setTimeout(() => {
       input.focus();
       input.setSelectionRange(input.value.length, input.value.length);
       input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
     }, 150);
   } else {
-    // มีข้อความปกติ → ใช้ ArrowDown เพื่อเปิด datalist
     setTimeout(() => {
       input.focus();
       input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
@@ -5933,8 +6051,8 @@ function showAllSuggestions(input) {
 const ideaModule = createFirestoreModule('ideas');
 let ideaListeners = [];
 
-function getIdeas() { return ideaModule.getItems(); }
-function saveIdeas(items) { return ideaModule.saveItems(items); }
+async function getIdeas() { return ideaModule.getItems(); }
+async function saveIdeas(items) { return ideaModule.saveItems(items); }
 function onIdeasSnapshot(callback) {
   const unsub = ideaModule.onSnapshot(callback);
   ideaListeners.push(unsub);
@@ -5948,8 +6066,8 @@ ideaModule.migrateFromLocalStorage('idea_items');
 const knowledgeModule = createFirestoreModule('knowledges');
 let knowledgeListeners = [];
 
-function getKnowledges() { return knowledgeModule.getItems(); }
-function saveKnowledges(items) { return knowledgeModule.saveItems(items); }
+async function getKnowledges() { return knowledgeModule.getItems(); }
+async function saveKnowledges(items) { return knowledgeModule.saveItems(items); }
 function onKnowledgesSnapshot(callback) {
   const unsub = knowledgeModule.onSnapshot(callback);
   knowledgeListeners.push(unsub);
@@ -5963,8 +6081,8 @@ knowledgeModule.migrateFromLocalStorage('knowledge_items');
 const artModule = createFirestoreModule('arts');
 let artListeners = [];
 
-function getArts() { return artModule.getItems(); }
-function saveArts(items) { return artModule.saveItems(items); }
+async function getArts() { return artModule.getItems(); }
+async function saveArts(items) { return artModule.saveItems(items); }
 function onArtsSnapshot(callback) {
   const unsub = artModule.onSnapshot(callback);
   artListeners.push(unsub);
@@ -5978,8 +6096,8 @@ artModule.migrateFromLocalStorage('art_items');
 const fitModule = createFirestoreModule('fits');
 let fitListeners = [];
 
-function getFits() { return fitModule.getItems(); }
-function saveFits(items) { return fitModule.saveItems(items); }
+async function getFits() { return fitModule.getItems(); }
+async function saveFits(items) { return fitModule.saveItems(items); }
 function onFitsSnapshot(callback) {
   const unsub = fitModule.onSnapshot(callback);
   fitListeners.push(unsub);
@@ -6004,13 +6122,8 @@ const VISION_CAT_LABELS = {
 };
 
 // ฟังก์ชันเดิม — เปลี่ยน implementation
-function getVisions() {
-  return visionModule.getItems();
-}
-
-function saveVisions(items) {
-  return visionModule.saveItems(items);
-}
+async function getVisions() { return visionModule.getItems(); }
+async function saveVisions(items) { return visionModule.saveItems(items); }
 
 // ฟังก์ชันใหม่สำหรับ real-time sync
 function onVisionsSnapshot(callback) {
@@ -6046,7 +6159,7 @@ function openVisionModal() {
   clearEditMode('vision');
   
   // แสดง modal
-  document.getElementById('vision-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('vision-modal');
 }
 async function confirmSaveVision(event) {
   if (event) event.preventDefault();
@@ -6123,7 +6236,7 @@ async function editVision(id) {
   setEditMode('vision', id);
   
   // แสดง modal
-  document.getElementById('vision-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('vision-modal');
 }
 
 async function confirmEditVision(event) {
@@ -6233,22 +6346,27 @@ async function renderVision() {
     filteredItems = filteredItems.filter(i => i.favourite);
   }
   
-  // Archive filter
-  if (state.active === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  } else if (state.active !== 'fav') {
+// Archive filter - ใช้ state.active เป็นหลัก
+if (state.active === 'archived') {
+  filteredItems = filteredItems.filter(i => i.archived === true);
+} else if (state.active === 'all' || state.active === 'fav') {
+  filteredItems = filteredItems.filter(i => !i.archived);
+}
+// ถ้าเป็น priority mode ให้ใช้ archiveFilter แทน
+else if (state.active === 'priority' && archiveFilter) {
+  if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived === true);
+  } else if (archiveFilter === 'active') {
     filteredItems = filteredItems.filter(i => !i.archived);
   }
-  
-  // archive-filter เดิม (ถ้ามี)
-  if (archiveFilter === 'active') {
-    filteredItems = filteredItems.filter(i => !i.archived);
-  } else if (archiveFilter === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  }
+}
+  const allRefs = await getRefs();
 
   list.innerHTML = '';
   empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+  if (filteredItems.length === 0) {
+  empty.textContent = 'ยังไม่มีวิสัยทัศน์ที่บันทึกไว้';
+}
 
   filteredItems.forEach(item => {
     const card = document.createElement('div');
@@ -6261,25 +6379,29 @@ async function renderVision() {
     };
     
     const categoryLabel = VISION_CAT_LABELS[item.category] || item.category;
-    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+;
     
     const totalRelations = (item.goalIds?.length || 0) + (item.studyIds?.length || 0) + 
                            (item.financeIds?.length || 0) + (item.wishIds?.length || 0) +
                            (item.projectIds?.length || 0);
     
     // ✅ ดึง refs สำหรับ preview
-    let refsHtml = '';
-    if (item.refIds && item.refIds.length > 0) {
-      const refs = refsCache.filter(r => item.refIds.includes(r.id)).slice(0, 3);
-      if (refs.length > 0) {
-        refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
-          ${refs.map(r => `
-            <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
-          `).join('')}
-          ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
-        </div>`;
-      }
+    
+  
+  let refsHtml = '';
+  // แล้วใน loop
+  if (item.refIds && item.refIds.length > 0) {
+    const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
+    if (refs.length > 0) {
+      refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
+        ${refs.map(r => `
+          <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+        `).join('')}
+        ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
+      </div>`;
     }
+  }
     
     card.innerHTML = `
       <div class="item-top">
@@ -6474,8 +6596,8 @@ const GOAL_CAT_LABELS = {
   skill: '🎯 ทักษะ',
   other: '📦 อื่นๆ'
 };
-function getGoals() { return goalsModule.getItems(); }
-function saveGoals(items) { return goalsModule.saveItems(items); }
+async function getGoals() { return goalsModule.getItems(); }
+async function saveGoals(items) { return goalsModule.saveItems(items); }
 function onGoalsSnapshot(callback) {
   const unsub = goalsModule.onSnapshot(callback);
   goalListeners.push(unsub);
@@ -6504,7 +6626,7 @@ function openGoalModal() {
   document.getElementById('goal-modal').querySelector('h3').textContent = 'เพิ่มเป้าหมาย';
   document.getElementById('goal-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveGoal;
   clearEditMode('goal');
-  document.getElementById('goal-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('goal-modal');
 }
 
 async function confirmSaveGoal(event) {
@@ -6601,19 +6723,21 @@ async function renderGoals() {
     filteredItems = filteredItems.filter(i => i.favourite);
   }
   
-  // Archive filter
-  if (state.active === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  } else if (state.active !== 'fav') {
+  // Archive filter - ใช้ state.active เป็นหลัก
+if (state.active === 'archived') {
+  filteredItems = filteredItems.filter(i => i.archived === true);
+} else if (state.active === 'all' || state.active === 'fav') {
+  filteredItems = filteredItems.filter(i => !i.archived);
+}
+// ถ้าเป็น status mode ให้ใช้ archiveFilter แทน
+else if (state.active === 'status' && archiveFilter) {
+  if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived === true);
+  } else if (archiveFilter === 'active') {
     filteredItems = filteredItems.filter(i => !i.archived);
   }
-  
-  // archive-filter เดิม
-  if (archiveFilter === 'active') {
-    filteredItems = filteredItems.filter(i => !i.archived);
-  } else if (archiveFilter === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  }
+}
+
   
   const dateFilter = document.getElementById('goal-deadline-filter')?.value;
   if (dateFilter) {
@@ -6629,12 +6753,13 @@ async function renderGoals() {
   }
 
   list.innerHTML = '';
-  if (!dateFilter || filteredItems.length > 0) {
-    empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
-    if (filteredItems.length === 0) {
-      empty.textContent = 'ยังไม่มีเป้าหมายที่บันทึกไว้';
-    }
-  }
+if (!dateFilter || filteredItems.length > 0) {
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+}
+if (filteredItems.length === 0 && !dateFilter) {
+  empty.textContent = 'ยังไม่มีเป้าหมายที่บันทึกไว้';
+}
+const allRefs = await getRefs();
 
   filteredItems.forEach(item => {
     const card = document.createElement('div');
@@ -6646,22 +6771,26 @@ async function renderGoals() {
     };
     
     const categoryLabel = GOAL_CAT_LABELS[item.category] || item.category;
-    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+;
     const isFinanceGoal = item.category === 'finance';
     
     // ✅ ดึง refs สำหรับ preview
     let refsHtml = '';
-    if (item.refIds && item.refIds.length > 0) {
-      const refs = refsCache.filter(r => item.refIds.includes(r.id)).slice(0, 3);
-      if (refs.length > 0) {
-        refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
-          ${refs.map(r => `
-            <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
-          `).join('')}
-          ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
-        </div>`;
-      }
-    }
+
+
+// แล้วใน loop
+if (item.refIds && item.refIds.length > 0) {
+  const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
+  if (refs.length > 0) {
+    refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
+      ${refs.map(r => `
+        <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+      `).join('')}
+      ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
+    </div>`;
+  }
+}
     
     card.innerHTML = `
       <div class="item-top">
@@ -6677,7 +6806,7 @@ async function renderGoals() {
         <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
           <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 6px;" onclick="event.stopPropagation();editGoal(${item.id})">✎</button>
           <button class="del-x" style="font-size:16px;padding:2px 6px;" onclick="event.stopPropagation();deleteGoal(${item.id})">✕</button>
-          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Goal', ${item.id})">📦</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('goal', ${item.id})">📦</button>
           </div>
       </div>
       <div class="item-footer">
@@ -6854,8 +6983,8 @@ const FINANCE_CAT_LABELS = {
   big_purchase: '🛒 ของใหญ่/ช้อปปิ้ง',
   other: '📦 อื่นๆ'
 };
-function getFinances() { return financeModule.getItems(); }
-function saveFinances(items) { return financeModule.saveItems(items); }
+async function getFinances() { return financeModule.getItems(); }
+async function saveFinances(items) { return financeModule.saveItems(items); }
 function onFinancesSnapshot(callback) {
   const unsub = financeModule.onSnapshot(callback);
   financeListeners.push(unsub);
@@ -6875,7 +7004,7 @@ function openFinanceModal() {
   document.getElementById('finance-modal').querySelector('h3').textContent = 'เพิ่มเป้าหมายการเงิน';
   document.getElementById('finance-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFinance;
   clearEditMode('finance');
-  document.getElementById('finance-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('finance-modal');
 }
 
 async function confirmSaveFinance(event) {
@@ -6956,92 +7085,7 @@ async function deleteFinance(id) {
   renderDashboard();
   showToast('🗑️ ลบเป้าหมายการเงินแล้ว', 'error');
 }
-async function renderFinanceSnapshot() {
-  const container = document.getElementById('finance-snapshot');
-  if (!container) return;
-  
-  const [transactions, budgets, finances, wishes] = await Promise.all([
-    getTransactions(),
-    getBudgets(),
-    getFinances(),
-    getWishes()
-  ]);
-  
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const monthTransactions = transactions.filter(t => t.date.startsWith(currentMonth));
-  
-  // 1. สรุปเดือนนี้
-  const income = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-  const expense = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-  const balance = income - expense;
-  
-  // 2. Budget Status
-  const monthBudgets = budgets.filter(b => b.month === currentMonth);
-  const overBudgetCount = monthBudgets.filter(b => {
-    const spent = monthTransactions
-      .filter(t => t.type === 'expense' && t.category === b.category)
-      .reduce((sum, t) => sum + t.amount, 0);
-    return spent > b.limit;
-  }).length;
-  
-  // 3. เป้าหมายใกล้สำเร็จ (>70%)
-  const nearGoalFinances = finances.filter(f => {
-    const pct = (f.saved / f.target) * 100;
-    return pct >= 70 && pct < 100;
-  }).slice(0, 3);
-  
-  const nearGoalWishes = wishes.filter(w => {
-    const pct = w.price > 0 ? (w.saved / w.price) * 100 : 0;
-    return pct >= 70 && pct < 100 && !w.bought;
-  }).slice(0, 3);
-  
-  // Render HTML
-  let html = `
-    <div class="dash-card" style="border-color:var(--green);">
-      <div style="font-size:20px;">💰</div>
-      <div style="font-size:16px;font-weight:700;color:var(--green);">+${income.toLocaleString()}</div>
-      <div style="color:var(--muted);font-size:10px;">รายรับเดือนนี้</div>
-    </div>
-    <div class="dash-card" style="border-color:var(--red);">
-      <div style="font-size:20px;">💸</div>
-      <div style="font-size:16px;font-weight:700;color:var(--red);">-${expense.toLocaleString()}</div>
-      <div style="color:var(--muted);font-size:10px;">รายจ่ายเดือนนี้</div>
-    </div>
-    <div class="dash-card" style="border-color:var(--accent);">
-      <div style="font-size:20px;">💵</div>
-      <div style="font-size:16px;font-weight:700;color:var(--accent);">${balance >= 0 ? '+' : ''}${balance.toLocaleString()}</div>
-      <div style="color:var(--muted);font-size:10px;">คงเหลือ</div>
-    </div>
-  `;
-  
-  if (overBudgetCount > 0) {
-    html += `
-      <div class="dash-card" style="border-color:var(--red);">
-        <div style="font-size:20px;">⚠️</div>
-        <div style="font-size:16px;font-weight:700;color:var(--red);">${overBudgetCount}</div>
-        <div style="color:var(--muted);font-size:10px;">หมวดเกินงบ</div>
-      </div>
-    `;
-  }
-  
-  if (nearGoalFinances.length > 0 || nearGoalWishes.length > 0) {
-    html += `
-      <div class="dash-card" style="grid-column:1/-1;text-align:left;padding:12px;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">🎯 เป้าหมายใกล้สำเร็จ</div>
-        ${nearGoalFinances.map(f => {
-          const pct = Math.round((f.saved / f.target) * 100);
-          return `<div style="font-size:12px;margin-bottom:4px;">${f.name}: ${pct}%</div>`;
-        }).join('')}
-        ${nearGoalWishes.map(w => {
-          const pct = Math.round((w.saved / w.price) * 100);
-          return `<div style="font-size:12px;margin-bottom:4px;">${w.name}: ${pct}%</div>`;
-        }).join('')}
-      </div>
-    `;
-  }
-  
-  container.innerHTML = html;
-}
+
 // ===== Project Tag Suggestions =====
 function getProjectTagSuggestions() {
   try {
@@ -7131,7 +7175,9 @@ function handleFinanceTagInput(input) {
 // INIT TAG SYSTEMS
 // ==========================================================
 function initTagSystems() {
-  updateGlobalTagSuggestions();
+  // อัปเดตทุก module ที่ใช้ global-tag-suggestions
+  const modules = ['project', 'finance', 'wish', 'inbox', 'daily', 'idea', 'knowledge', 'art', 'fit', 'default'];
+  modules.forEach(mod => updateGlobalTagSuggestions(mod));
   updateProjectTagSuggestions();
   updateTagSuggestions();
 }
@@ -7169,37 +7215,6 @@ function renderProjectRefPreview() {
     if (count) count.textContent = selectedRefs.length;
   });
 }
-
-
-// ==========================================================
-// MODULE 6: Finance Transactions
-// TransactionItem { id, date, type, category, amount, note, createdAt }
-// ==========================================================
-const transactionModule = createFirestoreModule('transactions');
-let transactionListeners = [];
-
-const TRANSACTION_CAT_LABELS = {
-  food: '🍜 อาหาร',
-  transport: '🚗 เดินทาง',
-  entertainment: '🎬 บันเทิง',
-  shopping: '🛍️ ช้อปปิ้ง',
-  health: '💊 สุขภาพ',
-  education: '📚 การศึกษา',
-  bills: '📄 บิล/ค่าครองชีพ',
-  salary: '💼 เงินเดือน',
-  freelance: ' ฟรีแลนซ์',
-  investment: '📈 ลงทุน',
-  other: '📦 อื่นๆ'
-};
-
-function getTransactions() { return transactionModule.getItems(); }
-function saveTransactions(items) { return transactionModule.saveItems(items); }
-function onTransactionsSnapshot(callback) {
-  const unsub = transactionModule.onSnapshot(callback);
-  transactionListeners.push(unsub);
-  return unsub;
-}
-transactionModule.migrateFromLocalStorage('finance_transactions');
 
 // ==========================================================
 // MODULE: Budgets
@@ -7321,8 +7336,8 @@ function getBudgetCatLabels() {
 const presetModule = createFirestoreModule('budget_presets');
 let presetListeners = [];
 
-function getPresets() { return presetModule.getItems(); }
-function savePresets(items) { return presetModule.saveItems(items); }
+async function getPresets() { return presetModule.getItems(); }
+async function savePresets(items) { return presetModule.saveItems(items); }
 function onPresetsSnapshot(callback) {
   const unsub = presetModule.onSnapshot(callback);
   presetListeners.push(unsub);
@@ -7333,7 +7348,7 @@ presetModule.migrateFromLocalStorage('budget_presets');
 // ===== Import CSV from Bluecoins =====
 function openImportCSVModal() {
   document.getElementById('csv-file-input').value = '';
-  document.getElementById('import-csv-modal').classList.add('show');
+  openModal('import-csv-modal');
 }
 
 async function confirmImportCSV(event) {
@@ -7473,7 +7488,7 @@ function openTransactionModal() {
   document.getElementById('transaction-input-category').value = 'food';
   document.getElementById('transaction-input-amount').value = '';
   document.getElementById('transaction-input-note').value = '';
-  document.getElementById('transaction-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('transaction-modal');
 }
 
 async function confirmSaveTransaction(event) {
@@ -7563,7 +7578,7 @@ async function renderFinanceTransactions() {
 function openBudgetModal() {
   document.getElementById('budget-input-month').value = new Date().toISOString().slice(0, 7);
   renderBudgetCategoryCheckboxes();
-  document.getElementById('budget-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('budget-modal');
 }
 function renderBudgetCategoryCheckboxes() {
   const group = document.getElementById('budget-category-group');
@@ -7724,7 +7739,7 @@ function openEditBudgetModal(id) {
     document.getElementById('budget-edit-input-month').value = item.month;
     document.getElementById('budget-edit-input-category').value = item.category;
     document.getElementById('budget-edit-input-limit').value = item.limit;
-    document.getElementById('budget-edit-modal').classList.add('show'); preventBodyScroll(true);
+    openModal('budget-edit-modal');
   });
 }
 
@@ -7763,7 +7778,7 @@ async function deleteBudget(id) {
 // ===== Preset Save =====
 function openPresetSaveModal() {
   document.getElementById('preset-input-name').value = '';
-  document.getElementById('preset-save-modal').classList.add('show');
+  openModal('preset-save-modal');  // ✅
 }
 
 async function confirmSavePreset(event) {
@@ -7813,7 +7828,7 @@ async function openPresetUseModal() {
   }
   
   document.getElementById('preset-input-month').value = new Date().toISOString().slice(0, 7);
-  document.getElementById('preset-use-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('preset-use-modal'); 
 }
 
 async function confirmCreateFromPreset(event) {
@@ -8074,22 +8089,27 @@ async function renderFinanceGoals() {
     filteredItems = filteredItems.filter(i => i.favourite);
   }
   
-  if (state.active === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  } else if (state.active !== 'fav') {
+  // Archive filter - ใช้ state.active เป็นหลัก
+if (state.active === 'archived') {
+  filteredItems = filteredItems.filter(i => i.archived === true);
+} else if (state.active === 'all' || state.active === 'fav') {
+  filteredItems = filteredItems.filter(i => !i.archived);
+}
+else if (state.active === 'filter' && archiveFilter) {
+  if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived === true);
+  } else if (archiveFilter === 'active') {
     filteredItems = filteredItems.filter(i => !i.archived);
   }
-  
-  if (archiveFilter === 'active') {
-    filteredItems = filteredItems.filter(i => !i.archived);
-  } else if (archiveFilter === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  }
+}
   
   list.innerHTML = '';
-  empty.style.display = items.length === 0 ? 'block' : 'none';
+empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+if (filteredItems.length === 0) {
+  empty.textContent = 'ยังไม่มีเป้าหมายการเงิน';
+}
   
-  items.forEach(item => {
+  filteredItems.forEach(item => {
     const pct = Math.min(100, (item.saved / item.target) * 100);
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -8100,7 +8120,8 @@ async function renderFinanceGoals() {
     };
     
     const categoryLabel = FINANCE_CAT_LABELS[item.category] || item.category;
-    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+;
     
     const tagsHtml = (item.tags || []).length > 0 
       ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px;">${item.tags.map(t => `<span class="tag" style="background:rgba(200,169,110,.15);color:var(--accent2);padding:1px 6px;border-radius:10px;font-size:9px;">${t}</span>`).join('')}</div>`
@@ -8119,7 +8140,7 @@ async function renderFinanceGoals() {
         <div style="display:flex;gap:2px;align-items:center;flex-shrink:0;">
           <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="event.stopPropagation();editFinance(${item.id})">✎</button>
           <button class="del-x" style="font-size:16px;" onclick="event.stopPropagation();deleteFinance(${item.id})">✕</button>
-          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Finance', ${item.id})">📦</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('finance', ${item.id})">📦</button>
           </div>
       </div>
       <div class="progress-bar">
@@ -8154,19 +8175,24 @@ async function renderWishlist() {
   }
   
   if (state.active === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  } else if (state.active !== 'fav') {
+    filteredItems = filteredItems.filter(i => i.archived === true);
+  } else if (state.active === 'all' || state.active === 'fav') {
     filteredItems = filteredItems.filter(i => !i.archived);
   }
-  
-  if (archiveFilter === 'active') {
-    filteredItems = filteredItems.filter(i => !i.archived);
-  } else if (archiveFilter === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
+  // ถ้าเป็น priority mode ให้ใช้ archiveFilter
+  else if (state.active === 'priority' && archiveFilter) {
+    if (archiveFilter === 'archived') {
+      filteredItems = filteredItems.filter(i => i.archived === true);
+    } else if (archiveFilter === 'active') {
+      filteredItems = filteredItems.filter(i => !i.archived);
+    }
   }
   
   list.innerHTML = '';
-  empty.style.display = items.length === 0 ? 'block' : 'none';
+  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+  if (filteredItems.length === 0) {
+    empty.textContent = 'ยังไม่มี Wishlist';
+  }
   
   filteredItems.forEach(item => {
     const saved = item.saved || 0;
@@ -8178,7 +8204,8 @@ async function renderWishlist() {
     card.style.opacity = item.bought ? '0.5' : '1';
     
     const categoryLabel = WISH_CAT_LABELS[item.category] || item.category;
-    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+;
     
     const tagsHtml = (item.tags || []).length > 0 
   ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px;">${item.tags.map(t => `<span class="tag" style="background:rgba(200,169,110,.15);color:var(--accent2);padding:1px 6px;border-radius:10px;font-size:9px;">${t}</span>`).join('')}</div>`
@@ -8232,23 +8259,19 @@ const WISH_CAT_LABELS = {
   experience: '🎫 ประสบการณ์/ทริป',
   other: '📦 อื่นๆ'
 };
-function getWishes() {
-  return wishModule.getItems().then(items => {
-    // migrate priority เก่า (high/medium/low → ใหม่)
-    return items.map(i => {
-      if (i.priority && !PRIORITY_LABELS[i.priority]) {
-        const map = { high: 'critical', medium: 'important', low: 'low' };
-        i.priority = map[i.priority] || 'important';
-      }
-      if (!i.priority) i.priority = 'important';
-      return i;
-    });
+// Wish
+async function getWishes() { 
+  const items = await wishModule.getItems();
+  return items.map(i => {
+    if (i.priority && !PRIORITY_LABELS[i.priority]) {
+      const map = { high: 'critical', medium: 'important', low: 'low' };
+      i.priority = map[i.priority] || 'important';
+    }
+    if (!i.priority) i.priority = 'important';
+    return i;
   });
 }
-
-function saveWishes(items) {
-  return wishModule.saveItems(items);
-}
+async function saveWishes(items) { return wishModule.saveItems(items); }
 
 function onWishesSnapshot(callback) {
   const unsub = wishModule.onSnapshot(callback);
@@ -8264,11 +8287,13 @@ function openWishModal() {
   document.getElementById('wish-input-name').value = '';
   document.getElementById('wish-input-category').value = 'other';
   document.getElementById('wish-input-price').value = '';
-  document.getElementById('wish-input-priority').value = 'medium';
+  document.getElementById('wish-input-priority').value = 'important';  // ✅ ย้ายมาก่อน
   document.getElementById('wish-input-link').value = '';
-  document.getElementById('wish-modal').classList.add('show'); preventBodyScroll(true);
-  document.getElementById('wish-input-priority').value = 'important';
   document.getElementById('wish-input-saved').value = '';
+  document.getElementById('wish-modal').querySelector('h3').textContent = 'เพิ่มของที่อยากได้';
+  document.getElementById('wish-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveWish;
+  clearEditMode('wish');
+  openModal('wish-modal');  // ✅
 }
 
 async function confirmSaveWish(event) {
@@ -8474,8 +8499,8 @@ async function confirmUpdateWish(event) {
 // ==========================================================
 const studyModule = createFirestoreModule('studies');
 let studyListeners = [];
-function getStudies() { return studyModule.getItems(); }
-function saveStudies(items) { return studyModule.saveItems(items); }
+async function getStudies() { return studyModule.getItems(); }
+async function saveStudies(items) { return studyModule.saveItems(items); }
 function onStudiesSnapshot(callback) {
   const unsub = studyModule.onSnapshot(callback);
   studyListeners.push(unsub);
@@ -8511,7 +8536,7 @@ function openStudyModal() {
   document.getElementById('study-modal').querySelector('h3').textContent = 'เพิ่มแผนเรียน';
   document.getElementById('study-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveStudy;
   clearEditMode('study');
-  document.getElementById('study-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('study-modal');
 }
 
 async function confirmSaveStudy(event) {
@@ -8602,21 +8627,26 @@ async function renderStudy() {
     filteredItems = filteredItems.filter(i => i.favourite);
   }
   
-  if (state.active === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  } else if (state.active !== 'fav') {
+  // Archive filter - ใช้ state.active เป็นหลัก
+if (state.active === 'archived') {
+  filteredItems = filteredItems.filter(i => i.archived === true);
+} else if (state.active === 'all' || state.active === 'fav') {
+  filteredItems = filteredItems.filter(i => !i.archived);
+}
+else if (state.active === 'status' && archiveFilter) {
+  if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived === true);
+  } else if (archiveFilter === 'active') {
     filteredItems = filteredItems.filter(i => !i.archived);
   }
-  
-  if (archiveFilter === 'active') {
-    filteredItems = filteredItems.filter(i => !i.archived);
-  } else if (archiveFilter === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  }
+}
 
   list.innerHTML = '';
-  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
-
+empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+if (filteredItems.length === 0) {
+  empty.textContent = 'ยังไม่มีแผนเรียน';
+}
+const allRefs = await getRefs();
   filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -8625,22 +8655,29 @@ async function renderStudy() {
       if (e.target.closest('.del-x') || e.target.closest('.btn')) return;
       openStudyDetail(item.id);
     };
-    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+    const statusClass = item.status === 'planning' ? 'status-planning' :
+                    item.status === 'studying' ? 'status-studying' :
+                    item.status === 'completed' ? 'status-done' :
+                    'status-not_started';
+;
     
     // ✅ Study ไม่มี refIds แต่เราสามารถใช้ refs ผ่าน relations ได้
     let refsHtml = '';
-    // ถ้ามีการเชื่อมโยง ref ผ่าน project หรืออื่นๆ
-    if (item.refIds && item.refIds.length > 0) {
-      const refs = refsCache.filter(r => item.refIds.includes(r.id)).slice(0, 3);
-      if (refs.length > 0) {
-        refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
-          ${refs.map(r => `
-            <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
-          `).join('')}
-          ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
-        </div>`;
-      }
-    }
+
+
+// แล้วใน loop
+if (item.refIds && item.refIds.length > 0) {
+  const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
+  if (refs.length > 0) {
+    refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
+      ${refs.map(r => `
+        <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+      `).join('')}
+      ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
+    </div>`;
+  }
+}
     
     card.innerHTML = `
       <div class="item-top">
@@ -8656,7 +8693,7 @@ async function renderStudy() {
         <div style="display:flex;gap:4px;flex-shrink:0;">
           <button class="del-x" style="color:var(--accent);" onclick="event.stopPropagation();editStudy(${item.id})">✎</button>
           <button class="del-x" onclick="event.stopPropagation();deleteStudy(${item.id})">✕</button>
-          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Study', ${item.id})">📦</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('study', ${item.id})">📦</button>
         </div>
       </div>
       <div class="item-footer">
@@ -8684,7 +8721,7 @@ async function editStudy(id) {
   document.getElementById('study-modal').querySelector('h3').textContent = 'แก้ไขแผนเรียน';
   document.getElementById('study-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditStudy;
   setEditMode('study', id);
-  document.getElementById('study-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('study-modal');
 }
 async function confirmEditStudy(event) {
   if (event) event.preventDefault();
@@ -8725,35 +8762,23 @@ async function confirmEditStudy(event) {
   renderDashboard();
 }
 
-function resetStudyModal() {
-  document.getElementById('study-modal').querySelector('h3').textContent = 'เพิ่มแผนเรียน';
-  document.getElementById('study-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveStudy;
-  document.getElementById('study-input-title').value = '';
-  document.getElementById('study-input-category').value = 'other';
-  document.getElementById('study-input-goal').value = '';
-  document.getElementById('study-input-note').value = '';
-  document.getElementById('study-input-priority').value = 'important';
-  document.getElementById('study-input-link').value = '';
-}
 // ==========================================================
 // MODULE: Project Board
 // ==========================================================
 const projectModule = createFirestoreModule('projects');
 let projectListeners = [];
-function getProjects() {
-  return projectModule.getItems().then(items => {
-    // migrate priority เก่า (high/medium/low → ใหม่)
-    return items.map(i => {
-      if (i.priority && !PRIORITY_LABELS[i.priority]) {
-        const map = { high: 'critical', medium: 'important', low: 'low' };
-        i.priority = map[i.priority] || 'important';
-      }
-      if (!i.priority) i.priority = 'important';
-      return i;
-    });
+async function getProjects() {
+  const items = await projectModule.getItems();
+  return items.map(i => {
+    if (i.priority && !PRIORITY_LABELS[i.priority]) {
+      const map = { high: 'critical', medium: 'important', low: 'low' };
+      i.priority = map[i.priority] || 'important';
+    }
+    if (!i.priority) i.priority = 'important';
+    return i;
   });
 }
-function saveProjects(items) { return projectModule.saveItems(items); }
+async function saveProjects(items) { return projectModule.saveItems(items); }
 function onProjectsSnapshot(callback) {
   const unsub = projectModule.onSnapshot(callback);
   projectListeners.push(unsub);
@@ -8772,7 +8797,6 @@ const PROJECT_STATUS_LABELS = {
 
 const PROJECT_STATUS_ORDER = ['planning', 'active', 'review', 'done'];
 async function renderRelationCheckboxes(selectedIds = {}) {
-  console.log('🔧 renderRelationCheckboxes called with:', selectedIds);
   const container = document.getElementById('project-relations-container');
   if (!container) {
     console.warn('⚠️ project-relations-container not found');
@@ -8908,7 +8932,7 @@ async function openProjectModal() {
   await renderRelationCheckboxes([]);
   document.getElementById('project-modal').querySelector('h3').textContent = '📋 เพิ่มโปรเจกต์ใหม่';
   document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveProject;
-  document.getElementById('project-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('project-modal');
   editingProjectRefIds = [];
   tempProjectRefIds = [];
   await renderProjectRefPreview();
@@ -8999,45 +9023,61 @@ async function renderProjects() {
     filteredItems = filteredItems.filter(i => i.favourite);
   }
   
-  if (state.active === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  } else if (state.active !== 'fav') {
+  // Archive filter - ใช้ state.active เป็นหลัก
+if (state.active === 'archived') {
+  filteredItems = filteredItems.filter(i => i.archived === true);
+} else if (state.active === 'all' || state.active === 'fav') {
+  filteredItems = filteredItems.filter(i => !i.archived);
+}
+else if (state.active === 'status' && archiveFilter) {
+  if (archiveFilter === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived === true);
+  } else if (archiveFilter === 'active') {
     filteredItems = filteredItems.filter(i => !i.archived);
   }
-  
-  if (archiveFilter === 'active') {
-    filteredItems = filteredItems.filter(i => !i.archived);
-  } else if (archiveFilter === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived);
-  }
+}
 
   list.innerHTML = '';
-  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+if (filteredItems.length === 0) {
+  empty.style.display = 'block';
+  empty.textContent = 'ยังไม่มีโปรเจกต์';
+} else {
+  empty.style.display = 'none';
+}
+const allRefs = await getRefs();
 
   filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
     const statusLabel = PROJECT_STATUS_LABELS[item.status] || item.status;
-    const statusClass = item.status === 'done' ? 'status-done' : 
-                        item.status === 'active' ? 'status-in_progress' : 'status-not_started';
-    const priorityLabel = PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)';
+    const statusClass = item.status === 'planning' ? 'status-planning' :
+                    item.status === 'active' ? 'status-active' :
+                    item.status === 'review' ? 'status-review' :
+                    item.status === 'done' ? 'status-done' :
+                    item.status === 'studying' ? 'status-studying' :
+                    'status-not_started';
+    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+;
     const totalRelations = (item.visionIds?.length || 0) + (item.goalIds?.length || 0) + 
                            (item.studyIds?.length || 0) + (item.refIds?.length || 0) +
                            (item.financeIds?.length || 0) + (item.wishIds?.length || 0);
     
     // ✅ ดึง refs สำหรับ preview
     let refsHtml = '';
-    if (item.refIds && item.refIds.length > 0) {
-      const refs = refsCache.filter(r => item.refIds.includes(r.id)).slice(0, 3);
-      if (refs.length > 0) {
-        refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
-          ${refs.map(r => `
-            <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
-          `).join('')}
-          ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
-        </div>`;
-      }
-    }
+
+
+// แล้วใน loop
+if (item.refIds && item.refIds.length > 0) {
+  const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
+  if (refs.length > 0) {
+    refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
+      ${refs.map(r => `
+        <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+      `).join('')}
+      ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
+    </div>`;
+  }
+}
     
     card.innerHTML = `
       <div class="item-top">
@@ -9057,7 +9097,7 @@ async function renderProjects() {
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
           <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 4px;" onclick="editProject(${item.id})">✎</button>
           <button class="del-x" style="font-size:16px;padding:2px 4px;" onclick="deleteProject(${item.id})">✕</button>
-          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('Project', ${item.id})">📦</button>
+          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('project', ${item.id})">📦</button>
           </div>
       </div>
       ${item.desc ? `
@@ -9460,7 +9500,7 @@ async function editProject(id) {
   // Set modal
   document.getElementById('project-modal').querySelector('h3').textContent = '✎ แก้ไขโปรเจกต์';
   document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditProject;
-  document.getElementById('project-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('project-modal');
   // Ref IDs
   tempProjectRefIds = item.refIds || [];
   editingProjectRefIds = item.refIds || [];
@@ -9520,22 +9560,6 @@ async function confirmEditProject(event) {
   renderDashboard();
 }
 
-function resetProjectModal() {
-  document.getElementById('project-modal').querySelector('h3').textContent = '📋 เพิ่มโปรเจกต์ใหม่';
-  document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveProject;
-  document.getElementById('project-input-title').value = '';
-  document.getElementById('project-input-desc').value = '';
-  document.getElementById('project-input-deadline').value = '';
-  document.getElementById('project-input-note').value = '';
-  document.getElementById('project-input-priority').value = 'important';
-  document.getElementById('project-input-progress').value = 0;
-  document.getElementById('project-progress-label').textContent = '0%';
-  document.getElementById('project-input-startdate').value = '';
-  document.getElementById('project-input-tags').value = '';
-  document.getElementById('project-relations-container').innerHTML = '';
-  
-  // ✅ ไม่ clear edit mode ที่นี่ (ให้ closeModal จัดการ)
-}
 // ==========================================================
 // REF SELECTION (สำหรับ Project)
 // ==========================================================
@@ -9633,8 +9657,8 @@ function confirmRefSelection() {
 const inboxModule = createFirestoreModule('inbox');
 let inboxListeners = [];
 
-function getInbox() { return inboxModule.getItems(); }
-function saveInbox(items) { return inboxModule.saveItems(items); }
+async function getInbox() { return inboxModule.getItems(); }
+async function saveInbox(items) { return inboxModule.saveItems(items); }
 function onInboxSnapshot(callback) {
   const unsub = inboxModule.onSnapshot(callback);
   inboxListeners.push(unsub);
@@ -9650,7 +9674,7 @@ function openInboxModal() {
   document.getElementById('inbox-modal').querySelector('h3').textContent = '💡 พิมพ์ความคิดของคุณ';
   document.getElementById('inbox-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveInbox;
   clearEditMode('inbox');
-  document.getElementById('inbox-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('inbox-modal');
   setTimeout(() => document.getElementById('inbox-input-text').focus(), 100);
 }
 
@@ -9735,28 +9759,43 @@ async function confirmConvertInbox(event) {
   if (target === 'vision') {
     document.getElementById('vision-input-title').value = text;
     document.getElementById('vision-input-desc').value = '';
-    document.getElementById('vision-modal').classList.add('show'); preventBodyScroll(true);
+    openModal('vision-modal');
   } else if (target === 'goal') {
     document.getElementById('goal-input-title').value = text;
     document.getElementById('goal-input-note').value = '';
-    document.getElementById('goal-modal').classList.add('show'); preventBodyScroll(true);
+    openModal('goal-modal');
   } else if (target === 'project') {
     document.getElementById('project-input-title').value = text;
     document.getElementById('project-input-desc').value = '';
-    document.getElementById('project-modal').classList.add('show'); preventBodyScroll(true);
+    openModal('project-modal');
   } else if (target === 'study') {
     document.getElementById('study-input-title').value = text;
     document.getElementById('study-input-goal').value = '';
-    document.getElementById('study-modal').classList.add('show'); preventBodyScroll(true);
+    openModal('study-modal');
   } else if (target === 'wish') {
     document.getElementById('wish-input-name').value = text;
     document.getElementById('wish-input-price').value = '';
-    document.getElementById('wish-modal').classList.add('show'); preventBodyScroll(true);
+    openModal('wish-modal');
   } else if (target === 'daily') {
-    // ✅ แปลงเป็น Daily Log
     document.getElementById('daily-input-content').value = text;
     document.getElementById('daily-input-date').value = new Date().toISOString().slice(0, 10);
-    document.getElementById('daily-modal').classList.add('show'); preventBodyScroll(true);
+    openModal('daily-modal');
+  } else if (target === 'idea') {
+    document.getElementById('idea-input-content').value = text;
+    document.getElementById('idea-input-date').value = new Date().toISOString().slice(0, 10);
+    openModal('idea-modal');
+  } else if (target === 'knowledge') {
+    document.getElementById('knowledge-input-title').value = text;
+    document.getElementById('knowledge-input-date').value = new Date().toISOString().slice(0, 10);
+    openModal('knowledge-modal');
+  } else if (target === 'art') {
+    document.getElementById('art-input-title').value = text;
+    document.getElementById('art-input-date').value = new Date().toISOString().slice(0, 10);
+    openModal('art-modal');
+  } else if (target === 'fit') {
+    document.getElementById('fit-input-content').value = text;
+    document.getElementById('fit-input-date').value = new Date().toISOString().slice(0, 10);
+    openModal('fit-modal');
   }
 
   renderInbox();
@@ -9765,6 +9804,21 @@ async function confirmConvertInbox(event) {
   showToast(`🔄 แปลง Inbox เป็น ${target} แล้ว`, 'success');
 }
 
+// ===== Helper: แสดงเวลาผ่านไป =====
+function getTimeAgo(dateString) {
+  const now = new Date();
+  const past = new Date(dateString);
+  const diffMs = now - past;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'เมื่อสักครู่';
+  if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`;
+  if (diffHours < 24) return `${diffHours} ชั่วโมงที่แล้ว`;
+  if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
+  return past.toLocaleDateString('th-TH');
+}
 // ===== FIXED: renderInbox() =====
 async function renderInbox() {
   const list = document.getElementById('inbox-list');
@@ -9799,10 +9853,10 @@ async function renderInbox() {
     
     // Archive filter
     if (state.active === 'archived') {
-      items = items.filter(i => i.archived);
-    } else if (state.active !== 'fav') {
-      items = items.filter(i => !i.archived);
-    }
+  items = items.filter(i => i.archived === true);
+} else if (state.active !== 'fav') {
+  items = items.filter(i => !i.archived);
+}
     
     list.innerHTML = '';
     empty.style.display = items.length === 0 ? 'block' : 'none';
@@ -9845,8 +9899,8 @@ async function renderInbox() {
 const dailyModule = createFirestoreModule('daily');
 let dailyListeners = [];
 
-function getDaily() { return dailyModule.getItems(); }
-function saveDaily(items) { return dailyModule.saveItems(items); }
+async function getDaily() { return dailyModule.getItems(); }
+async function saveDaily(items) { return dailyModule.saveItems(items); }
 function onDailySnapshot(callback) {
   const unsub = dailyModule.onSnapshot(callback);
   dailyListeners.push(unsub);
@@ -9864,7 +9918,8 @@ function openDailyModal(date) {
   document.getElementById('daily-modal').querySelector('h3').textContent = '📖 บันทึกประจำวัน';
   document.getElementById('daily-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveDaily;
   clearEditMode('daily');
-  document.getElementById('daily-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('daily-modal');
+
 }
 
 async function confirmSaveDaily(event) {
@@ -9928,7 +9983,7 @@ async function editDaily(id) {
   document.getElementById('daily-modal').querySelector('h3').textContent = '✎ แก้ไขบันทึก';
   document.getElementById('daily-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditDaily;
   setEditMode('daily', id);
-  document.getElementById('daily-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('daily-modal');
 }
 
 // แก้ไข confirmEditDaily
@@ -9967,16 +10022,183 @@ async function confirmEditDaily() {
   renderDaily();
   renderDashboard();
 }
+// ==========================================================
+// RESET FUNCTIONS - เพิ่มเติม
+// ==========================================================
 
-function resetDailyModal() {
-  document.getElementById('daily-modal').querySelector('h3').textContent = '📖 บันทึกประจำวัน';
-  document.getElementById('daily-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveDaily;
-  document.getElementById('daily-input-date').value = '';
-  document.getElementById('daily-input-content').value = '';
-  document.getElementById('daily-input-mood').value = '';
-  document.getElementById('daily-input-tags').value = '';
-  document.getElementById('daily-input-image').value = '';
-}
+// Vision Modal Reset
+const resetVisionModal = createFormResetter('vision-modal', {
+  title: 'เพิ่มวิสัยทัศน์ชีวิต',
+  saveButtonText: 'บันทึก',
+  saveHandler: confirmSaveVision,
+  fields: {
+    'vision-input-category': 'career',
+    'vision-input-title': '',
+    'vision-input-desc': '',
+    'vision-input-priority': 'important',
+    'vision-input-link': ''
+  },
+  onReset: function() {
+    tempVisionRefIds = [];
+    editingVisionRefIds = [];
+    renderVisionRefPreview();
+  }
+});
+
+// Goal Modal Reset
+const resetGoalModal = createFormResetter('goal-modal', {
+  title: 'เพิ่มเป้าหมาย',
+  saveButtonText: 'บันทึก',
+  saveHandler: confirmSaveGoal,
+  fields: {
+    'goal-input-title': '',
+    'goal-input-category': 'career',
+    'goal-input-date': '',
+    'goal-input-note': '',
+    'goal-input-priority': 'important',
+    'goal-input-link': ''
+  },
+  onReset: function() {
+    tempGoalRefIds = [];
+    editingGoalRefIds = [];
+    renderGoalRefPreview();
+  }
+});
+// Project Modal Reset
+const resetProjectModal = createFormResetter('project-modal', {
+  title: '📋 เพิ่มโปรเจกต์ใหม่',
+  saveButtonText: 'บันทึก',
+  saveHandler: confirmSaveProject,
+  fields: {
+    'project-input-title': '',
+    'project-input-desc': '',
+    'project-input-deadline': '',
+    'project-input-note': '',
+    'project-input-priority': 'important',
+    'project-input-progress': 0,
+    'project-input-startdate': '',
+    'project-input-tags': ''
+  },
+  onReset: function() {
+    document.getElementById('project-progress-label').textContent = '0%';
+    tempProjectRefIds = [];
+    editingProjectRefIds = [];
+    // ✅ ใช้ then() เพื่อรอให้โหลดเสร็จ
+    renderProjectRefPreview().then(() => {
+      console.log('✅ Project ref preview updated');
+    }).catch(err => {
+      console.warn('⚠️ renderProjectRefPreview error:', err);
+    });
+  }
+});
+// Inbox Modal Reset
+const resetInboxModal = createFormResetter('inbox-modal', {
+  title: '💡 พิมพ์ความคิดของคุณ',
+  saveButtonText: '💾 บันทึก',
+  saveHandler: confirmSaveInbox,
+  fields: {
+    'inbox-input-text': '',
+    'inbox-input-tags': '#quick-idea'
+  }
+});
+
+// Daily Modal Reset
+const resetDailyModal = createFormResetter('daily-modal', {
+  title: '📖 บันทึกประจำวัน',
+  saveButtonText: '💾 บันทึก',
+  saveHandler: confirmSaveDaily,
+  fields: {
+    'daily-input-date': '',
+    'daily-input-content': '',
+    'daily-input-mood': '',
+    'daily-input-tags': '',
+    'daily-input-image': ''
+  }
+});
+
+// แทนที่ resetIdeaModal
+const resetIdeaModal = createFormResetter('idea-modal', {
+  title: '💡 บันทึกไอเดีย',
+  saveButtonText: '💾 บันทึก',
+  saveHandler: confirmSaveIdea,
+  fields: {
+    'idea-input-date': '',
+    'idea-input-content': '',
+    'idea-input-tags': '#idea',
+    'idea-input-link': ''
+  }
+});
+
+// แทนที่ resetKnowledgeModal
+const resetKnowledgeModal = createFormResetter('knowledge-modal', {
+  title: '📚 บันทึกความรู้',
+  saveButtonText: '💾 บันทึก',
+  saveHandler: confirmSaveKnowledge,
+  fields: {
+    'knowledge-input-date': '',
+    'knowledge-input-title': '',
+    'knowledge-input-content': '',
+    'knowledge-input-tags': '#knowledge',
+    'knowledge-input-link': ''
+  }
+});
+
+// แทนที่ resetArtModal
+const resetArtModal = createFormResetter('art-modal', {
+  title: '🎨 บันทึกงานศิลปะ',
+  saveButtonText: '💾 บันทึก',
+  saveHandler: confirmSaveArt,
+  fields: {
+    'art-input-date': '',
+    'art-input-title': '',
+    'art-input-content': '',
+    'art-input-image': '',
+    'art-input-tags': '#art'
+  }
+});
+
+
+// แทนที่ resetFitModal
+const resetFitModal = createFormResetter('fit-modal', {
+  title: '💪 บันทึกออกกำลังกาย',
+  saveButtonText: '💾 บันทึก',
+  saveHandler: confirmSaveFit,
+  fields: {
+    'fit-input-date': '',
+    'fit-input-type': 'cardio',
+    'fit-input-content': '',
+    'fit-input-tags': '#fitness'
+  }
+});
+const resetWishModal = createFormResetter('wish-modal', {
+  title: 'เพิ่มของที่อยากได้',
+  saveButtonText: 'บันทึก',
+  saveHandler: confirmSaveWish,
+  fields: {
+    'wish-input-name': '',
+    'wish-input-category': 'other',
+    'wish-input-price': '',
+    'wish-input-saved': '',
+    'wish-input-priority': 'important',
+    'wish-input-link': '',
+    'wish-input-tags': ''
+  }
+});
+const resetFinanceModal = createFormResetter('finance-modal', {
+  title: 'เพิ่มเป้าหมายการเงิน',
+  saveButtonText: 'บันทึก',
+  saveHandler: confirmSaveFinance,
+  fields: {
+    'finance-input-name': '',
+    'finance-input-category': 'other',
+    'finance-input-target': '',
+    'finance-input-saved': '',
+    'finance-input-priority': 'important',
+    'finance-input-tags': ''
+  }
+});
+
+
 
 // ===== FIXED: renderDaily() =====
 async function renderDaily() {
@@ -9997,10 +10219,10 @@ async function renderDaily() {
       items = items.filter(i => i.favourite);
     }
     if (state.active === 'archived') {
-      items = items.filter(i => i.archived);
-    } else if (state.active !== 'fav') {
-      items = items.filter(i => !i.archived);
-    }
+  items = items.filter(i => i.archived === true);
+} else if (state.active !== 'fav') {
+  items = items.filter(i => !i.archived);
+}
 
     list.innerHTML = '';
     empty.style.display = items.length === 0 ? 'block' : 'none';
@@ -10163,7 +10385,7 @@ async function editVision(id) {
   document.getElementById('vision-modal').querySelector('h3').textContent = '✎ แก้ไขวิสัยทัศน์';
   document.getElementById('vision-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditVision;
   setEditMode('vision', id);
-  document.getElementById('vision-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('vision-modal');
   
   renderVisionRefPreview();
 }
@@ -10214,23 +10436,6 @@ async function confirmEditVision() {
   showToast('✅ แก้ไขวิสัยทัศน์สำเร็จ', 'success');
 }
 
-function resetVisionModal() {
-  document.getElementById('vision-modal').querySelector('h3').textContent = 'เพิ่มวิสัยทัศน์ชีวิต';
-  document.getElementById('vision-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveVision;
-  document.getElementById('vision-input-category').value = 'career';
-  document.getElementById('vision-input-title').value = '';
-  document.getElementById('vision-input-desc').value = '';
-  document.getElementById('vision-input-priority').value = 'important';
-  document.getElementById('vision-input-link').value = '';
-  
-  // รีเซ็ต Ref
-  tempVisionRefIds = [];
-  editingVisionRefIds = [];
-  renderVisionRefPreview();
-  
-  // ✅ ไม่ clear edit mode ที่นี่ (ให้ closeModal จัดการ)
-}
-
 async function editGoal(id) {
   let items = await getGoals();
   const item = items.find(i => i.id === id);
@@ -10257,7 +10462,7 @@ async function editGoal(id) {
   document.getElementById('goal-modal').querySelector('h3').textContent = 'แก้ไขเป้าหมาย';
   document.getElementById('goal-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditGoal;
   setEditMode('goal', id);
-  document.getElementById('goal-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('goal-modal');
   
   renderGoalRefPreview();
 }
@@ -10309,20 +10514,6 @@ async function confirmEditGoal(event) {
   renderDashboard();
 }
 
-function resetGoalModal() {
-  document.getElementById('goal-modal').querySelector('h3').textContent = 'เพิ่มเป้าหมาย';
-  document.getElementById('goal-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveGoal;
-  document.getElementById('goal-input-title').value = '';
-  document.getElementById('goal-input-category').value = 'career';
-  document.getElementById('goal-input-date').value = '';
-  document.getElementById('goal-input-note').value = '';
-  document.getElementById('goal-input-priority').value = 'important';
-  document.getElementById('goal-input-link').value = '';
-  
-  tempGoalRefIds = [];
-  editingGoalRefIds = [];
-  renderGoalRefPreview();
-}
 
 // --- Edit Finance ---
 async function editFinance(id) {
@@ -10340,7 +10531,7 @@ async function editFinance(id) {
   document.getElementById('finance-modal').querySelector('h3').textContent = 'แก้ไขเป้าหมายการเงิน';
   document.getElementById('finance-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditFinance;
   setEditMode('finance', id);
-  document.getElementById('finance-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('finance-modal');
 }
 
 async function confirmEditFinance() {
@@ -10381,17 +10572,6 @@ async function confirmEditFinance() {
   renderDashboard();
 }
 
-function resetFinanceModal() {
-  document.getElementById('finance-modal').querySelector('h3').textContent = 'เพิ่มเป้าหมายการเงิน';
-  document.getElementById('finance-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFinance;
-  document.getElementById('finance-input-name').value = '';
-  document.getElementById('finance-input-category').value = 'other';
-  document.getElementById('finance-input-target').value = '';
-  document.getElementById('finance-input-saved').value = '';
-  document.getElementById('finance-input-priority').value = 'important';
-  document.getElementById('finance-input-tags').value = '';
-}
-
 
 // --- Edit Wishlist ---
 async function editWish(id) {
@@ -10408,7 +10588,7 @@ async function editWish(id) {
   document.getElementById('wish-modal').querySelector('h3').textContent = 'แก้ไขของที่อยากได้';
   document.getElementById('wish-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditWish;
   setEditMode('wish', id);
-  document.getElementById('wish-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('wish-modal');
   document.getElementById('wish-input-priority').value = item.priority || 'important';
 }
 async function confirmEditWish() {
@@ -10449,20 +10629,6 @@ async function confirmEditWish() {
   renderDashboard();
 }
 
-function resetWishModal() {
-  document.getElementById('wish-modal').querySelector('h3').textContent = 'เพิ่มของที่อยากได้';
-  document.getElementById('wish-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveWish;
-  document.getElementById('wish-input-name').value = '';
-  document.getElementById('wish-input-category').value = 'other';
-  document.getElementById('wish-input-price').value = '';
-  document.getElementById('wish-input-priority').value = 'medium';
-  document.getElementById('wish-input-link').value = '';
-  document.getElementById('wish-input-category').value = 'other';
-  document.getElementById('wish-input-priority').value = 'important';
-  document.getElementById('wish-input-saved').value = '';
-  document.getElementById('wish-input-tags').value = '';
-}
-
 // --- Edit Ref ---
 async function editRef(id) {
   const items = await getRefs();
@@ -10496,7 +10662,7 @@ async function editRef(id) {
   document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditRef;
   
   setEditMode('ref', id);
-  document.getElementById('ref-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('ref-modal');
 }
 
 async function confirmEditRef() {
@@ -10557,9 +10723,20 @@ function resetRefModal() {
   pendingUploadCount = 0;
 }
 // ==========================================================
-// TOAST NOTIFICATIONS
+// TOAST CONFIGURATION
 // ==========================================================
-function showToast(message, type = 'info', duration = 2500) {
+
+const TOAST_DURATIONS = {
+  info: 2500,
+  success: 2000,
+  error: 3000,
+  warning: 2500,
+  quick: 1000,   // สำหรับ navigation
+  default: 2500
+};
+
+function showToast(message, type = 'info', duration = null) {
+  const actualDuration = duration || TOAST_DURATIONS[type] || TOAST_DURATIONS.default;
   const toast = document.getElementById('toast');
   toast.textContent = message;
   toast.className = type;
@@ -10568,7 +10745,7 @@ function showToast(message, type = 'info', duration = 2500) {
   clearTimeout(toast._timeout);
   toast._timeout = setTimeout(() => {
     toast.classList.remove('show');
-  }, duration);
+  }, actualDuration);
 }
 // ==========================================================
 // CALENDAR
@@ -10790,7 +10967,7 @@ function resetCalendar() {
     refreshCalendarPopup();
   }
   
-  showToast('📅 กลับมาวันนี้', 'info', 1500);
+  showToast('📅 กลับมาวันนี้', 'info', TOAST_DURATIONS.quick);
 }
 function clearDateFilter() {
   const filter = document.getElementById('goal-deadline-filter');
@@ -10908,7 +11085,8 @@ function handleTagInput(input) {
       
       input.focus();
       input.setSelectionRange(input.value.length, input.value.length);
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      // ✅ ใช้ showAllSuggestions แทนการ dispatch โดยตรง
+      showAllSuggestions(input, 'ref-tag-suggestions');
     }, 100);
   }
 }
@@ -10930,7 +11108,7 @@ function handleBatchTagInput(input) {
     }
     
     setTimeout(() => {
-      showAllSuggestions(input);
+      showAllSuggestions(input, 'ref-tag-suggestions');  // ✅ เพิ่ม datalistId
     }, 50);
   }
 }
@@ -10955,7 +11133,7 @@ function handleProjectTagInput(input) {
       
       input.focus();
       input.setSelectionRange(input.value.length, input.value.length);
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      showAllSuggestions(input, 'global-tag-suggestions-project');  // ✅ ใช้ showAllSuggestions
     }, 150);
   }
 }
@@ -11009,7 +11187,8 @@ async function openVisionDetail(id) {
   let html = `
     <div style="margin-bottom:12px;">
       <span class="item-cat">${VISION_CAT_LABELS[item.category] || item.category}</span>
-      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)'}</span>
+      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+}</span>
     </div>
     <div style="margin-bottom:12px;white-space:pre-wrap;word-break:break-word;">
       ${item.desc || 'ไม่มีคำอธิบาย'}
@@ -11085,7 +11264,8 @@ async function openGoalDetail(id) {
   let html = `
     <div style="margin-bottom:12px;">
       <span class="item-cat">${GOAL_CAT_LABELS[item.category] || item.category}</span>
-      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)'}</span>
+      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+}</span>
       <span class="status-badge status-${item.status}">${STATUS_LABELS[item.status]}</span>
     </div>
     <div style="margin-bottom:12px;white-space:pre-wrap;word-break:break-word;">
@@ -11152,7 +11332,8 @@ async function openStudyDetail(id) {
   let html = `
     <div style="margin-bottom:12px;">
       <span class="item-cat">${STUDY_CAT_LABELS[item.category] || item.category}</span>
-      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || '⭐⭐ สำคัญ (ไม่เร่ง)'}</span>
+      <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
+}</span>
       <span class="status-badge ${item.status === 'completed' ? 'status-done' : item.status === 'studying' ? 'status-in_progress' : 'status-not_started'}">${STUDY_STATUS_LABELS[item.status]}</span>
     </div>
     ${item.goal ? `<div style="margin-bottom:8px;font-size:13px;color:var(--accent2);">🎯 ${item.goal}</div>` : ''}
@@ -11206,7 +11387,7 @@ async function editInbox(id) {
   document.getElementById('inbox-modal').querySelector('h3').textContent = '✎ แก้ไขความคิด';
   document.getElementById('inbox-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditInbox;
   setEditMode('inbox', id);
-  document.getElementById('inbox-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('inbox-modal');
 }
 
 async function confirmEditInbox() {
@@ -11245,12 +11426,6 @@ async function confirmEditInbox() {
   renderNav();
 }
 
-function resetInboxModal() {
-  document.getElementById('inbox-modal').querySelector('h3').textContent = '💡 พิมพ์ความคิดของคุณ';
-  document.getElementById('inbox-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveInbox;
-  document.getElementById('inbox-input-text').value = '';
-  document.getElementById('inbox-input-tags').value = '#quick-idea';
-}
 const editState = {
   vision: { id: null, module: 'vision' },
   goal: { id: null, module: 'goal' },
@@ -11918,22 +12093,66 @@ function getModuleFunctions(module) {
 // TOGGLE ARCHIVE
 // ==========================================================
 async function toggleArchive(module, id) {
-  const mod = getModuleFunctions(module);
-  if (!mod) {
+  // ✅ แปลง module name ให้ตรงกับ key ใน getModuleFunctions
+  const moduleMap = {
+    'vision': 'vision',
+    'Goal': 'goal',
+    'goal': 'goal',
+    'Study': 'study',
+    'study': 'study',
+    'Finance': 'finance',
+    'finance': 'finance',
+    'Wish': 'wish',
+    'wish': 'wish',
+    'Project': 'project',
+    'project': 'project',
+    'inbox': 'inbox',
+    'Inbox': 'inbox',
+    'daily': 'daily',
+    'Daily': 'daily',
+    'idea': 'idea',
+    'Idea': 'idea',
+    'knowledge': 'knowledge',
+    'Knowledge': 'knowledge',
+    'art': 'art',
+    'Art': 'art',
+    'fit': 'fit',
+    'Fit': 'fit',
+    'ref': 'ref',
+    'Ref': 'ref',
+    'transaction': 'transaction',
+    'Transaction': 'transaction',
+    'budget': 'budget',
+    'Budget': 'budget'
+  };
+  
+  const mappedModule = moduleMap[module];
+  if (!mappedModule) {
     console.warn('⚠️ Unknown module:', module);
+    showToast('❌ ไม่รู้จักโมดูลนี้', 'error');
+    return;
+  }
+  
+  const mod = getModuleFunctions(mappedModule);
+  if (!mod) {
+    console.warn('⚠️ No module functions for:', mappedModule);
+    showToast('❌ ไม่พบฟังก์ชันสำหรับโมดูลนี้', 'error');
     return;
   }
   
   const items = await mod.get();
   const item = items.find(i => i.id === id);
-  if (!item) return;
+  if (!item) {
+    showToast('❌ ไม่พบรายการ', 'error');
+    return;
+  }
   
   const wasArchived = item.archived;
   item.archived = !item.archived;
   
   addAction({
     type: 'archive',
-    module: module,
+    module: mappedModule,
     id: id,
     message: wasArchived ? `แสดง "${item.title || item.content || item.name || 'item'}"` : `ซ่อน "${item.title || item.content || item.name || 'item'}"`
   });
@@ -12235,7 +12454,7 @@ function openIdeaModal() {
   document.getElementById('idea-modal').querySelector('h3').textContent = '💡 บันทึกไอเดีย';
   document.getElementById('idea-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveIdea;
   clearEditMode('idea');
-  document.getElementById('idea-modal').classList.add('show');preventBodyScroll(true);
+  openModal('idea-modal');
 }
 
 async function confirmSaveIdea(event) {
@@ -12282,7 +12501,7 @@ async function editIdea(id) {
   document.getElementById('idea-modal').querySelector('h3').textContent = '✎ แก้ไขไอเดีย';
   document.getElementById('idea-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditIdea;
   setEditMode('idea', id);
-  document.getElementById('idea-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('idea-modal');
 }
 
 async function confirmEditIdea() {
@@ -12367,7 +12586,7 @@ function openKnowledgeModal() {
   document.getElementById('knowledge-modal').querySelector('h3').textContent = '📚 บันทึกความรู้';
   document.getElementById('knowledge-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveKnowledge;
   clearEditMode('knowledge');
-  document.getElementById('knowledge-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('knowledge-modal');
 }
 
 async function confirmSaveKnowledge(event) {
@@ -12416,7 +12635,7 @@ async function editKnowledge(id) {
   document.getElementById('knowledge-modal').querySelector('h3').textContent = '✎ แก้ไขความรู้';
   document.getElementById('knowledge-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditKnowledge;
   setEditMode('knowledge', id);
-  document.getElementById('knowledge-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('knowledge-modal');
 }
 
 async function confirmEditKnowledge() {
@@ -12493,13 +12712,56 @@ function handleIdeaTagInput(input) {
       const lastTag = tags[tags.length - 1];
       if (lastTag) addGlobalTagSuggestion(lastTag);
     }
-    setTimeout(() => { showAllSuggestions(input); }, 100);
+    setTimeout(() => { 
+      showAllSuggestions(input, 'global-tag-suggestions-idea');
+    }, 100);
   }
 }
 
-function handleKnowledgeTagInput(input) { handleIdeaTagInput(input); }
-function handleArtTagInput(input) { handleIdeaTagInput(input); }
-function handleFitTagInput(input) { handleIdeaTagInput(input); }
+function handleKnowledgeTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addGlobalTagSuggestion(lastTag);
+    }
+    setTimeout(() => { 
+      showAllSuggestions(input, 'global-tag-suggestions-knowledge');
+    }, 100);
+  }
+}
+
+function handleArtTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addGlobalTagSuggestion(lastTag);
+    }
+    setTimeout(() => { 
+      showAllSuggestions(input, 'global-tag-suggestions-art');
+    }, 100);
+  }
+}
+
+function handleFitTagInput(input) {
+  const value = input.value;
+  const lastChar = value.charAt(value.length - 1);
+  if (lastChar === ',' || lastChar === ' ') {
+    const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+    if (tags.length > 0) {
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) addGlobalTagSuggestion(lastTag);
+    }
+    setTimeout(() => { 
+      showAllSuggestions(input, 'global-tag-suggestions-fit');
+    }, 100);
+  }
+}
 
 // ==========================================================
 // JOURNAL FILTER
@@ -12549,7 +12811,7 @@ function openArtModal() {
   document.getElementById('art-modal').querySelector('h3').textContent = '🎨 บันทึกงานศิลปะ';
   document.getElementById('art-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveArt;
   clearEditMode('art');
-  document.getElementById('art-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('art-modal');
 }
 
 async function confirmSaveArt(event) {
@@ -12595,7 +12857,7 @@ async function editArt(id) {
   document.getElementById('art-modal').querySelector('h3').textContent = '✎ แก้ไขงานศิลปะ';
   document.getElementById('art-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditArt;
   setEditMode('art', id);
-  document.getElementById('art-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('art-modal');
 }
 async function confirmEditArt() {
   const editingId = getEditingId('art');
@@ -12669,7 +12931,7 @@ function openFitModal() {
   document.getElementById('fit-modal').querySelector('h3').textContent = '💪 บันทึกออกกำลังกาย';
   document.getElementById('fit-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFit;
   clearEditMode('fit');
-  document.getElementById('fit-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('fit-modal');
 }
 
 async function confirmSaveFit(event) {
@@ -12713,7 +12975,7 @@ async function editFit(id) {
   document.getElementById('fit-modal').querySelector('h3').textContent = '✎ แก้ไขออกกำลังกาย';
   document.getElementById('fit-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditFit;
   setEditMode('fit', id);
-  document.getElementById('fit-modal').classList.add('show'); preventBodyScroll(true);
+  openModal('fit-modal');
 }
 
 async function confirmEditFit() {
@@ -12776,43 +13038,7 @@ async function renderFit() {
     list.appendChild(card);
   });
 }
-function resetIdeaModal() {
-  document.getElementById('idea-modal').querySelector('h3').textContent = '💡 บันทึกไอเดีย';
-  document.getElementById('idea-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveIdea;
-  document.getElementById('idea-input-date').value = '';
-  document.getElementById('idea-input-content').value = '';
-  document.getElementById('idea-input-tags').value = '#idea';
-  document.getElementById('idea-input-link').value = '';
-}
 
-function resetKnowledgeModal() {
-  document.getElementById('knowledge-modal').querySelector('h3').textContent = '📚 บันทึกความรู้';
-  document.getElementById('knowledge-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveKnowledge;
-  document.getElementById('knowledge-input-date').value = '';
-  document.getElementById('knowledge-input-title').value = '';
-  document.getElementById('knowledge-input-content').value = '';
-  document.getElementById('knowledge-input-tags').value = '#knowledge';
-  document.getElementById('knowledge-input-link').value = '';
-}
-
-function resetArtModal() {
-  document.getElementById('art-modal').querySelector('h3').textContent = '🎨 บันทึกงานศิลปะ';
-  document.getElementById('art-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveArt;
-  document.getElementById('art-input-date').value = '';
-  document.getElementById('art-input-title').value = '';
-  document.getElementById('art-input-content').value = '';
-  document.getElementById('art-input-image').value = '';
-  document.getElementById('art-input-tags').value = '#art';
-}
-
-function resetFitModal() {
-  document.getElementById('fit-modal').querySelector('h3').textContent = '💪 บันทึกออกกำลังกาย';
-  document.getElementById('fit-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveFit;
-  document.getElementById('fit-input-date').value = '';
-  document.getElementById('fit-input-type').value = 'cardio';
-  document.getElementById('fit-input-content').value = '';
-  document.getElementById('fit-input-tags').value = '#fitness';
-}
 // ===== Art Trend =====
 async function renderArtTrend() {
   const container = document.getElementById('dash-art-trend');
@@ -12967,68 +13193,13 @@ const DEFAULT_VISION_CATEGORIES = [
   { key: 'lifestyle', label: '🌟 ไลฟ์สไตล์' },
   { key: 'other', label: '📦 อื่นๆ' }
 ];
+const visionCatManager = createCategoryManager({
+  storageKey: 'vision_custom_categories',
+  defaultCategories: DEFAULT_VISION_CATEGORIES,
+  selectId: 'vision-input-category',
+  managerId: 'vision-cat-manager'
+});
 
-function getVisionCategories() {
-  try {
-    const custom = JSON.parse(localStorage.getItem('vision_custom_categories') || '[]');
-    return [...DEFAULT_VISION_CATEGORIES, ...custom];
-  } catch { return [...DEFAULT_VISION_CATEGORIES]; }
-}
-
-function saveVisionCategories(categories) {
-  const custom = categories.filter(c => !DEFAULT_VISION_CATEGORIES.find(d => d.key === c.key));
-  localStorage.setItem('vision_custom_categories', JSON.stringify(custom));
-}
-
-function addVisionCategory(label) {
-  const categories = getVisionCategories();
-  const key = 'custom_' + Date.now();
-  categories.push({ key, label: label.trim() });
-  saveVisionCategories(categories);
-  renderVisionCategorySelect();
-  renderVisionCategoryManager();
-  return key;
-}
-
-function deleteVisionCategory(key) {
-  const isDefault = DEFAULT_VISION_CATEGORIES.find(c => c.key === key);
-  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
-  const categories = getVisionCategories().filter(c => c.key !== key);
-  saveVisionCategories(categories);
-  renderVisionCategorySelect();
-  renderVisionCategoryManager();
-  return true;
-}
-
-function renderVisionCategorySelect() {
-  const select = document.getElementById('vision-input-category');
-  if (!select) return;
-  const categories = getVisionCategories();
-  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
-}
-
-function renderVisionCategoryManager() {
-  const container = document.getElementById('vision-cat-manager');
-  if (!container) return;
-  const categories = getVisionCategories();
-  container.innerHTML = categories.map(c => `
-    <span class="cat-tag">
-      ${c.label}
-      ${!DEFAULT_VISION_CATEGORIES.find(d => d.key === c.key) ? 
-        `<button class="del-cat" onclick="deleteVisionCategory('${c.key}')">✕</button>` : ''}
-    </span>
-  `).join('') + `
-    <button class="cat-add-btn" onclick="addVisionCategoryPrompt()">+ เพิ่มหมวด</button>
-  `;
-}
-
-function addVisionCategoryPrompt() {
-  const label = prompt('ชื่อหมวดหมู่ใหม่:');
-  if (label && label.trim()) {
-    addVisionCategory(label.trim());
-    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
-  }
-}
 // ===== Goal Categories (แก้ไขได้) =====
 const DEFAULT_GOAL_CATEGORIES = [
   { key: 'career', label: '💼 อาชีพ/งาน' },
@@ -13038,67 +13209,13 @@ const DEFAULT_GOAL_CATEGORIES = [
   { key: 'other', label: '📦 อื่นๆ' }
 ];
 
-function getGoalCategories() {
-  try {
-    const custom = JSON.parse(localStorage.getItem('goal_custom_categories') || '[]');
-    return [...DEFAULT_GOAL_CATEGORIES, ...custom];
-  } catch { return [...DEFAULT_GOAL_CATEGORIES]; }
-}
+const goalCatManager = createCategoryManager({
+  storageKey: 'goal_custom_categories',
+  defaultCategories: DEFAULT_GOAL_CATEGORIES,
+  selectId: 'goal-input-category',
+  managerId: 'goal-cat-manager'
+});
 
-function saveGoalCategories(categories) {
-  const custom = categories.filter(c => !DEFAULT_GOAL_CATEGORIES.find(d => d.key === c.key));
-  localStorage.setItem('goal_custom_categories', JSON.stringify(custom));
-}
-
-function addGoalCategory(label) {
-  const categories = getGoalCategories();
-  const key = 'custom_' + Date.now();
-  categories.push({ key, label: label.trim() });
-  saveGoalCategories(categories);
-  renderGoalCategorySelect();
-  renderGoalCategoryManager();
-  return key;
-}
-
-function deleteGoalCategory(key) {
-  const isDefault = DEFAULT_GOAL_CATEGORIES.find(c => c.key === key);
-  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
-  const categories = getGoalCategories().filter(c => c.key !== key);
-  saveGoalCategories(categories);
-  renderGoalCategorySelect();
-  renderGoalCategoryManager();
-  return true;
-}
-
-function renderGoalCategorySelect() {
-  const select = document.getElementById('goal-input-category');
-  if (!select) return;
-  const categories = getGoalCategories();
-  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
-}
-
-function renderGoalCategoryManager() {
-  const container = document.getElementById('goal-cat-manager');
-  if (!container) return;
-  const categories = getGoalCategories();
-  container.innerHTML = categories.map(c => `
-    <span class="cat-tag">
-      ${c.label}
-      ${!DEFAULT_GOAL_CATEGORIES.find(d => d.key === c.key) ? 
-        `<button class="del-cat" onclick="deleteGoalCategory('${c.key}')">✕</button>` : ''}
-    </span>
-  `).join('') + `
-    <button class="cat-add-btn" onclick="addGoalCategoryPrompt()">+ เพิ่มหมวด</button>
-  `;
-}
-
-function addGoalCategoryPrompt() {
-  const label = prompt('ชื่อหมวดหมู่ใหม่:');
-  if (label && label.trim()) {
-    addGoalCategory(label.trim());
-    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
-  }
-}
 // ===== Study Categories (แก้ไขได้) =====
 const DEFAULT_STUDY_CATEGORIES = [
   { key: 'art', label: '🎨 ศิลปะ' },
@@ -13109,67 +13226,13 @@ const DEFAULT_STUDY_CATEGORIES = [
   { key: 'other', label: '📦 อื่นๆ' }
 ];
 
-function getStudyCategories() {
-  try {
-    const custom = JSON.parse(localStorage.getItem('study_custom_categories') || '[]');
-    return [...DEFAULT_STUDY_CATEGORIES, ...custom];
-  } catch { return [...DEFAULT_STUDY_CATEGORIES]; }
-}
+const studyCatManager = createCategoryManager({
+  storageKey: 'study_custom_categories',
+  defaultCategories: DEFAULT_STUDY_CATEGORIES,
+  selectId: 'study-input-category',
+  managerId: 'study-cat-manager'
+});
 
-function saveStudyCategories(categories) {
-  const custom = categories.filter(c => !DEFAULT_STUDY_CATEGORIES.find(d => d.key === c.key));
-  localStorage.setItem('study_custom_categories', JSON.stringify(custom));
-}
-
-function addStudyCategory(label) {
-  const categories = getStudyCategories();
-  const key = 'custom_' + Date.now();
-  categories.push({ key, label: label.trim() });
-  saveStudyCategories(categories);
-  renderStudyCategorySelect();
-  renderStudyCategoryManager();
-  return key;
-}
-
-function deleteStudyCategory(key) {
-  const isDefault = DEFAULT_STUDY_CATEGORIES.find(c => c.key === key);
-  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
-  const categories = getStudyCategories().filter(c => c.key !== key);
-  saveStudyCategories(categories);
-  renderStudyCategorySelect();
-  renderStudyCategoryManager();
-  return true;
-}
-
-function renderStudyCategorySelect() {
-  const select = document.getElementById('study-input-category');
-  if (!select) return;
-  const categories = getStudyCategories();
-  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
-}
-
-function renderStudyCategoryManager() {
-  const container = document.getElementById('study-cat-manager');
-  if (!container) return;
-  const categories = getStudyCategories();
-  container.innerHTML = categories.map(c => `
-    <span class="cat-tag">
-      ${c.label}
-      ${!DEFAULT_STUDY_CATEGORIES.find(d => d.key === c.key) ? 
-        `<button class="del-cat" onclick="deleteStudyCategory('${c.key}')">✕</button>` : ''}
-    </span>
-  `).join('') + `
-    <button class="cat-add-btn" onclick="addStudyCategoryPrompt()">+ เพิ่มหมวด</button>
-  `;
-}
-
-function addStudyCategoryPrompt() {
-  const label = prompt('ชื่อหมวดหมู่ใหม่:');
-  if (label && label.trim()) {
-    addStudyCategory(label.trim());
-    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
-  }
-}
 // ===== Finance Categories (แก้ไขได้) =====
 const DEFAULT_FINANCE_CATEGORIES = [
   { key: 'emergency', label: '🚨 กองทุนฉุกเฉิน' },
@@ -13181,67 +13244,14 @@ const DEFAULT_FINANCE_CATEGORIES = [
   { key: 'other', label: '📦 อื่นๆ' }
 ];
 
-function getFinanceCategories() {
-  try {
-    const custom = JSON.parse(localStorage.getItem('finance_custom_categories') || '[]');
-    return [...DEFAULT_FINANCE_CATEGORIES, ...custom];
-  } catch { return [...DEFAULT_FINANCE_CATEGORIES]; }
-}
+const financeCatManager = createCategoryManager({
+  storageKey: 'finance_custom_categories',
+  defaultCategories: DEFAULT_FINANCE_CATEGORIES,
+  selectId: 'finance-input-category',
+  managerId: 'finance-cat-manager'
+});
 
-function saveFinanceCategories(categories) {
-  const custom = categories.filter(c => !DEFAULT_FINANCE_CATEGORIES.find(d => d.key === c.key));
-  localStorage.setItem('finance_custom_categories', JSON.stringify(custom));
-}
 
-function addFinanceCategory(label) {
-  const categories = getFinanceCategories();
-  const key = 'custom_' + Date.now();
-  categories.push({ key, label: label.trim() });
-  saveFinanceCategories(categories);
-  renderFinanceCategorySelect();
-  renderFinanceCategoryManager();
-  return key;
-}
-
-function deleteFinanceCategory(key) {
-  const isDefault = DEFAULT_FINANCE_CATEGORIES.find(c => c.key === key);
-  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
-  const categories = getFinanceCategories().filter(c => c.key !== key);
-  saveFinanceCategories(categories);
-  renderFinanceCategorySelect();
-  renderFinanceCategoryManager();
-  return true;
-}
-
-function renderFinanceCategorySelect() {
-  const select = document.getElementById('finance-input-category');
-  if (!select) return;
-  const categories = getFinanceCategories();
-  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
-}
-
-function renderFinanceCategoryManager() {
-  const container = document.getElementById('finance-cat-manager');
-  if (!container) return;
-  const categories = getFinanceCategories();
-  container.innerHTML = categories.map(c => `
-    <span class="cat-tag">
-      ${c.label}
-      ${!DEFAULT_FINANCE_CATEGORIES.find(d => d.key === c.key) ? 
-        `<button class="del-cat" onclick="deleteFinanceCategory('${c.key}')">✕</button>` : ''}
-    </span>
-  `).join('') + `
-    <button class="cat-add-btn" onclick="addFinanceCategoryPrompt()">+ เพิ่มหมวด</button>
-  `;
-}
-
-function addFinanceCategoryPrompt() {
-  const label = prompt('ชื่อหมวดหมู่ใหม่:');
-  if (label && label.trim()) {
-    addFinanceCategory(label.trim());
-    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
-  }
-}
 // ===== Wish Categories (แก้ไขได้) =====
 const DEFAULT_WISH_CATEGORIES = [
   { key: 'tech', label: '📱 เทคโนโลยี' },
@@ -13254,83 +13264,12 @@ const DEFAULT_WISH_CATEGORIES = [
   { key: 'other', label: '📦 อื่นๆ' }
 ];
 
-function getWishCategories() {
-  try {
-    const custom = JSON.parse(localStorage.getItem('wish_custom_categories') || '[]');
-    return [...DEFAULT_WISH_CATEGORIES, ...custom];
-  } catch { return [...DEFAULT_WISH_CATEGORIES]; }
-}
-
-function saveWishCategories(categories) {
-  const custom = categories.filter(c => !DEFAULT_WISH_CATEGORIES.find(d => d.key === c.key));
-  localStorage.setItem('wish_custom_categories', JSON.stringify(custom));
-}
-
-function addWishCategory(label) {
-  const categories = getWishCategories();
-  const key = 'custom_' + Date.now();
-  categories.push({ key, label: label.trim() });
-  saveWishCategories(categories);
-  renderWishCategorySelect();
-  renderWishCategoryManager();
-  return key;
-}
-
-function deleteWishCategory(key) {
-  const isDefault = DEFAULT_WISH_CATEGORIES.find(c => c.key === key);
-  if (isDefault) { showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); return false; }
-  const categories = getWishCategories().filter(c => c.key !== key);
-  saveWishCategories(categories);
-  renderWishCategorySelect();
-  renderWishCategoryManager();
-  return true;
-}
-
-function renderWishCategorySelect() {
-  const select = document.getElementById('wish-input-category');
-  if (!select) return;
-  const categories = getWishCategories();
-  select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
-}
-
-function renderWishCategoryManager() {
-  const container = document.getElementById('wish-cat-manager');
-  if (!container) return;
-  const categories = getWishCategories();
-  container.innerHTML = categories.map(c => `
-    <span class="cat-tag">
-      ${c.label}
-      ${!DEFAULT_WISH_CATEGORIES.find(d => d.key === c.key) ? 
-        `<button class="del-cat" onclick="deleteWishCategory('${c.key}')">✕</button>` : ''}
-    </span>
-  `).join('') + `
-    <button class="cat-add-btn" onclick="addWishCategoryPrompt()">+ เพิ่มหมวด</button>
-  `;
-}
-
-function addWishCategoryPrompt() {
-  const label = prompt('ชื่อหมวดหมู่ใหม่:');
-  if (label && label.trim()) {
-    addWishCategory(label.trim());
-    showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
-  }
-}
-// ===== Switch Nav Page with Arrow Buttons =====
-function switchNavPage(direction) {
-  const currentPage = getCurrentPage();
-  const pages = ['journal', 'dashboard', 'ref', 'vision', 'projects', 'goals', 'finance', 'settings'];
-  const currentIdx = pages.indexOf(currentPage);
-  
-  if (currentIdx === -1) return;
-  
-  let newIdx = currentIdx + direction;
-  if (newIdx < 0) newIdx = pages.length - 1;
-  if (newIdx >= pages.length) newIdx = 0;
-  
-  const newPage = pages[newIdx];
-  switchPage(newPage);
-  showToast(`📱 ${PAGES.find(p => p.id === newPage)?.label || newPage}`, 'info', 1000);
-}
+const wishCatManager = createCategoryManager({
+  storageKey: 'wish_custom_categories',
+  defaultCategories: DEFAULT_WISH_CATEGORIES,
+  selectId: 'wish-input-category',
+  managerId: 'wish-cat-manager'
+});
 
 // ===== Close Upload Widget =====
 function closeUploadWidget() {
@@ -13358,6 +13297,151 @@ document.addEventListener('keydown', function(e) {
     }
   }
 });
+// ==========================================================
+// FORM RESET FACTORY
+// ==========================================================
+
+function createFormResetter(modalId, config) {
+  const {
+    title,
+    saveButtonText,
+    saveHandler,
+    fields,
+    onReset
+  } = config;
+
+  return function resetForm() {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    // รีเซ็ต title
+    const heading = modal.querySelector('h3');
+    if (heading && title) {
+      heading.textContent = title;
+    }
+    
+    // รีเซ็ตปุ่มบันทึก
+    const saveBtn = modal.querySelector('.modal-actions .btn:last-child');
+    if (saveBtn) {
+      if (saveButtonText) saveBtn.textContent = saveButtonText;
+      if (saveHandler) saveBtn.onclick = saveHandler;
+    }
+    
+    // รีเซ็ตฟิลด์ทั้งหมด
+    Object.entries(fields || {}).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) {
+        if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          el.value = value;
+        }
+      }
+    });
+    
+    if (onReset) onReset();
+  };
+}
+// ==========================================================
+// CATEGORY MANAGER FACTORY
+// ==========================================================
+
+function createCategoryManager(config) {
+  const {
+    storageKey,
+    defaultCategories,
+    selectId,
+    managerId,
+    onUpdate
+  } = config;
+
+  function getCategories() {
+    try {
+      const custom = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      return [...defaultCategories, ...custom];
+    } catch { return [...defaultCategories]; }
+  }
+
+  function saveCategories(categories) {
+    const custom = categories.filter(c => !defaultCategories.find(d => d.key === c.key));
+    localStorage.setItem(storageKey, JSON.stringify(custom));
+  }
+
+  function addCategory(label) {
+    const categories = getCategories();
+    const key = 'custom_' + Date.now();
+    categories.push({ key, label: label.trim() });
+    saveCategories(categories);
+    render();
+    return key;
+  }
+
+  function deleteCategory(key) {
+    const isDefault = defaultCategories.find(c => c.key === key);
+    if (isDefault) { 
+      showToast('❌ ไม่สามารถลบหมวดหมู่ default ได้', 'error'); 
+      return false; 
+    }
+    const categories = getCategories().filter(c => c.key !== key);
+    saveCategories(categories);
+    render();
+    return true;
+  }
+
+  function render() {
+    // อัปเดต select dropdown
+    const select = document.getElementById(selectId);
+    if (select) {
+      const categories = getCategories();
+      const currentValue = select.value;
+      select.innerHTML = categories.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+      if (currentValue) select.value = currentValue;
+    }
+    
+    // อัปเดต manager UI
+    const container = document.getElementById(managerId);
+    if (container) {
+      const categories = getCategories();
+      container.innerHTML = categories.map(c => `
+        <span class="cat-tag">
+          ${c.label}
+          ${!defaultCategories.find(d => d.key === c.key) ? 
+            `<button class="del-cat" onclick="window.categoryManagers['${storageKey}'].delete('${c.key}')">✕</button>` : ''}
+        </span>
+      `).join('') + `
+        <button class="cat-add-btn" onclick="window.categoryManagers['${storageKey}'].add()">+ เพิ่มหมวด</button>
+      `;
+    }
+    
+    if (onUpdate) onUpdate();
+  }
+
+  function add() {
+    const label = prompt('ชื่อหมวดหมู่ใหม่:');
+    if (label && label.trim()) {
+      addCategory(label.trim());
+      showToast(`✅ เพิ่มหมวดหมู่ "${label.trim()}" แล้ว`, 'success');
+    }
+  }
+
+  function del(key) {
+    deleteCategory(key);
+  }
+
+  const manager = { 
+    getCategories, 
+    saveCategories, 
+    addCategory, 
+    deleteCategory, 
+    render, 
+    add, 
+    del 
+  };
+  
+  // เก็บไว้ใน global เพื่อให้ onclick ทำงาน
+  window.categoryManagers = window.categoryManagers || {};
+  window.categoryManagers[storageKey] = manager;
+  
+  return manager;
+}
 
 // แก้ไข confirmSaveMultiRef() และ confirmEditRef() ให้เรียก collectTagSuggestionsFromInput()
 // ก่อนบันทึก
@@ -13381,7 +13465,7 @@ async function initApp() {
   updateBoardFilterSuggestions();
   updateTagSuggestions();
   updateSearchSuggestions();
-  updateGlobalTagSuggestions();
+  ['project', 'finance', 'wish', 'inbox', 'daily', 'idea', 'knowledge', 'art', 'fit', 'default'].forEach(mod => updateGlobalTagSuggestions(mod));
   updateProjectTagSuggestions();
   updateRefSelectionSuggestions();
 
@@ -13401,11 +13485,11 @@ async function initApp() {
     dailyModule.migrateFromLocalStorage('daily_items')
   ]);
 
-  onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); });
+    onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); });
   onDailySnapshot(() => { renderDaily(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onRefsSnapshot(() => { getRefs().then(refs => { refsCache = refs; }); renderRef(); renderDashboard(); renderNav(); updateRefCategorySuggestions(); syncBottomTabActive(); syncTopNavActive(); });
-  onFinancesSnapshot(() => { renderFinanceGoals(); renderDashboard(); renderNav(); renderFinanceSnapshot(); syncBottomTabActive(); syncTopNavActive(); });
-  onWishesSnapshot(() => { renderWishlist(); renderDashboard(); renderNav(); renderFinanceSnapshot(); syncBottomTabActive(); syncTopNavActive(); });
+  onFinancesSnapshot(() => { renderFinanceGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
+  onWishesSnapshot(() => { renderWishlist(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onBudgetsSnapshot(() => { renderBudgets(); renderFinanceOverview(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); });
   onTransactionsSnapshot(() => { renderFinanceTransactions(); renderFinanceOverview(); syncBottomTabActive(); syncTopNavActive(); });  
   onPresetsSnapshot(() => { renderPresets(); syncBottomTabActive(); syncTopNavActive(); });
@@ -13417,54 +13501,44 @@ async function initApp() {
   onKnowledgesSnapshot(() => { renderKnowledge(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onArtsSnapshot(() => { renderArt(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onFitsSnapshot(() => { renderFit(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  
+
+  // ✅ เรียก switchPage
   let lastPage = localStorage.getItem('last_active_page') || 'journal';
   const validPages = PAGES.map(p => p.id);
   if (!validPages.includes(lastPage)) lastPage = 'journal';
-
   switchPage(lastPage);
-  renderRef(); getRefs().then(refs => { refsCache = refs; });
-  renderVision();
-  renderGoals();
-  renderStudy();
-  renderProjects();
-  renderFinanceGoals();
-  renderWishlist();
-  renderDashboard();
+
+  // ✅ เรียก render ที่ไม่มี snapshot (ครั้งเดียว)
   renderEnhancedStats();
   renderArtTrend();
   renderFitnessTrend();
+  await waitForFirestore()
   renderFinanceTrend();
   renderFocusThisWeek();
   renderOverdueGoals();
-  renderRecentActivity();
   await renderCalendar();
-  renderInbox();
-  renderDaily();
-  renderFinanceTransactions();
-  renderBudgets();
-  renderPresets();
-  renderFinanceOverview();
-  renderFinanceSnapshot();
-  renderVisionCategoryManager();
-  renderGoalCategoryManager();
-  renderStudyCategoryManager();
-  renderFinanceCategoryManager();
-  renderWishCategoryManager();
+  
+  visionCatManager.render();
+  goalCatManager.render();
+  studyCatManager.render();
+  financeCatManager.render();
+  wishCatManager.render();
+  
   setTimeout(() => {
     syncBottomTabActive();
-    syncTopNavActive();  // ← เพิ่ม
+    syncTopNavActive();
   }, 200);
+  
   setTimeout(() => {
-  enableDragSort('vision-list', getVisions, saveVisions, renderVision);
-  enableDragSort('goals-list', getGoals, saveGoals, renderGoals);
-  enableDragSort('study-list', getStudies, saveStudies, renderStudy);
-  enableDragSort('projects-list', getProjects, saveProjects, renderProjects);
-  enableDragSort('finance-goals-list', getFinances, saveFinances, renderFinanceGoals);
-  enableDragSort('wishlist-list', getWishes, saveWishes, renderWishlist);
-  enableDragSort('inbox-list', getInbox, saveInbox, renderInbox);
-  enableDragSort('daily-list', getDaily, saveDaily, renderDaily);
-}, 500);
+    enableDragSort('vision-list', getVisions, saveVisions, renderVision);
+    enableDragSort('goals-list', getGoals, saveGoals, renderGoals);
+    enableDragSort('study-list', getStudies, saveStudies, renderStudy);
+    enableDragSort('projects-list', getProjects, saveProjects, renderProjects);
+    enableDragSort('finance-goals-list', getFinances, saveFinances, renderFinanceGoals);
+    enableDragSort('wishlist-list', getWishes, saveWishes, renderWishlist);
+    enableDragSort('inbox-list', getInbox, saveInbox, renderInbox);
+    enableDragSort('daily-list', getDaily, saveDaily, renderDaily);
+  }, 500);
 
   const savedState = localStorage.getItem('calendar_collapsed');
   if (savedState === 'true') {
@@ -13477,6 +13551,7 @@ async function initApp() {
     if (arrow) arrow.textContent = '▶';
   }
 }
+
 
 initApp();
 
