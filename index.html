@@ -58,8 +58,45 @@ firebase.auth().signInAnonymously().catch(err => {
 background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif;
 padding: 16px; max-width: 900px; margin: 0 auto; padding-bottom: 80px;
 }
-  h1 { font-size: 19px; margin-bottom: 4px; }
-  .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+h1 { 
+  font-size: 19px; 
+  margin-bottom: 4px;
+  color: var(--text);
+  text-shadow: 
+    0 0 3px rgba(224, 80, 113, 0.3),    /* ← ขอบบางๆ */
+    0 0 8px rgba(224, 80, 113, 0.15),   /* ← ออร่าแรก */
+    0 0 20px rgba(224, 80, 113, 0.08),  /* ← ออร่าสอง */
+    0 0 40px rgba(224, 80, 113, 0.04);  /* ← ออร่าสาม */
+}
+
+.head-title {
+  font-size: 19px;
+  margin-bottom: 4px;
+  color: var(--text);
+  text-shadow: 
+    0 0 10px rgba(224, 80, 113, 0.15),
+    0 0 20px rgba(224, 80, 113, 0.08),
+    0 0 40px rgba(224, 80, 113, 0.04);
+  /* ใช้ outline แทน text-stroke */
+  outline: none;
+  -webkit-text-fill-color: var(--text);
+  -webkit-text-stroke: 0px transparent;
+}
+
+.head-title:hover {
+  text-shadow: 
+    0 0 3px rgba(224, 80, 113, 0.4),
+    0 0 12px rgba(224, 80, 113, 0.25),
+    0 0 30px rgba(224, 80, 113, 0.12),
+    0 0 60px rgba(224, 80, 113, 0.06);
+  transition: text-shadow 0.3s ease;
+}
+  .sub {
+  color: var(--red) !important;
+  opacity: 0.85;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
 
   /* ===== Navigation ===== */
   .nav {
@@ -1236,7 +1273,9 @@ body {
   border: 2px solid var(--accent);
   box-shadow: 0 0 0 2px var(--accent);
 }
-/* ===== Project Detail Full Screen ===== */
+#project-detail-modal {
+  z-index: 200 !important;
+}
 #project-detail-modal .modal {
   position: fixed;
   inset: 0;
@@ -1249,8 +1288,9 @@ body {
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* กัน scroll ซ้อน */
+  overflow: hidden;
 }
+
 #project-detail-modal .modal h3 {
   flex-shrink: 0;
 }
@@ -2009,12 +2049,204 @@ textarea.input {
 .status-active { background: rgba(200,169,110,.15); color: var(--accent2); }
 .status-review { background: rgba(124,110,245,.15); color: var(--accent); }
 .status-studying { background: rgba(200,169,110,.15); color: var(--accent2); }
+
+/* ===== Path of Donlee Head Display ===== */
+#path-head-display {
+  display: none;
+  background: linear-gradient(135deg, 
+    rgba(26, 26, 62, 0.92) 0%, 
+    rgba(26, 42, 94, 0.92) 25%, 
+    rgba(42, 26, 94, 0.92) 50%, 
+    rgba(58, 42, 26, 0.92) 75%, 
+    rgba(42, 26, 10, 0.92) 100%
+  );
+  border: 1px solid rgba(200, 169, 110, 0.2);
+  border-radius: 8px;
+  padding: 6px 60px;
+  margin: 6px 0 10px 0;
+  font-size: 12px;
+  color: var(--text);
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.3s ease;
+  box-shadow: 0 1px 8px rgba(200, 169, 110, 0.06);
+  width: auto;
+  max-width: 100%;
+  transition: all 0.3s ease;
+}
+
+#path-head-display .path-label {
+  font-size: 10px;
+  color: var(--accent2);
+  opacity: 0.7;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+#path-head-display .path-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+/* ==========================================================
+   FOCUS CARDS - Primary (ทอง) & Secondary (แดงเข้ม)
+   ========================================================== */
+
+/* ----- Focus Primary (ทอง) ----- */
+.focus-primary-card {
+  text-align: left;
+  padding: 16px;
+  border-left: 5px solid rgba(200, 169, 110, 0.7);  /* ← หนาขึ้น + ชัดขึ้น */
+  border-right: 5px solid rgba(200, 169, 110, 0.7); /* ← เพิ่มขอบขวา */
+  background: linear-gradient(135deg, 
+    rgba(200, 169, 110, 0.15) 0%,   /* ← เพิ่มความเข้ม */
+    rgba(200, 169, 110, 0.04) 50%,
+    rgba(200, 169, 110, 0.10) 100%
+  );
+  border: 1px solid rgba(200, 169, 110, 0.25);  /* ← ชัดขึ้น */
+  border-left-width: 5px;  /* ← หนาขึ้น */
+  border-right-width: 5px; /* ← หนาขึ้น */
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-radius: 8px;  /* ← เพิ่มความกลม */
+}
+
+.focus-primary-card:hover {
+  border-color: rgba(200, 169, 110, 0.4);
+  box-shadow: 0 4px 20px rgba(200, 169, 110, 0.08);
+  transform: translateY(-2px);
+}
+
+.focus-primary-label {
+  font-size: 11px;
+  color: var(--accent2);
+  opacity: 0.8;
+}
+
+.focus-primary-priority {
+  font-size: 10px;
+  color: var(--accent2);
+  opacity: 0.7;
+}
+
+.focus-primary-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 6px 0 4px;
+  color: var(--text);
+}
+
+.focus-primary-desc {
+  font-size: 12px;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  opacity: 0.9;
+}
+
+.focus-primary-deadline {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.focus-btn-primary {
+  font-size: 9px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(200, 169, 110, 0.1) !important;
+  color: var(--text) !important;
+}
+
+.focus-btn-primary:hover {
+  background: rgba(200, 169, 110, 0.08) !important;
+  border-color: rgba(200, 169, 110, 0.25) !important;
+}
+
+/* ----- Focus Secondary (แดงเข้ม) ----- */
+.focus-secondary-card {
+  padding: 10px 12px;
+  border-left: 4px solid rgba(224, 80, 113, 0.6);  /* ← หนาขึ้น + ชัดขึ้น */
+  border-right: 4px solid rgba(224, 80, 113, 0.6); /* ← เพิ่มขอบขวา */
+  background: linear-gradient(135deg, 
+    rgba(224, 80, 113, 0.14) 0%,   /* ← เพิ่มความเข้ม */
+    rgba(224, 80, 113, 0.03) 50%,
+    rgba(224, 80, 113, 0.08) 100%
+  );
+  border: 1px solid rgba(224, 80, 113, 0.18);  /* ← ชัดขึ้น */
+  border-left-width: 4px;  /* ← หนาขึ้น */
+  border-right-width: 4px; /* ← หนาขึ้น */
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-radius: 8px;  /* ← เพิ่มความกลม */
+}
+
+.focus-secondary-card:hover {
+  border-color: rgba(224, 80, 113, 0.35);
+  box-shadow: 0 2px 12px rgba(224, 80, 113, 0.06);
+  transform: translateX(4px);
+}
+
+.focus-secondary-label {
+  font-size: 10px;
+  color: var(--red);
+  opacity: 0.7;
+}
+
+.focus-secondary-priority {
+  font-size: 9px;
+  color: var(--red);
+  opacity: 0.6;
+}
+
+.focus-secondary-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 2px 0;
+}
+
+.focus-secondary-desc {
+  font-size: 11px;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  opacity: 0.8;
+}
+
+.focus-btn-secondary {
+  font-size: 8px;
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(224, 80, 113, 0.08) !important;
+  color: var(--text) !important;
+}
+
+.focus-btn-secondary:hover {
+  background: rgba(224, 80, 113, 0.08) !important;
+  border-color: rgba(224, 80, 113, 0.2) !important;
+}
+
 </style>
 </head>
 <body>
 
-  <h1>🧠 My Second Brain</h1>
-  <div class="sub">คลัง Ref + แผนที่ชีวิต + เป้าหมาย + การเงิน + Wishlist — ทุกอย่างที่เป็นตัวเรา</div>
+  <h1 class="head-title">🧠 My Second Brain</h1>
+  <div class="sub">...ชีวิตนี้มอบให้เอริส...</div> 
+  <!-- ===== PATH DISPLAY ON HEAD ===== -->
+  <div id="path-head-display">
+    <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;">
+      <div class="path-label">Path of Donlee</div>
+      <div class="path-title" id="path-head-title"></div>
+    </div>
+  </div>
 
 <div class="nav-wrapper" id="nav-wrapper">
   <div style="display:flex;align-items:center;gap:4px;position:relative;">
@@ -2041,6 +2273,13 @@ textarea.input {
     <input class="input" id="global-search" placeholder="🔍 ค้นหาทุกโมดูล..." style="width:100%;" oninput="globalSearch()">
     <div id="global-search-results" style="margin-top:8px;"></div>
   </div>
+    <!-- ===== PATH OF DONLEE ===== -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 4px;">
+    <h3 style="font-size:14px;color:var(--accent2);margin:0;">🗺️ Path of Donlee</h3>
+    <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="openPathEditor()">✎ เลือก Path</button>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">แนวทางดำเนินชีวิต</div>
+  <div id="path-primary" style="display:block;margin-bottom:20px;"></div>
 
   <!-- Quick Actions (Dropdown) -->
   <div style="position:relative;margin-bottom:16px;">
@@ -2071,7 +2310,7 @@ textarea.input {
   <h3 style="font-size:14px;color:var(--text);margin:0;">⭐ Focus</h3>
   <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="openFocusEditor('primary')">✎ แก้ไข Focus หลัก</button>
 </div>
-<div style="font-size:11px;color:var(--muted);margin-bottom:12px;">สิ่งที่สำคัญที่สุดในตอนนี้ (เลือกจาก Life Map, Projects, Goals, Finance, Idea, Knowledge)</div>
+<div style="font-size:11px;color:var(--muted);margin-bottom:12px;">สิ่งที่สำคัญที่สุดในตอนนี้</div>
 <div id="focus-primary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;"></div>
 
 <!-- ===== FOCUS: 5 อันรอง (เล็ก) ===== -->
@@ -2648,7 +2887,7 @@ textarea.input {
     <div id="wishlist-list"></div>
     <div class="empty" id="wishlist-empty" style="display:none;">ยังไม่มี Wishlist</div>
   </div>
-
+</div><!-- ✅ ปิด page-finance ที่นี่ -->
 
 <!-- ============ PAGE: Study Plan ============ -->
 <div class="page" id="page-study">
@@ -2687,6 +2926,7 @@ textarea.input {
   <div id="study-list"></div>
   <div class="empty" id="study-empty" style="display:none;">ยังไม่มีแผนเรียน</div>
 </div>
+
 <!-- ============ PAGE: Project Board ============ -->
 <div class="page" id="page-projects">
   <div class="toolbar">
@@ -2719,10 +2959,11 @@ textarea.input {
     <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
   </div>
   
-  <!-- ⬇️ content ต้องอยู่ภายใน #page-projects ⬇️ -->
   <div id="projects-list"></div>
   <div class="empty" id="projects-empty" style="display:none;">ยังไม่มีโปรเจกต์</div>  
-</div><!-- ✅ ปิด div.page ที่นี่เท่านั้น -->
+</div><!-- ✅ ปิด page-projects ที่นี่ -->
+
+<!-- ============ PROJECT MODALS (ย้ายมาอยู่ข้างนอก page-projects) ============ -->
 
 <!-- Project Modal -->
 <div class="modal-overlay" id="project-modal">
@@ -2748,14 +2989,14 @@ textarea.input {
         <option value="low">☆ ทิ้ง/เลื่อน</option>
       </select>
     </div>
-  <div class="field"><label>📊 ความคืบหน้า (0-100%)</label>
-    <input class="input" type="range" id="project-input-progress" min="0" max="100" value="0" oninput="document.getElementById('project-progress-label').textContent=this.value+'%'">
-    <div style="text-align:center;font-size:12px;color:var(--muted);" id="project-progress-label">0%</div>
-  </div>
-  <div class="field"><label>📅 วันที่เริ่ม</label>
-    <input class="input" type="date" id="project-input-startdate">
-  </div>
-  <div class="field">
+    <div class="field"><label>📊 ความคืบหน้า (0-100%)</label>
+      <input class="input" type="range" id="project-input-progress" min="0" max="100" value="0" oninput="document.getElementById('project-progress-label').textContent=this.value+'%'">
+      <div style="text-align:center;font-size:12px;color:var(--muted);" id="project-progress-label">0%</div>
+    </div>
+    <div class="field"><label>📅 วันที่เริ่ม</label>
+      <input class="input" type="date" id="project-input-startdate">
+    </div>
+    <div class="field">
       <label>🏷️ แท็ก (คั่นด้วยจุลภาค)</label>
       <input class="input" id="project-input-tags" placeholder="design, web, freelance" 
        list="global-tag-suggestions-project" 
@@ -2764,7 +3005,6 @@ textarea.input {
        onclick="showAllSuggestions(this, 'global-tag-suggestions-project')">
       <datalist id="global-tag-suggestions-project"></datalist>
     </div>
-    <!-- ... -->
     <div class="field" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
       <div class="relation-section">
         <div class="relation-header" onclick="toggleRelation(this)">
@@ -2788,21 +3028,22 @@ textarea.input {
     </div>
   </div>
 </div>
-<!-- Project Detail Modal (Sandbox) -->
+
+<!-- Project Detail Modal (Sandbox) - ย้ายออกมาจาก page-finance -->
 <div class="modal-overlay" id="project-detail-modal">
   <div class="modal">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;flex-shrink:0;">
       <h3 id="project-detail-title" style="font-size:18px;">ชื่อโปรเจกต์</h3>
       <div style="display:flex;gap:6px;">
-      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="toggleEditProjectDesc()">✎ แก้ไข</button>        
-      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editProjectFromDetail()">📋 แก้ไขทั้งหมด</button>
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="toggleEditProjectDesc()">✎ แก้ไข</button>        
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="editProjectFromDetail()">📋 แก้ไขทั้งหมด</button>
         <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="closeModal('project-detail-modal')">✕</button>
       </div>
     </div>
     <div id="project-detail-content" style="flex:1;overflow-y:auto;padding-bottom:20px;"></div>
   </div>
 </div>
-  
+
 <!-- ============ PAGE: Settings ============ -->
 <div class="page" id="page-settings">
   <div class="item-card">
@@ -2850,6 +3091,7 @@ textarea.input {
     </div>
   </div>
 </div>
+
 
 <!-- ============ MODALS ============ -->
 
@@ -5888,7 +6130,7 @@ if (saved === null) {
   console.log('✅ Using saved focus data (may be empty)');
 }
   
-// 5. Render Primary (ใหญ่)
+// 5. Render Primary (ใหญ่) - สีทอง
 const primaryContainer = document.getElementById('focus-primary');
 if (primaryItems.length === 0) {
   primaryContainer.innerHTML = `
@@ -5900,23 +6142,23 @@ if (primaryItems.length === 0) {
   `;
 } else {
   primaryContainer.innerHTML = primaryItems.map(item => `
-    <div class="dash-card" onclick="openFocusDetail('${item.module}', ${item.id})" style="text-align:left;padding:16px;border-left:4px solid ${getPriorityColor(item.priority)};position:relative;">
+    <div class="dash-card focus-primary-card" onclick="openFocusDetail('${item.module}', ${item.id})">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <span style="font-size:11px;color:var(--muted);">${item.moduleLabel}</span>
-        <span style="font-size:10px;color:var(--accent2);">${getPriorityLabel(item.priority)}</span>
+        <span class="focus-primary-label">${item.moduleLabel}</span>
+        <span class="focus-primary-priority">${getPriorityLabel(item.priority)}</span>
       </div>
-      <div style="font-size:16px;font-weight:700;margin:6px 0 4px;">${item.title}</div>
-      ${item.desc ? `<div style="font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${item.desc}</div>` : ''}
-      ${item.deadline ? `<div style="font-size:10px;color:var(--muted);margin-top:4px;">📅 ${new Date(item.deadline).toLocaleDateString('th-TH')}</div>` : ''}
+      <div class="focus-primary-title">${item.title}</div>
+      ${item.desc ? `<div class="focus-primary-desc">${item.desc}</div>` : ''}
+      ${item.deadline ? `<div class="focus-primary-deadline">📅 ${new Date(item.deadline).toLocaleDateString('th-TH')}</div>` : ''}
       ${item.progress !== undefined ? `<div style="margin-top:6px;"><div class="progress-bar"><div class="progress-fill" style="width:${item.progress || 0}%;"></div></div></div>` : ''}
       <div style="margin-top:8px;display:flex;gap:4px;justify-content:flex-end;">
-        <button type="button" class="btn secondary" style="font-size:9px;padding:2px 8px;" onclick="event.stopPropagation();switchPage('${item.module}')">📂 ไปที่ ${item.moduleLabel}</button>
+        <button type="button" class="btn secondary focus-btn-primary" onclick="event.stopPropagation();switchPage('${item.module}')">📂 ไปที่ ${item.moduleLabel}</button>
       </div>
     </div>
   `).join('');
 }
 
-// 6. Render Secondary (เล็ก)
+// 6. Render Secondary (เล็ก) - สีแดงเข้ม
 const secondaryContainer = document.getElementById('focus-secondary');
 if (secondaryItems.length === 0) {
   secondaryContainer.innerHTML = `
@@ -5926,15 +6168,15 @@ if (secondaryItems.length === 0) {
   `;
 } else {
   secondaryContainer.innerHTML = secondaryItems.map(item => `
-    <div class="dash-recent-item" onclick="openFocusDetail('${item.module}', ${item.id})" style="padding:10px 12px;border-left:3px solid ${getPriorityColor(item.priority)};position:relative;">
+    <div class="dash-recent-item focus-secondary-card" onclick="openFocusDetail('${item.module}', ${item.id})">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:10px;color:var(--muted);">${item.moduleLabel}</span>
-        <span style="font-size:9px;color:var(--accent2);">${getPriorityLabel(item.priority)}</span>
+        <span class="focus-secondary-label">${item.moduleLabel}</span>
+        <span class="focus-secondary-priority">${getPriorityLabel(item.priority)}</span>
       </div>
-      <div style="font-size:13px;font-weight:600;">${item.title}</div>
-      ${item.desc ? `<div style="font-size:11px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;">${item.desc}</div>` : ''}
+      <div class="focus-secondary-title">${item.title}</div>
+      ${item.desc ? `<div class="focus-secondary-desc">${item.desc}</div>` : ''}
       <div style="margin-top:4px;display:flex;gap:4px;justify-content:flex-end;">
-        <button type="button" class="btn secondary" style="font-size:8px;padding:1px 6px;" onclick="event.stopPropagation();switchPage('${item.module}')">📂 ไปที่ ${item.moduleLabel}</button>
+        <button type="button" class="btn secondary focus-btn-secondary" onclick="event.stopPropagation();switchPage('${item.module}')">📂 ไปที่ ${item.moduleLabel}</button>
       </div>
     </div>
   `).join('');
@@ -6349,6 +6591,283 @@ function buildFocusDetailHtml(config) {
   return html;
 }
 // ==========================================================
+// PATH OF DONLEE - เลือก 1 อันจาก Life Map
+// ==========================================================
+
+// โหลด Path ที่บันทึกไว้
+function loadSavedPath() {
+  try {
+    return JSON.parse(localStorage.getItem('user_path_selection') || 'null');
+  } catch (e) {
+    return null;
+  }
+}
+
+// บันทึก Path
+function savePathSelection(visionId) {
+  const data = { 
+    visionId: visionId, 
+    updatedAt: new Date().toISOString() 
+  };
+  localStorage.setItem('user_path_selection', JSON.stringify(data));
+  renderPathDisplay();
+  renderPathHead();
+  showToast('✅ บันทึก Path เรียบร้อย', 'success', 1500);
+}
+
+// เปิด Path Editor
+async function openPathEditor() {
+  const visions = await getVisions();
+  const activeVisions = visions.filter(v => !v.archived);
+  
+  if (activeVisions.length === 0) {
+    showToast('⚠️ ยังไม่มีวิสัยทัศน์ใน Life Map กรุณาสร้างก่อน', 'warning', 2000);
+    return;
+  }
+  
+  const saved = loadSavedPath();
+  const currentId = saved ? saved.visionId : null;
+  
+  // สร้าง Modal แบบง่าย
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay show';
+  overlay.id = 'path-editor-modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;';
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;width:90%;max-width:500px;max-height:85vh;overflow-y:auto;';
+  
+  let html = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="margin:0;">🗺️ เลือก Path of Donlee</h3>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px;" onclick="this.closest('.modal-overlay').remove()">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">เลือก 1 วิสัยทัศน์ที่เป็นแนวทางดำเนินชีวิตของคุณ</div>
+    <div style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto;">
+  `;
+  
+  activeVisions.forEach(v => {
+    const isSelected = currentId === v.id;
+    const categoryLabel = getCategoryLabel(v.category, VISION_CAT_LABELS, visionCatManager);
+    html += `
+      <div style="
+        display:flex;align-items:center;gap:10px;
+        padding:10px 14px;
+        background:${isSelected ? 'var(--accent2)' : 'var(--surface2)'};
+        border-radius:8px;
+        border:2px solid ${isSelected ? 'var(--accent2)' : 'var(--border)'};
+        cursor:pointer;
+        transition:all 0.2s;
+      "
+      onclick="selectPath(${v.id}, this)"
+      onmouseover="if(!this.style.borderColor.includes('var(--accent2)')) this.style.borderColor='var(--accent)'"
+      onmouseout="if(!this.style.borderColor.includes('var(--accent2)')) this.style.borderColor='var(--border)'"
+      >
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:${isSelected ? 'var(--bg)' : 'var(--text)'};">${v.title}</div>
+          <div style="font-size:11px;color:${isSelected ? 'var(--surface)' : 'var(--muted)'};">${categoryLabel}</div>
+        </div>
+        ${isSelected ? '<span style="font-size:18px;">✅</span>' : ''}
+      </div>
+    `;
+  });
+  
+  html += `
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button type="button" class="btn secondary" style="flex:1;" onclick="this.closest('.modal-overlay').remove()">ยกเลิก</button>
+      <button type="button" class="btn" style="flex:1;" onclick="confirmSelectPath()">✅ ยืนยัน</button>
+    </div>
+    <div style="margin-top:8px;text-align:center;color:var(--muted);font-size:11px;">
+      💡 คลิกที่รายการเพื่อเลือก • เลือกได้เพียง 1 อัน
+      ${currentId ? `<br>📌 ปัจจุบัน: ${activeVisions.find(v => v.id === currentId)?.title || 'ไม่พบ'}` : ''}
+    </div>
+  `;
+  
+  modal.innerHTML = html;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  
+  // เก็บ currentId ไว้ใน global
+  window._pathEditorCurrentId = currentId;
+}
+
+// เลือก Path
+function selectPath(id, element) {
+  // ล้างการเลือกทั้งหมด
+  const container = element.closest('div[style*="flex-direction:column"]');
+  if (container) {
+    container.querySelectorAll('div[style*="cursor:pointer"]').forEach(el => {
+      el.style.background = 'var(--surface2)';
+      el.style.borderColor = 'var(--border)';
+      el.style.color = 'var(--text)';
+      // ลบ ✅
+      const check = el.querySelector('span:last-child');
+      if (check && check.textContent === '✅') {
+        check.textContent = '';
+      }
+      // เปลี่ยนสีข้อความ
+      const title = el.querySelector('div:first-child div:first-child');
+      const cat = el.querySelector('div:first-child div:last-child');
+      if (title) title.style.color = 'var(--text)';
+      if (cat) cat.style.color = 'var(--muted)';
+    });
+  }
+  
+  // เลือกอันนี้
+  element.style.background = 'var(--accent2)';
+  element.style.borderColor = 'var(--accent2)';
+  const title = element.querySelector('div:first-child div:first-child');
+  const cat = element.querySelector('div:first-child div:last-child');
+  if (title) title.style.color = 'var(--bg)';
+  if (cat) cat.style.color = 'var(--surface)';
+  
+  // เพิ่ม ✅
+  const existingCheck = element.querySelector('span:last-child');
+  if (existingCheck) {
+    existingCheck.textContent = '✅';
+  } else {
+    const check = document.createElement('span');
+    check.textContent = '✅';
+    check.style.fontSize = '18px';
+    element.appendChild(check);
+  }
+  
+  window._pathEditorCurrentId = id;
+}
+
+// ยืนยันการเลือก Path
+function confirmSelectPath() {
+  const id = window._pathEditorCurrentId;
+  if (!id) {
+    showToast('⚠️ กรุณาเลือก Path ก่อน', 'warning', 1500);
+    return;
+  }
+  
+  // ปิด modal
+  const modal = document.getElementById('path-editor-modal');
+  if (modal) modal.remove();
+  
+  savePathSelection(id);
+}
+
+// ลบ Path (ยกเลิกการเลือก)
+function clearPath() {
+  if (!confirm('ลบ Path ที่เลือก?')) return;
+  localStorage.removeItem('user_path_selection');
+  renderPathDisplay();
+  renderPathHead();
+  showToast('🗑️ ลบ Path แล้ว', 'info', 1500);
+}
+
+// ==========================================================
+// RENDER PATH DISPLAY (ใน Dashboard)
+// ==========================================================
+async function renderPathDisplay() {
+  const container = document.getElementById('path-primary');
+  if (!container) return;
+  
+  const saved = loadSavedPath();
+  if (!saved || !saved.visionId) {
+    container.innerHTML = `
+      <div style="text-align:center;color:var(--muted);padding:20px;background:var(--surface2);border-radius:10px;border:1px dashed var(--border);">
+        <div style="font-size:24px;margin-bottom:8px;">🗺️</div>
+        <div>ยังไม่มี Path of Donlee</div>
+        <div style="font-size:11px;margin-top:4px;">คลิก ✎ เลือก Path เพื่อกำหนดแนวทางดำเนินชีวิต</div>
+      </div>
+    `;
+    return;
+  }
+  
+  const visions = await getVisions();
+  const item = visions.find(v => v.id === saved.visionId);
+  
+  if (!item) {
+    localStorage.removeItem('user_path_selection');
+    renderPathDisplay();
+    renderPathHead();
+    return;
+  }
+  
+  const categoryLabel = getCategoryLabel(item.category, VISION_CAT_LABELS, visionCatManager);
+  const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important;
+  
+  // ✅ ใช้ gradient และสไตล์เดียวกับ head
+  container.innerHTML = `
+    <div class="dash-card" onclick="openVisionDetail(${item.id})" style="
+      text-align:left;
+      padding:16px 20px;
+      background: linear-gradient(135deg, 
+        rgba(26, 26, 62, 0.92) 0%, 
+        rgba(26, 42, 94, 0.92) 25%, 
+        rgba(42, 26, 94, 0.92) 50%, 
+        rgba(58, 42, 26, 0.92) 75%, 
+        rgba(42, 26, 10, 0.92) 100%
+      );
+      border: 1px solid rgba(200, 169, 110, 0.2);
+      border-radius: 10px;
+      box-shadow: 0 1px 8px rgba(200, 169, 110, 0.06);
+      transition: all 0.3s ease;
+      cursor:pointer;
+    "
+    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 20px rgba(200, 169, 110, 0.12)';"
+    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 1px 8px rgba(200, 169, 110, 0.06)';"
+    >
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10px;color:var(--accent2);opacity:0.7;font-weight:500;letter-spacing:0.3px;margin-bottom:4px;">🗺️ Path of Donlee</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+            <span class="item-cat" style="background:rgba(200,169,110,.15);color:var(--accent2);font-size:9px;">${categoryLabel}</span>
+            <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+          </div>
+          <div style="font-size:16px;font-weight:700;margin:2px 0 4px;color:var(--text);">${item.title}</div>
+          ${item.desc ? `<div style="font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:0.8;">${item.desc}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          <button type="button" class="btn secondary" style="font-size:9px;padding:2px 10px;background:rgba(255,255,255,0.06);border-color:rgba(200,169,110,0.15);color:var(--text);" onclick="event.stopPropagation();switchPage('vision')">📂 ไปที่ Life Map</button>
+          <button type="button" class="btn secondary" style="font-size:9px;padding:2px 10px;color:var(--red);border-color:rgba(224,92,92,0.3);background:rgba(224,92,92,0.05);" onclick="event.stopPropagation();clearPath()">🗑️ ลบ Path</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================================
+// RENDER PATH HEAD (บน head ของเว็บเพจ)
+// ==========================================================
+async function renderPathHead() {
+  const container = document.getElementById('path-head-display');
+  const titleEl = document.getElementById('path-head-title');
+  if (!container || !titleEl) return;
+  
+  const saved = loadSavedPath();
+  if (!saved || !saved.visionId) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  const visions = await getVisions();
+  const item = visions.find(v => v.id === saved.visionId);
+  
+  if (!item) {
+    localStorage.removeItem('user_path_selection');
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.style.display = 'inline-flex'; // เปลี่ยนเป็น inline-flex ให้พอดีกับข้อความ
+  titleEl.textContent = item.title;
+}
+
+// ==========================================================
+// INIT PATH - เรียกใน initApp()
+// ==========================================================
+async function initPath() {
+  await renderPathDisplay();
+  await renderPathHead();
+}
+// ==========================================================
 // MODULE 1: Ref Library
 // RefItem { id, url, category, tags[], note, createdAt }
 // ==========================================================
@@ -6357,7 +6876,9 @@ let refListeners = [];
 let pendingUploadUrls = []; let refSelectionMode = false;
 let selectedRefIds = new Set(); // array ของ URLs ที่ upload แล้ว
 let pendingUploadTotal = 0; // จำนวนรูปทั้งหมดที่เลือก
-let pendingUploadCount = 0; // จำนวนที่ upload เสร็จแล้ว let pendingFinanceId = null;
+let pendingUploadCount = 0; // จำนวนที่ upload เสร็จแล้ว 
+let pendingFinanceId = null;
+let pendingWishId = null;
 let pendingTransactionId = null;
 let pendingBudgetId = null;
 let refsCache = [];
@@ -7834,15 +8355,67 @@ async function deleteVision(id) {
 
 // ✅ renderVision - ตรวจสอบให้สมบูรณ์
 // ===== FIXED: renderVision() =====
+// REPLACE THE ENTIRE renderVision() FUNCTION
 async function renderVision() {
   const list = document.getElementById('vision-list');
   const empty = document.getElementById('vision-empty');
   
-  // ✅ เพิ่มการตรวจสอบ element
-  if (!list || !empty) {
-    console.warn('⚠️ vision-list or vision-empty not found in DOM');
-    return;
+  // ✅ ถ้าไม่มี element ให้สร้างใหม่ (แต่ไม่ลบเนื้อหาเก่า)
+  let page = document.getElementById('page-vision');
+  if (!page) {
+    page = document.createElement('div');
+    page.className = 'page';
+    page.id = 'page-vision';
+    document.body.appendChild(page);
   }
+  
+  if (!list || !empty) {
+    console.log('🔧 Creating vision-list and vision-empty');
+    
+    // ✅ ตรวจสอบ toolbar
+    let toolbar = page.querySelector('.toolbar');
+    if (!toolbar) {
+      toolbar = document.createElement('div');
+      toolbar.className = 'toolbar';
+      toolbar.innerHTML = `
+        <button type="button" class="btn" onclick="openVisionModal()">+ เพิ่มวิสัยทัศน์</button>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+          <button class="filter-chip active" onclick="setVisionFilter('all')" id="vision-filter-all">ทั้งหมด</button>
+          <button type="button" class="filter-chip" onclick="setVisionFilter('fav')" id="vision-filter-fav">⭐</button>
+          <button type="button" class="filter-chip" onclick="setVisionFilter('archived')" id="vision-filter-archived">📦</button>
+          <button type="button" class="filter-chip" onclick="setVisionFilter('priority')" id="vision-filter-priority">📊</button>
+        </div>
+        <select class="input" id="vision-cat-filter" onchange="renderVision()" style="display:none;">
+          <option value="">ทุกด้าน</option>
+          <option value="career">อาชีพ/งาน</option>
+          <option value="health">สุขภาพ</option>
+          <option value="relationship">ความสัมพันธ์</option>
+          <option value="growth">พัฒนาตนเอง</option>
+          <option value="lifestyle">ไลฟ์สไตล์</option>
+        </select>
+        <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+      `;
+      page.appendChild(toolbar);
+    }
+    
+    if (!document.getElementById('vision-list')) {
+      const newList = document.createElement('div');
+      newList.id = 'vision-list';
+      page.appendChild(newList);
+    }
+    if (!document.getElementById('vision-empty')) {
+      const newEmpty = document.createElement('div');
+      newEmpty.className = 'empty';
+      newEmpty.id = 'vision-empty';
+      newEmpty.style.display = 'none';
+      newEmpty.textContent = 'ยังไม่มีวิสัยทัศน์ที่บันทึกไว้';
+      page.appendChild(newEmpty);
+    }
+  }
+  
+  // ✅ รีเฟรช references
+  const listRef = document.getElementById('vision-list');
+  const emptyRef = document.getElementById('vision-empty');
   
   const catFilter = document.getElementById('vision-cat-filter')?.value || '';
   const priorityFilter = document.getElementById('vision-priority-filter')?.value || '';
@@ -7852,77 +8425,62 @@ async function renderVision() {
   let items = await getVisions();
   let filteredItems = items;
   
-  // กรองตามหมวดหมู่ (ใช้ catFilter)
   if (catFilter) {
     filteredItems = filteredItems.filter(i => i.category === catFilter);
   }
-  
-  // กรองตาม priority
   if (priorityFilter) {
     filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
   }
-  
-  // Favourite filter
   if (state.active === 'fav') {
     filteredItems = filteredItems.filter(i => i.favourite);
   }
-  
-// Archive filter - ใช้ state.active เป็นหลัก
-if (state.active === 'archived') {
-  filteredItems = filteredItems.filter(i => i.archived === true);
-} else if (state.active === 'all' || state.active === 'fav') {
-  filteredItems = filteredItems.filter(i => !i.archived);
-}
-// ถ้าเป็น priority mode ให้ใช้ archiveFilter แทน
-else if (state.active === 'priority' && archiveFilter) {
-  if (archiveFilter === 'archived') {
+  if (state.active === 'archived') {
     filteredItems = filteredItems.filter(i => i.archived === true);
-  } else if (archiveFilter === 'active') {
+  } else if (state.active === 'all' || state.active === 'fav') {
     filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (state.active === 'priority' && archiveFilter) {
+    if (archiveFilter === 'archived') {
+      filteredItems = filteredItems.filter(i => i.archived === true);
+    } else if (archiveFilter === 'active') {
+      filteredItems = filteredItems.filter(i => !i.archived);
+    }
   }
-}
+  
   const allRefs = await getRefs();
 
-  list.innerHTML = '';
-  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
+  listRef.innerHTML = '';
+  emptyRef.style.display = filteredItems.length === 0 ? 'block' : 'none';
   if (filteredItems.length === 0) {
-  empty.textContent = 'ยังไม่มีวิสัยทัศน์ที่บันทึกไว้';
-}
+    emptyRef.textContent = 'ยังไม่มีวิสัยทัศน์ที่บันทึกไว้';
+  }
 
   filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
     card.style.cursor = 'pointer';
-    
     card.onclick = (e) => {
       if (e.target.closest('.del-x') || e.target.closest('.btn')) return;
       openVisionDetail(item.id);
     };
     
     const categoryLabel = getCategoryLabel(item.category, VISION_CAT_LABELS, visionCatManager);
-    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
-;
-    
+    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important;
     const totalRelations = (item.goalIds?.length || 0) + (item.studyIds?.length || 0) + 
                            (item.financeIds?.length || 0) + (item.wishIds?.length || 0) +
                            (item.projectIds?.length || 0);
     
-    // ✅ ดึง refs สำหรับ preview
-    
-  
-  let refsHtml = '';
-  // แล้วใน loop
-  if (item.refIds && item.refIds.length > 0) {
-    const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
-    if (refs.length > 0) {
-      refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
-        ${refs.map(r => `
-          <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
-        `).join('')}
-        ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
-      </div>`;
+    let refsHtml = '';
+    if (item.refIds && item.refIds.length > 0) {
+      const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
+      if (refs.length > 0) {
+        refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
+          ${refs.map(r => `
+            <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+          `).join('')}
+          ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
+        </div>`;
+      }
     }
-  }
     
     card.innerHTML = `
       <div class="item-top">
@@ -7942,7 +8500,7 @@ else if (state.active === 'priority' && archiveFilter) {
         </div>
       </div>
     `;
-    list.appendChild(card);
+    listRef.appendChild(card);
   });
 }
 // ===== Vision Relations & Ref =====
@@ -8222,9 +8780,85 @@ async function deleteGoal(id) {
   showToast('🗑️ ลบเป้าหมายแล้ว', 'error');
 }
 
+// REPLACE THE ENTIRE renderGoals() FUNCTION
 async function renderGoals() {
   const list = document.getElementById('goals-list');
   const empty = document.getElementById('goals-empty');
+  
+  // ✅ ถ้าไม่มี element ให้สร้างใหม่ (แต่ไม่ลบเนื้อหาเก่า)
+  let page = document.getElementById('page-goals');
+  if (!page) {
+    page = document.createElement('div');
+    page.className = 'page';
+    page.id = 'page-goals';
+    document.body.appendChild(page);
+  }
+  
+  if (!list || !empty) {
+    console.log('🔧 Creating goals-list and goals-empty');
+    
+    // ✅ ตรวจสอบ toolbar
+    let toolbar = page.querySelector('.toolbar');
+    if (!toolbar) {
+      toolbar = document.createElement('div');
+      toolbar.className = 'toolbar';
+      toolbar.innerHTML = `
+        <button type="button" class="btn" onclick="openGoalModal()">+ เพิ่มเป้าหมาย</button>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+          <button type="button" class="filter-chip active" onclick="setGoalFilter('all')" id="goal-filter-all">ทั้งหมด</button>
+          <button type="button" class="filter-chip" onclick="setGoalFilter('fav')" id="goal-filter-fav">⭐</button>
+          <button type="button" class="filter-chip" onclick="setGoalFilter('archived')" id="goal-filter-archived">📦</button>
+          <button type="button" class="filter-chip" onclick="setGoalFilter('status')" id="goal-filter-status">📊</button>
+        </div>
+        <select class="input" id="goal-cat-filter" onchange="renderGoals()" style="display:none;">
+          <option value="">ทุกหมวดหมู่</option>
+          <option value="career">อาชีพ/งาน</option>
+          <option value="health">สุขภาพ</option>
+          <option value="finance">การเงิน</option>
+          <option value="skill">ทักษะ</option>
+          <option value="other">อื่นๆ</option>
+        </select>
+        <select class="input" id="goal-status-filter" onchange="renderGoals()" style="display:none;">
+          <option value="">ทุกสถานะ</option>
+          <option value="not_started">ยังไม่เริ่ม</option>
+          <option value="in_progress">กำลังทำ</option>
+          <option value="done">สำเร็จแล้ว</option>
+        </select>
+        <select class="input" id="goal-priority-filter" onchange="renderGoals()" style="display:none;">
+          <option value="">⭐ ทุกระดับ</option>
+          <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+          <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+          <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+          <option value="low">☆ ทิ้ง/เลื่อน</option>
+        </select>
+        <select class="input" id="goal-archive-filter" onchange="renderGoals()" style="display:none;">
+          <option value="active">แสดงทั้งหมด</option>
+          <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+          <option value="all">แสดงทั้งหมด</option>
+        </select>
+        <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+      `;
+      page.appendChild(toolbar);
+    }
+    
+    if (!document.getElementById('goals-list')) {
+      const newList = document.createElement('div');
+      newList.id = 'goals-list';
+      page.appendChild(newList);
+    }
+    if (!document.getElementById('goals-empty')) {
+      const newEmpty = document.createElement('div');
+      newEmpty.className = 'empty';
+      newEmpty.id = 'goals-empty';
+      newEmpty.style.display = 'none';
+      newEmpty.textContent = 'ยังไม่มีเป้าหมายที่บันทึกไว้';
+      page.appendChild(newEmpty);
+    }
+  }
+  
+  // ✅ รีเฟรช references
+  const listRef = document.getElementById('goals-list');
+  const emptyRef = document.getElementById('goals-empty');
   
   const catFilter = document.getElementById('goal-cat-filter')?.value || '';
   const statusFilter = document.getElementById('goal-status-filter')?.value || '';
@@ -8238,27 +8872,20 @@ async function renderGoals() {
   if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
   if (catFilter) filteredItems = filteredItems.filter(i => i.category === catFilter);
   if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
-  
-  // Favourite filter
   if (state.active === 'fav') {
     filteredItems = filteredItems.filter(i => i.favourite);
   }
-  
-  // Archive filter - ใช้ state.active เป็นหลัก
-if (state.active === 'archived') {
-  filteredItems = filteredItems.filter(i => i.archived === true);
-} else if (state.active === 'all' || state.active === 'fav') {
-  filteredItems = filteredItems.filter(i => !i.archived);
-}
-// ถ้าเป็น status mode ให้ใช้ archiveFilter แทน
-else if (state.active === 'status' && archiveFilter) {
-  if (archiveFilter === 'archived') {
+  if (state.active === 'archived') {
     filteredItems = filteredItems.filter(i => i.archived === true);
-  } else if (archiveFilter === 'active') {
+  } else if (state.active === 'all' || state.active === 'fav') {
     filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (state.active === 'status' && archiveFilter) {
+    if (archiveFilter === 'archived') {
+      filteredItems = filteredItems.filter(i => i.archived === true);
+    } else if (archiveFilter === 'active') {
+      filteredItems = filteredItems.filter(i => !i.archived);
+    }
   }
-}
-
   
   const dateFilter = document.getElementById('goal-deadline-filter')?.value;
   if (dateFilter) {
@@ -8266,21 +8893,21 @@ else if (state.active === 'status' && archiveFilter) {
     if (filteredItems.length === 0) {
       const dateObj = new Date(dateFilter + 'T00:00:00');
       const dateDisplay = dateObj.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-      empty.innerHTML = `📅 ${dateDisplay}: ไม่มีเป้าหมาย`;
-      empty.style.display = 'block';
+      emptyRef.innerHTML = `📅 ${dateDisplay}: ไม่มีเป้าหมาย`;
+      emptyRef.style.display = 'block';
     } else {
-      empty.style.display = 'none';
+      emptyRef.style.display = 'none';
     }
   }
 
-  list.innerHTML = '';
-if (!dateFilter || filteredItems.length > 0) {
-  empty.style.display = filteredItems.length === 0 ? 'block' : 'none';
-}
-if (filteredItems.length === 0 && !dateFilter) {
-  empty.textContent = 'ยังไม่มีเป้าหมายที่บันทึกไว้';
-}
-const allRefs = await getRefs();
+  listRef.innerHTML = '';
+  if (!dateFilter || filteredItems.length > 0) {
+    emptyRef.style.display = filteredItems.length === 0 ? 'block' : 'none';
+  }
+  if (filteredItems.length === 0 && !dateFilter) {
+    emptyRef.textContent = 'ยังไม่มีเป้าหมายที่บันทึกไว้';
+  }
+  const allRefs = await getRefs();
 
   filteredItems.forEach(item => {
     const card = document.createElement('div');
@@ -8292,26 +8919,21 @@ const allRefs = await getRefs();
     };
     
     const categoryLabel = getCategoryLabel(item.category, GOAL_CAT_LABELS, goalCatManager);
-    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
-;
+    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important;
     const isFinanceGoal = item.category === 'finance';
     
-    // ✅ ดึง refs สำหรับ preview
     let refsHtml = '';
-
-
-// แล้วใน loop
-if (item.refIds && item.refIds.length > 0) {
-  const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
-  if (refs.length > 0) {
-    refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
-      ${refs.map(r => `
-        <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
-      `).join('')}
-      ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
-    </div>`;
-  }
-}
+    if (item.refIds && item.refIds.length > 0) {
+      const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
+      if (refs.length > 0) {
+        refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
+          ${refs.map(r => `
+            <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+          `).join('')}
+          ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
+        </div>`;
+      }
+    }
     
     card.innerHTML = `
       <div class="item-top">
@@ -8328,7 +8950,7 @@ if (item.refIds && item.refIds.length > 0) {
           <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 6px;" onclick="event.stopPropagation();editGoal(${item.id})">✎</button>
           <button class="del-x" style="font-size:16px;padding:2px 6px;" onclick="event.stopPropagation();deleteGoal(${item.id})">✕</button>
           <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('goal', ${item.id})">📦</button>
-          </div>
+        </div>
       </div>
       <div class="item-footer">
         <span class="item-date">${item.deadline ? '📅 ' + new Date(item.deadline).toLocaleDateString('th-TH') : 'ไม่มีกำหนด'}</span>
@@ -8338,7 +8960,7 @@ if (item.refIds && item.refIds.length > 0) {
         </div>
       </div>
     `;
-    list.appendChild(card);
+    listRef.appendChild(card);
   });
 }
 // ===== Goal Relations & Ref =====
@@ -10524,133 +11146,69 @@ async function deleteProject(id) {
   renderDashboard();
   showToast('🗑️ ลบโปรเจกต์แล้ว', 'error');
 }
-
-async function renderProjects() {
-  const list = document.getElementById('projects-list');
-  const empty = document.getElementById('projects-empty');
-  
-  const statusFilter = document.getElementById('project-status-filter')?.value || '';
-  const priorityFilter = document.getElementById('project-priority-filter')?.value || '';
-  const archiveFilter = document.getElementById('project-archive-filter')?.value || 'active';
-  const state = filterStates.project || { active: 'all' };
-
-  let items = await getProjects();
-  let filteredItems = items;
-  
-  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
-  if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
-  
-  if (state.active === 'fav') {
-    filteredItems = filteredItems.filter(i => i.favourite);
+async function confirmEditProject(event) {
+  if (event) event.preventDefault();
+  const currentEditingId = editingProjectId;
+  console.log('🔧 confirmEditProject - currentEditingId:', currentEditingId);
+  if (currentEditingId === null) {
+    console.error('❌ editingProjectId is null!');
+    showToast('❌ ไม่พบโปรเจกต์ที่กำลังแก้ไข', 'error');
+    return false;
   }
   
-  // Archive filter - ใช้ state.active เป็นหลัก
-if (state.active === 'archived') {
-  filteredItems = filteredItems.filter(i => i.archived === true);
-} else if (state.active === 'all' || state.active === 'fav') {
-  filteredItems = filteredItems.filter(i => !i.archived);
-}
-else if (state.active === 'status' && archiveFilter) {
-  if (archiveFilter === 'archived') {
-    filteredItems = filteredItems.filter(i => i.archived === true);
-  } else if (archiveFilter === 'active') {
-    filteredItems = filteredItems.filter(i => !i.archived);
+  const title = document.getElementById('project-input-title').value.trim();
+  if (!title) { 
+    alert('กรุณาใส่ชื่อโปรเจกต์'); 
+    return; 
   }
-}
-
-  list.innerHTML = '';
-if (filteredItems.length === 0) {
-  empty.style.display = 'block';
-  empty.textContent = 'ยังไม่มีโปรเจกต์';
-} else {
-  empty.style.display = 'none';
-}
-const allRefs = await getRefs();
-
-  filteredItems.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'item-card';
-    const statusLabel = PROJECT_STATUS_LABELS[item.status] || item.status;
-    const statusClass = item.status === 'planning' ? 'status-planning' :
-                    item.status === 'active' ? 'status-active' :
-                    item.status === 'review' ? 'status-review' :
-                    item.status === 'done' ? 'status-done' :
-                    item.status === 'studying' ? 'status-studying' :
-                    'status-not_started';
-    const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
-;
-    const totalRelations = (item.visionIds?.length || 0) + (item.goalIds?.length || 0) + 
-                           (item.studyIds?.length || 0) + (item.refIds?.length || 0) +
-                           (item.financeIds?.length || 0) + (item.wishIds?.length || 0);
+  
+  const relations = getSelectedRelations();
+  const items = await getProjects();
+  const item = items.find(i => i.id === currentEditingId);
+  
+  if (item) {
+    item.title = title;
+    item.desc = document.getElementById('project-input-desc').value.trim();
+    item.deadline = document.getElementById('project-input-deadline').value || null;
+    item.note = document.getElementById('project-input-note').value.trim();
+    item.priority = document.getElementById('project-input-priority').value || 'important';
+    item.progress = parseInt(document.getElementById('project-input-progress').value) || 0;
+    item.startDate = document.getElementById('project-input-startdate').value || null;
+    item.tags = document.getElementById('project-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    item.visionIds = relations.visionIds || [];
+    item.goalIds = relations.goalIds || [];
+    item.studyIds = relations.studyIds || [];
+    item.refIds = tempProjectRefIds || [];
+    item.financeIds = relations.financeIds || [];
+    item.wishIds = relations.wishIds || [];
     
-    // ✅ ดึง refs สำหรับ preview
-    let refsHtml = '';
-
-
-// แล้วใน loop
-if (item.refIds && item.refIds.length > 0) {
-  const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
-  if (refs.length > 0) {
-    refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
-      ${refs.map(r => `
-        <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
-      `).join('')}
-      ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
-    </div>`;
+    await saveProjects(items);
+    showToast('✅ แก้ไขโปรเจกต์สำเร็จ', 'success');
+  } else {
+    showToast('❌ ไม่พบโปรเจกต์', 'error');
+    return;
   }
+  
+  // ✅ reset editingProjectId
+  editingProjectId = null;
+  
+  closeModal('project-modal');
+  resetProjectModal();
+  renderProjects();
+  renderDashboard();
 }
-    
-    card.innerHTML = `
-      <div class="item-top">
-        <div style="flex:1;min-width:0;">
-          <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('project', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-            <span class="item-cat" style="background:${item.status === 'done' ? 'rgba(78,203,113,.15)' : item.status === 'active' ? 'rgba(200,169,110,.15)' : 'rgba(138,135,152,.15)'}; color:${item.status === 'done' ? 'var(--green)' : item.status === 'active' ? 'var(--accent2)' : 'var(--muted)'}">
-              ${statusLabel}
-            </span>
-            <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
-            ${item.tags?.slice(0,3).map(t => `<span class="tag" style="background:rgba(200,169,110,.10);color:var(--accent2);font-size:8px;padding:1px 6px;">#${t}</span>`).join('') || ''}
-            ${totalRelations > 0 ? `<span class="tag" style="background:rgba(78,203,113,.12);color:var(--green);font-size:8px;">🔗 ${totalRelations}</span>` : ''}
-          </div>
-          <div class="item-title" style="margin-top:4px;cursor:pointer;" onclick="openProjectDetail(${item.id})">${item.title}</div>
-        </div>
-        ${refsHtml}
-        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
-          <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 4px;" onclick="editProject(${item.id})">✎</button>
-          <button class="del-x" style="font-size:16px;padding:2px 4px;" onclick="deleteProject(${item.id})">✕</button>
-          <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('project', ${item.id})">📦</button>
-          </div>
-      </div>
-      ${item.desc ? `
-    <div class="item-desc project-desc-truncate" style="font-size:12px;cursor:pointer;" onclick="openProjectDetail(${item.id})">
-      ${item.desc.replace(/\n/g, '<br>')}
-    </div>
-    <div style="font-size:10px;color:var(--muted);cursor:pointer;margin-top:2px;" onclick="openProjectDetail(${item.id})">
-      ... คลิกเพื่อดูทั้งหมด
-    </div>
-  </div>
-` : ''}
-      <div style="margin-top:6px;">
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
-          <span>ความคืบหน้า</span>
-          <span>${item.progress || 0}%</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${item.progress || 0}%;transition:width 0.5s;"></div></div>
-      </div>
-      <div class="item-footer">
-        <span class="item-date">${item.deadline ? '📅 ' + new Date(item.deadline).toLocaleDateString('th-TH') : 'ไม่มีกำหนด'}</span>
-        <span class="status-badge ${statusClass}" style="cursor:pointer;" onclick="cycleProjectStatus(${item.id})">${statusLabel} ↻</span>
-      </div>
-    `;
-    list.appendChild(card);
-  });
-}
-let detailProjectId = null;
+// ==========================================================
+// OPEN PROJECT DETAIL - เปิดดูรายละเอียดโปรเจกต์
+// ==========================================================
+let detailProjectId = null;  // เก็บ ID โปรเจกต์ที่กำลังเปิดดู
 
 async function openProjectDetail(id) {
   const projects = await getProjects();
   const project = projects.find(p => p.id === id);
-  if (!project) { showToast('❌ ไม่พบโปรเจกต์', 'error'); return; }
+  if (!project) { 
+    showToast('❌ ไม่พบโปรเจกต์', 'error'); 
+    return; 
+  }
   detailProjectId = id;
   
   const [visions, goals, studies, refs, finances, wishes] = await Promise.all([
@@ -10675,8 +11233,8 @@ async function openProjectDetail(id) {
     </div>
     
     <div class="project-desc-display" data-project-id="${project.id}" style="cursor:text;" onclick="toggleEditProjectDesc()">
-  ${project.desc ? project.desc : 'ไม่มีคำอธิบาย (คลิกเพื่อแก้ไข)'}
-</div>
+      ${project.desc ? project.desc : 'ไม่มีคำอธิบาย (คลิกเพื่อแก้ไข)'}
+    </div>
     
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:var(--muted);margin-bottom:12px;background:var(--surface2);padding:8px 12px;border-radius:8px;">
       ${project.startDate ? `<span>📅 เริ่ม: ${new Date(project.startDate).toLocaleDateString('th-TH')}</span>` : ''}
@@ -10703,23 +11261,18 @@ async function openProjectDetail(id) {
   } else {
     html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;">`;
     
-    // Life Map
     if (filteredVisions.length) {
       html += `<div class="project-detail-card"><div class="label">🗺️ Life Map</div><div class="value">${filteredVisions.map(v => `<span class="relation-tag vision" onclick="switchPage('vision')">${v.title}</span>`).join('')}</div></div>`;
     }
-    // Goals
     if (filteredGoals.length) {
       html += `<div class="project-detail-card"><div class="label">🎯 Goals</div><div class="value">${filteredGoals.map(g => `<span class="relation-tag goal" onclick="switchPage('goals')">${g.title}</span>`).join('')}</div></div>`;
     }
-    // Study
     if (filteredStudies.length) {
       html += `<div class="project-detail-card"><div class="label">📚 Study</div><div class="value">${filteredStudies.map(s => `<span class="relation-tag study" onclick="switchPage('study')">${s.title}</span>`).join('')}</div></div>`;
     }
-    // Finance
     if (filteredFinances.length) {
       html += `<div class="project-detail-card"><div class="label">💰 Finance</div><div class="value">${filteredFinances.map(f => `<span class="relation-tag finance" onclick="switchPage('finance')">${f.name}: ${f.saved.toLocaleString()}/${f.target.toLocaleString()} บาท</span>`).join('')}</div></div>`;
     }
-    // Wishlist
     if (filteredWishes.length) {
       html += `<div class="project-detail-card"><div class="label">🛍️ Wishlist</div><div class="value">${filteredWishes.map(w => `<span class="relation-tag wish" onclick="switchPage('finance')">${w.name}${w.price ? ' ('+w.price.toLocaleString()+' บาท)' : ''}</span>`).join('')}</div></div>`;
     }
@@ -10740,33 +11293,268 @@ async function openProjectDetail(id) {
       <span class="arrow">▼</span>
     </div>
     <div class="collapsible-body">
-`;
+  `;
 
-if (filteredRefs.length === 0) {
-  html += `<div style="color:var(--muted);font-size:12px;padding:8px 0;">ยังไม่มีรูปอ้างอิง</div>`;
-} else {
-  html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;
-  filteredRefs.forEach(r => {
-    html += `
-      <div style="background:var(--surface);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer;aspect-ratio:3/4;" onclick="openLightbox('${r.url}')">
-        <img src="${r.url}" style="width:100%;height:100%;object-fit:cover;display:block;">
-      </div>
-    `;
-  });
-  html += `</div>`;
-}
+  if (filteredRefs.length === 0) {
+    html += `<div style="color:var(--muted);font-size:12px;padding:8px 0;">ยังไม่มีรูปอ้างอิง</div>`;
+  } else {
+    html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;
+    filteredRefs.forEach(r => {
+      html += `
+        <div style="background:var(--surface);border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:pointer;aspect-ratio:3/4;" onclick="openLightbox('${r.url}')">
+          <img src="${r.url}" style="width:100%;height:100%;object-fit:cover;display:block;">
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
 
-html += `
+  html += `
     </div>
   </div>
-`;
+  `;
   
   if (project.note) {
     html += `<div style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);">📝 ${project.note}</div>`;
   }
   
+  html += `
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="closeModal('project-detail-modal')">✕ ปิด</button>
+      <button type="button" class="btn" style="font-size:11px;padding:4px 12px;" onclick="editProjectFromDetail()">📋 แก้ไขโปรเจกต์</button>
+    </div>
+  `;
+  
   content.innerHTML = html;
   document.getElementById('project-detail-modal').classList.add('show');
+}
+
+// ==========================================================
+// RENDER PROJECTS - FIXED VERSION
+// ==========================================================
+async function renderProjects() {
+  console.log('🔍 renderProjects called');
+  
+  // ✅ STEP 1: Find or create the correct page container at the top level
+  let page = document.getElementById('page-projects');
+  
+  // ✅ STEP 2: If page exists but is inside the wrong container, move it
+  if (page) {
+    const correctParent = document.body;
+    if (page.parentElement !== correctParent) {
+      console.warn(`⚠️ page-projects is inside ${page.parentElement?.id || 'unknown'}, moving to body...`);
+      // Remove from current parent and append to body
+      page.remove();
+      correctParent.appendChild(page);
+    }
+  }
+  
+  // ✅ STEP 3: If page doesn't exist, create it at the correct location
+  if (!page) {
+    console.log('🔧 Creating page-projects at body level');
+    page = document.createElement('div');
+    page.className = 'page';
+    page.id = 'page-projects';
+    // Find the correct insertion point (before settings or after finance)
+    const settingsPage = document.getElementById('page-settings');
+    if (settingsPage) {
+      document.body.insertBefore(page, settingsPage);
+    } else {
+      document.body.appendChild(page);
+    }
+  }
+  
+  // ✅ STEP 4: Ensure list and empty elements exist
+  let list = document.getElementById('projects-list');
+  let empty = document.getElementById('projects-empty');
+  
+  // ✅ STEP 5: If list or empty doesn't exist, create them inside page
+  if (!list || !empty) {
+    console.log('🔧 Creating projects-list and projects-empty');
+    
+    // Create toolbar if it doesn't exist
+    let toolbar = page.querySelector('.toolbar');
+    if (!toolbar) {
+      toolbar = document.createElement('div');
+      toolbar.className = 'toolbar';
+      toolbar.innerHTML = `
+        <button type="button" class="btn" onclick="openProjectModal()">+ เพิ่มโปรเจกต์</button>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+          <button type="button" class="filter-chip active" onclick="setProjectFilter('all')" id="project-filter-all">ทั้งหมด</button>
+          <button type="button" class="filter-chip" onclick="setProjectFilter('fav')" id="project-filter-fav">⭐</button>
+          <button type="button" class="filter-chip" onclick="setProjectFilter('archived')" id="project-filter-archived">📦</button>
+          <button type="button" class="filter-chip" onclick="setProjectFilter('status')" id="project-filter-status">📊</button>
+        </div>
+        <select class="input" id="project-status-filter" onchange="renderProjects()" style="display:none;">
+          <option value="">ทุกสถานะ</option>
+          <option value="planning">📝 วางแผน</option>
+          <option value="active">🚀 กำลังทำ</option>
+          <option value="review">🔍 ทบทวน</option>
+          <option value="done">✅ เสร็จแล้ว</option>
+        </select>
+        <select class="input" id="project-priority-filter" onchange="renderProjects()" style="display:none;">
+          <option value="">⭐ ทุกระดับ</option>
+          <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
+          <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
+          <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
+          <option value="low">☆ ทิ้ง/เลื่อน</option>
+        </select>
+        <select class="input" id="project-archive-filter" onchange="renderProjects()" style="display:none;">
+          <option value="active">แสดงทั้งหมด</option>
+          <option value="archived">แสดงเฉพาะที่ซ่อน</option>
+          <option value="all">แสดงทั้งหมด</option>
+        </select>
+        <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
+      `;
+      page.appendChild(toolbar);
+    }
+    
+    // Create list if missing
+    if (!document.getElementById('projects-list')) {
+      list = document.createElement('div');
+      list.id = 'projects-list';
+      page.appendChild(list);
+    } else {
+      list = document.getElementById('projects-list');
+    }
+    
+    // Create empty if missing
+    if (!document.getElementById('projects-empty')) {
+      empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.id = 'projects-empty';
+      empty.style.display = 'none';
+      empty.textContent = 'ยังไม่มีโปรเจกต์';
+      page.appendChild(empty);
+    } else {
+      empty = document.getElementById('projects-empty');
+    }
+  }
+  
+  // ✅ STEP 6: Continue with normal rendering
+  const statusFilter = document.getElementById('project-status-filter')?.value || '';
+  const priorityFilter = document.getElementById('project-priority-filter')?.value || '';
+  const archiveFilter = document.getElementById('project-archive-filter')?.value || 'active';
+  const state = filterStates.project || { active: 'all' };
+
+  let items = await getProjects();
+  console.log('📦 All projects:', items.length);
+  
+  let filteredItems = items;
+  
+  if (priorityFilter) filteredItems = filteredItems.filter(i => i.priority === priorityFilter);
+  if (statusFilter) filteredItems = filteredItems.filter(i => i.status === statusFilter);
+  
+  if (state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => i.favourite);
+  }
+  
+  // Archive filter
+  if (state.active === 'archived') {
+    filteredItems = filteredItems.filter(i => i.archived === true);
+  } else if (state.active === 'all' || state.active === 'fav') {
+    filteredItems = filteredItems.filter(i => !i.archived);
+  } else if (state.active === 'status' && archiveFilter) {
+    if (archiveFilter === 'archived') {
+      filteredItems = filteredItems.filter(i => i.archived === true);
+    } else if (archiveFilter === 'active') {
+      filteredItems = filteredItems.filter(i => !i.archived);
+    }
+  }
+  
+  console.log('📦 After filter:', filteredItems.length);
+  
+  // ✅ If no data → show empty
+  if (filteredItems.length === 0) {
+    empty.style.display = 'block';
+    empty.textContent = 'ยังไม่มีโปรเจกต์';
+    list.innerHTML = '';
+    return;
+  }
+  
+  empty.style.display = 'none';
+  const allRefs = await getRefs();
+
+  try {
+    list.innerHTML = '';
+    
+    filteredItems.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      const statusLabel = PROJECT_STATUS_LABELS[item.status] || item.status;
+      const statusClass = item.status === 'planning' ? 'status-planning' :
+                      item.status === 'active' ? 'status-active' :
+                      item.status === 'review' ? 'status-review' :
+                      item.status === 'done' ? 'status-done' :
+                      item.status === 'studying' ? 'status-studying' :
+                      'status-not_started';
+      const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important;
+      const totalRelations = (item.visionIds?.length || 0) + (item.goalIds?.length || 0) + 
+                             (item.studyIds?.length || 0) + (item.refIds?.length || 0) +
+                             (item.financeIds?.length || 0) + (item.wishIds?.length || 0);
+      
+      let refsHtml = '';
+      if (item.refIds && item.refIds.length > 0) {
+        const refs = allRefs.filter(r => item.refIds.includes(r.id)).slice(0, 3);
+        if (refs.length > 0) {
+          refsHtml = `<div style="display:flex;gap:4px;flex-shrink:0;margin-left:8px;">
+            ${refs.map(r => `
+              <img src="${r.url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+            `).join('')}
+            ${item.refIds.length > 3 ? `<span style="font-size:10px;color:var(--muted);align-self:center;">+${item.refIds.length-3}</span>` : ''}
+          </div>`;
+        }
+      }
+      
+      card.innerHTML = `
+        <div class="item-top">
+          <div style="flex:1;min-width:0;">
+            <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('project', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+              <span class="item-cat" style="background:${item.status === 'done' ? 'rgba(78,203,113,.15)' : item.status === 'active' ? 'rgba(200,169,110,.15)' : 'rgba(138,135,152,.15)'}; color:${item.status === 'done' ? 'var(--green)' : item.status === 'active' ? 'var(--accent2)' : 'var(--muted)'}">
+                ${statusLabel}
+              </span>
+              <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
+              ${item.tags?.slice(0,3).map(t => `<span class="tag" style="background:rgba(200,169,110,.10);color:var(--accent2);font-size:8px;padding:1px 6px;">#${t}</span>`).join('') || ''}
+              ${totalRelations > 0 ? `<span class="tag" style="background:rgba(78,203,113,.12);color:var(--green);font-size:8px;">🔗 ${totalRelations}</span>` : ''}
+            </div>
+            <div class="item-title" style="margin-top:4px;cursor:pointer;" onclick="openProjectDetail(${item.id})">${item.title}</div>
+          </div>
+          ${refsHtml}
+          <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+            <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 4px;" onclick="editProject(${item.id})">✎</button>
+            <button class="del-x" style="font-size:16px;padding:2px 4px;" onclick="deleteProject(${item.id})">✕</button>
+            <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('project', ${item.id})">📦</button>
+          </div>
+        </div>
+        ${item.desc ? `
+      <div class="item-desc project-desc-truncate" style="font-size:12px;cursor:pointer;" onclick="openProjectDetail(${item.id})">
+        ${item.desc.replace(/\n/g, '<br>')}
+      </div>
+      <div style="font-size:10px;color:var(--muted);cursor:pointer;margin-top:2px;" onclick="openProjectDetail(${item.id})">
+        ... คลิกเพื่อดูทั้งหมด
+      </div>
+    ` : ''}
+        <div style="margin-top:6px;">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
+            <span>ความคืบหน้า</span>
+            <span>${item.progress || 0}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${item.progress || 0}%;transition:width 0.5s;"></div></div>
+        </div>
+        <div class="item-footer">
+          <span class="item-date">${item.deadline ? '📅 ' + new Date(item.deadline).toLocaleDateString('th-TH') : 'ไม่มีกำหนด'}</span>
+          <span class="status-badge ${statusClass}" style="cursor:pointer;" onclick="cycleProjectStatus(${item.id})">${statusLabel} ↻</span>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+    console.log('✅ renderProjects completed successfully');
+  } catch (err) {
+    console.error('❌ renderProjects error:', err);
+    empty.style.display = 'block';
+    empty.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+  }
 }
 // ===== Edit Inline — Project Detail (Rich Text) =====
 let isEditingDesc = false;
@@ -11029,57 +11817,7 @@ async function editProject(id) {
   await renderProjectRefPreview();
 }
 
-async function confirmEditProject(event) {
-  if (event) event.preventDefault();
-  const currentEditingId = editingProjectId;
-  console.log('🔧 confirmEditProject - currentEditingId:', currentEditingId);
-  if (currentEditingId === null) {
-    console.error('❌ editingProjectId is null!');
-    showToast('❌ ไม่พบโปรเจกต์ที่กำลังแก้ไข', 'error');
-    return false;
-  }
-  
-  const title = document.getElementById('project-input-title').value.trim();
-  if (!title) { 
-    alert('กรุณาใส่ชื่อโปรเจกต์'); 
-    return; 
-  }
-  
-  const relations = getSelectedRelations();
-  const items = await getProjects();
-  const item = items.find(i => i.id === currentEditingId);
-  
-  if (item) {
-    item.title = title;
-    item.desc = document.getElementById('project-input-desc').value.trim();
-    item.deadline = document.getElementById('project-input-deadline').value || null;
-    item.note = document.getElementById('project-input-note').value.trim();
-    item.priority = document.getElementById('project-input-priority').value || 'important';
-    item.progress = parseInt(document.getElementById('project-input-progress').value) || 0;
-    item.startDate = document.getElementById('project-input-startdate').value || null;
-    item.tags = document.getElementById('project-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-    item.visionIds = relations.visionIds || [];
-    item.goalIds = relations.goalIds || [];
-    item.studyIds = relations.studyIds || [];
-    item.refIds = tempProjectRefIds || [];
-    item.financeIds = relations.financeIds || [];
-    item.wishIds = relations.wishIds || [];
-    
-    await saveProjects(items);
-    showToast('✅ แก้ไขโปรเจกต์สำเร็จ', 'success');
-  } else {
-    showToast('❌ ไม่พบโปรเจกต์', 'error');
-    return;
-  }
-  
-  // ✅ reset editingProjectId
-  editingProjectId = null;
-  
-  closeModal('project-modal');
-  resetProjectModal();
-  renderProjects();
-  renderDashboard();
-}
+
 
 // ==========================================================
 // REF SELECTION (สำหรับ Project)
@@ -11395,23 +12133,28 @@ async function renderInbox() {
     items.forEach(item => {
       const card = document.createElement('div');
       card.className = 'item-card inbox-item';
+      card.style.cursor = 'pointer';
+      card.onclick = (e) => {
+        // ป้องกันการคลิกที่ปุ่มภายใน
+        if (e.target.closest('.del-x') || e.target.closest('.btn')) return;
+        openInboxDetail(item.id);
+      };
       const timeAgo = getTimeAgo(item.createdAt);
       card.innerHTML = `
         <div class="item-top">
           <div style="flex:1;">
-            <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('inbox', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
-            <div style="font-size:13px;white-space:pre-wrap;word-break:break-word;">${item.text}</div>
+            <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
+            <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('inbox', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
+            <div style="font-size:13px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${item.text}</div>
             <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
               ${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}
               <span style="font-size:10px;color:var(--muted);">${timeAgo}</span>
-            </div>
-            <div style="margin-top:6px;">
-              <button type="button" class="btn secondary" style="font-size:10px;padding:2px 8px;" onclick="openConvertInbox(${item.id})">🔄 แปลง</button>
+              ${item.processed ? `<span class="status-badge status-done" style="font-size:8px;padding:1px 6px;">✅</span>` : ''}
             </div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0;">
-            <button class="del-x" style="color:var(--accent);font-size:13px;" onclick="editInbox(${item.id})">✎</button>
-            <button class="del-x" style="font-size:14px;" onclick="deleteInbox(${item.id})">✕</button>
+            <button class="del-x" style="color:var(--accent);font-size:13px;padding:2px 6px;" onclick="event.stopPropagation();editInbox(${item.id})">✎</button>
+            <button class="del-x" style="font-size:14px;padding:2px 6px;" onclick="event.stopPropagation();deleteInbox(${item.id})">✕</button>
             <button class="del-x" style="color:var(--accent2);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();toggleArchive('inbox', ${item.id})">📦</button>
           </div>
         </div>
@@ -11422,6 +12165,47 @@ async function renderInbox() {
     console.warn('⚠️ renderInbox error:', err);
     if (list) list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">โหลดข้อมูลไม่สำเร็จ</div>';
   }
+}
+// ===== INBOX DETAIL =====
+async function openInboxDetail(id) {
+  const items = await getInbox();
+  const item = items.find(i => i.id === id);
+  if (!item) {
+    showToast('❌ ไม่พบข้อความ', 'error');
+    return;
+  }
+  
+  document.getElementById('detail-modal-title').textContent = '📥 Inbox';
+  
+  const timeAgo = getTimeAgo(item.createdAt);
+  
+  let html = `
+    <!-- ✅ ปุ่ม Actions อยู่ด้านบน -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="closeModal('detail-modal');openConvertInbox(${item.id})">🔄 แปลง</button>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="closeModal('detail-modal');editInbox(${item.id})">✎ แก้ไข</button>
+      <button type="button" class="btn danger" style="font-size:11px;padding:4px 12px;" onclick="closeModal('detail-modal');deleteInbox(${item.id})">🗑️ ลบ</button>
+      <span style="flex:1;"></span>
+      <button type="button" class="btn secondary" style="font-size:11px;padding:4px 12px;" onclick="closeModal('detail-modal')">✕ ปิด</button>
+    </div>
+    
+    <!-- เนื้อหา -->
+    <div style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:12px;color:var(--muted);">${timeAgo}</span>
+      ${item.processed ? `<span class="status-badge status-done">✅ ประมวลผลแล้ว</span>` : `<span class="status-badge status-not_started">⏳ ยังไม่ประมวลผล</span>`}
+    </div>
+    <div style="white-space:pre-wrap;word-break:break-word;font-size:14px;line-height:1.8;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);">
+      ${item.text}
+    </div>
+    ${(item.tags || []).length > 0 ? `
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;">
+        ${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+      </div>
+    ` : ''}
+  `;
+  
+  document.getElementById('detail-modal-body').innerHTML = html;
+  openModal('detail-modal');
 }
 
 // ==========================================================
@@ -15459,6 +16243,79 @@ async function checkForMissingData() {
     return false;
   }
 }
+// ADD THIS FUNCTION AFTER renderProjects()
+function renderSettings() {
+  console.log('🔍 renderSettings called');
+  
+  // ✅ Find or create page-settings at body level
+  let page = document.getElementById('page-settings');
+  
+  if (page) {
+    const correctParent = document.body;
+    if (page.parentElement !== correctParent) {
+      console.warn(`⚠️ page-settings is inside ${page.parentElement?.id || 'unknown'}, moving to body...`);
+      page.remove();
+      correctParent.appendChild(page);
+    }
+  }
+  
+  if (!page) {
+    console.log('🔧 Creating page-settings at body level');
+    page = document.createElement('div');
+    page.className = 'page';
+    page.id = 'page-settings';
+    document.body.appendChild(page);
+  }
+  
+  // ✅ Only rebuild if empty
+  if (page.children.length === 0) {
+    page.innerHTML = `
+      <div class="item-card">
+        <div class="item-title">📦 สำรองข้อมูล (Export)</div>
+        <div class="item-desc">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ JSON</div>
+        <div class="item-footer">
+          <span></span>
+          <button type="button" class="btn" onclick="exportAll()">Export JSON</button>
+        </div>
+      </div>
+      <div class="item-card">
+        <div class="item-title">📥 กู้คืนข้อมูล (Import)</div>
+        <div class="item-desc">อัพโหลดไฟล์ JSON เพื่อ restoring ข้อมูล <strong style="color:var(--red);">⚠️ ข้อมูลเดิมจะถูกลบหมด</strong></div>
+        <div class="item-footer">
+          <span></span>
+          <label class="btn secondary" style="cursor:pointer;">
+            Import JSON
+            <input type="file" accept=".json" style="display:none;" onchange="importAll(event)">
+          </label>
+        </div>
+      </div>
+      
+      <div class="item-card" style="border-color: var(--accent);">
+        <div class="item-title">☁️ อัปเดตข้อมูลขึ้นคลาวด์</div>
+        <div class="item-desc" style="color: var(--accent2);">
+          🔄 ใช้เมื่อข้อมูลในเครื่อง (LiveServer) ใหม่กว่าบนคลาวด์ (GitHub Pages)
+          <br><span style="font-size:11px;color:var(--muted);">⚠️ ข้อมูลบนคลาวด์จะถูกแทนที่ด้วยข้อมูลในเครื่อง</span>
+        </div>
+        <div class="item-footer">
+          <span></span>
+          <button type="button" class="btn" onclick="forceSyncLocalToFirestore()" style="background: var(--accent);">
+            ☁️ อัปเดตคลาวด์
+          </button>
+        </div>
+      </div>
+      <div class="item-card" style="border-color: var(--green);">
+        <div class="item-title">⏪ กู้คืนจาก Backup</div>
+        <div class="item-desc">กู้คืนข้อมูลจาก backup อัตโนมัติในเครื่อง (7 วันล่าสุด)</div>
+        <div class="item-footer">
+          <span></span>
+          <button type="button" class="btn" onclick="restoreFromBackup()" style="background: var(--green);">
+            ⏪ กู้คืน
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}
 
 
 // เรียกใน initApp() หลังจาก loadAllCategoriesFromFirestore()
@@ -15536,7 +16393,7 @@ async function initApp() {
   renderFocusThisWeek();
   renderOverdueGoals();
   await renderCalendar();
-  
+  renderSettings();
   visionCatManager.render();
   goalCatManager.render();
   studyCatManager.render();
@@ -15557,6 +16414,11 @@ async function initApp() {
   } catch (err) {
     console.warn('⚠️ checkForMissingData error:', err);
   }
+  try {
+    await initPath();
+  } catch (err) {
+    console.warn('⚠️ Init Path error:', err);
+  }
   
   setTimeout(() => {
     syncBottomTabActive();
@@ -15573,6 +16435,18 @@ async function initApp() {
     enableDragSort('inbox-list', getInbox, saveInbox, renderInbox);
     enableDragSort('daily-list', getDaily, saveDaily, renderDaily);
   }, 500);
+
+  setTimeout(() => {
+  const page = document.getElementById('page-projects');
+  const finance = document.getElementById('page-finance');
+  if (page && finance && finance.contains(page)) {
+    console.warn('⚠️ page-projects is inside page-finance, moving back...');
+    const wrapper = document.querySelector('.nav-wrapper');
+    if (wrapper && wrapper.nextSibling) {
+      wrapper.parentElement.insertBefore(page, wrapper.nextSibling);
+    }
+  }
+}, 1000);
 
   const savedState = localStorage.getItem('calendar_collapsed');
   if (savedState === 'true') {
