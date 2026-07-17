@@ -2261,7 +2261,6 @@ textarea.input {
         <button type="button" class="btn" id="upload-btn" onclick="openUploadWidget()">📁 + เพิ่มรูป</button>
         <button type="button" class="btn secondary" id="ref-select-btn" onclick="toggleRefSelection()">✏️ Select</button>
         <button type="button" class="btn secondary" id="ref-select-all-btn" onclick="toggleSelectAll()" style="display:none;">SelectAll</button>
-        <button type="button" class="btn secondary" id="ref-back-btn" onclick="clearRefFilters()" style="display:none;">📁 กลับไป Board</button>
         <input class="input" id="ref-search" placeholder="🔍 ค้นหาทุกอย่าง (หมวด, board, tags, note)" 
                 list="ref-search-suggestions" style="flex:1;min-width:120px;" 
                 oninput="renderRef()" onchange="renderRef()">
@@ -2284,6 +2283,9 @@ textarea.input {
           <option value="az">ชื่อ A-Z</option>
           <option value="za">ชื่อ Z-A</option>
         </select>
+        <button type="button" class="btn secondary" id="ref-back-btn" onclick="clearRefFilters()" style="display:none; font-size:11px; padding:4px 12px;">
+    📁 กลับไป Board
+  </button>
       </div>
       <div id="ref-board-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
       <div class="grid" id="ref-grid"></div>
@@ -2603,7 +2605,7 @@ textarea.input {
     <div id="wishlist-list"></div>
     <div class="empty" id="wishlist-empty" style="display:none;">ยังไม่มี Wishlist</div>
   </div>
-</div>
+
 
 <!-- ============ PAGE: Study Plan ============ -->
 <div class="page" id="page-study">
@@ -2676,8 +2678,7 @@ textarea.input {
   
   <!-- ⬇️ content ต้องอยู่ภายใน #page-projects ⬇️ -->
   <div id="projects-list"></div>
-  <div class="empty" id="projects-empty" style="display:none;">ยังไม่มีโปรเจกต์</div>
-  
+  <div class="empty" id="projects-empty" style="display:none;">ยังไม่มีโปรเจกต์</div>  
 </div><!-- ✅ ปิด div.page ที่นี่เท่านั้น -->
 
 <!-- Project Modal -->
@@ -3429,7 +3430,7 @@ textarea.input {
     <div class="modal-actions">
       <button type="button" class="btn secondary" onclick="closeModal('inbox-convert-modal')">ยกเลิก</button>
       <button type="button" class="btn" onclick="confirmConvertInbox(event)">แปลง + ลบ Inbox</button>
-
+      <div class="modal-overlay" id="inbox-convert-modal" onclick="if(event.target===this) closeModal('inbox-convert-modal')"></div>
     </div>
   </div>
 </div>
@@ -5273,10 +5274,22 @@ function updateCategoryFilterSuggestions() {
 function addNewRefCategory() {
   const label = prompt('ชื่อหมวดหมู่ใหม่:');
   if (!label || !label.trim()) return;
-  addRefCustomCategory(label.trim());
+  const key = addRefCustomCategory(label.trim());
   document.getElementById('ref-input-category').value = label.trim();
+  
+  // ✅ Update all category suggestions
   updateRefCategorySuggestions();
   updateCategoryFilterSuggestions();
+  
+  // ✅ Sync to Firestore
+  syncRefCategoriesToFirestore();
+  
+  // ✅ Also update batch category suggestions
+  const batchCatInput = document.getElementById('batch-category');
+  if (batchCatInput) {
+    batchCatInput.value = label.trim();
+  }
+  
   showToast('✅ เพิ่มหมวดหมู่ "' + label.trim() + '" แล้ว', 'success');
 }
 
@@ -5346,11 +5359,18 @@ function saveRefTagSuggestions(tags) {
 }
 
 function updateTagSuggestions() {
-  const datalist = document.getElementById('ref-tag-suggestions');
-  if (!datalist) return;
-  const tags = getRefTagSuggestions();
-  datalist.innerHTML = tags.map(t => `<option value="${t}">`).join('');
-  console.log('✅ Tags updated:', tags);  // ← เพิ่มเพื่อ debug
+  // Ref tag suggestions
+  const refDatalist = document.getElementById('ref-tag-suggestions');
+  if (refDatalist) {
+    const tags = getRefTagSuggestions();
+    refDatalist.innerHTML = tags.map(t => `<option value="${t}">`).join('');
+  }
+  
+  // Also update batch tag suggestions
+  const batchDatalist = document.getElementById('ref-tag-suggestions');
+  // It's the same element, already updated above
+  
+  console.log('✅ Tags updated:', getRefTagSuggestions());
 }
 
 function addTagSuggestion(tag) {
@@ -5775,10 +5795,19 @@ async function renderRef() {
 
   let items = await getRefs();
 
+  // ✅ ตรวจสอบว่ามีการกรองหรือค้นหาหรือไม่
+  const hasFilter = search || boardFilter || catFilter || state.active === 'fav';
+  const refBackBtn = document.getElementById('ref-back-btn');
+
+  // ✅ แสดง/ซ่อนปุ่ม "กลับไป Board" ตามเงื่อนไข
+  if (hasFilter) {
+    if (refBackBtn) refBackBtn.style.display = 'inline-block';
+  } else {
+    if (refBackBtn) refBackBtn.style.display = 'none';
+  }
+
   // ✅ ถ้ามี Search หรือ Filter → แสดงรูปตามปกติ (Grid)
-  if (search || boardFilter || catFilter) {
-    document.getElementById('ref-back-btn').style.display = 'inline-block';
-    
+  if (hasFilter) {
     // ค้นหา (case-insensitive)
     if (search) {
       const searchLower = search.toLowerCase();
@@ -5852,9 +5881,7 @@ async function renderRef() {
       `;
       grid.appendChild(card);
     });
-    return; // ✅ สำคัญ: ออกจากฟังก์ชัน
-  } else {
-    document.getElementById('ref-back-btn').style.display = 'none';
+    return; // ✅ ออกจากฟังก์ชัน
   }
 
   // ==========================================================
@@ -5881,65 +5908,63 @@ async function renderRef() {
   // ✅ เรียง Board ตามจำนวนรูป (มากไปน้อย)
   boardNames.sort((a, b) => boardMap[b].length - boardMap[a].length);
 
-// ✅ เปลี่ยนเป็นแนวนอน (flex) แทน grid
-grid.innerHTML = `
-  <!-- 💡 ข้อความแนะนำ 移到上方 -->
-  <div style="
-    grid-column: 1 / -1;
-    text-align: center;
-    color: var(--muted);
-    font-size: 12px;
-    padding: 8px 12px;
-    background: var(--surface2);
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    margin-bottom: 12px;
-  ">
-    💡 คลิกที่ Board เพื่อดูรูป  หรือใช้ 🔍 Search / 📂 Filter ด้านบน
-  </div>
+  grid.innerHTML = `
+    <div style="
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 8px 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    ">
+      💡 คลิกที่ Board เพื่อดูรูป  หรือใช้ 🔍 Search / 📂 Filter ด้านบน
+    </div>
 
-  <div style="
-    grid-column: 1 / -1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: flex-start;
-  ">
-    ${boardNames.map(board => {
-      const boardItems = boardMap[board];
-      const count = boardItems.length;
-      const thumbnails = boardItems.slice(0, 3);
-      
-      return `
-        <div class="board-card" onclick="document.getElementById('ref-board-filter').value='${board}';renderRef();" 
-             style="
-               flex: 0 0 auto;
-               width: 200px;
-               min-height: 130px;
-               padding: 16px;
-             ">
-          
-          <!-- Thumbnail Grid -->
-          <div class="board-thumbnails" style="opacity:0.12;">
-            ${thumbnails.map(item => `
-              <img src="${item.url}">
-            `).join('')}
-            ${thumbnails.length < 3 ? Array(3 - thumbnails.length).fill('<div style="background:var(--surface2);border-radius:6px;"></div>').join('') : ''}
+    <div style="
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: flex-start;
+    ">
+      ${boardNames.map(board => {
+        const boardItems = boardMap[board];
+        const count = boardItems.length;
+        const thumbnails = boardItems.slice(0, 3);
+        
+        return `
+          <div class="board-card" onclick="document.getElementById('ref-board-filter').value='${board}';renderRef();" 
+               style="
+                 flex: 0 0 auto;
+                 width: 200px;
+                 min-height: 130px;
+                 padding: 16px;
+               ">
+            
+            <!-- Thumbnail Grid -->
+            <div class="board-thumbnails" style="opacity:0.12;">
+              ${thumbnails.map(item => `
+                <img src="${item.url}">
+              `).join('')}
+              ${thumbnails.length < 3 ? Array(3 - thumbnails.length).fill('<div style="background:var(--surface2);border-radius:6px;"></div>').join('') : ''}
+            </div>
+            
+            <!-- Content -->
+            <div class="board-content">
+              <div class="board-icon" style="font-size:28px;margin-bottom:2px;">📁</div>
+              <div class="board-name" style="font-size:14px;">${board}</div>
+              <div class="board-count" style="font-size:12px;">${count} รูป</div>
+              ${count > 3 ? `<div class="board-extra" style="font-size:10px;">+${count - 3} รูปเพิ่มเติม</div>` : ''}
+            </div>
           </div>
-          
-          <!-- Content -->
-          <div class="board-content">
-            <div class="board-icon" style="font-size:28px;margin-bottom:2px;">📁</div>
-            <div class="board-name" style="font-size:14px;">${board}</div>
-            <div class="board-count" style="font-size:12px;">${count} รูป</div>
-            ${count > 3 ? `<div class="board-extra" style="font-size:10px;">+${count - 3} รูปเพิ่มเติม</div>` : ''}
-          </div>
-        </div>
-      `;
-    }).join('')}
-  </div>
-`;
-empty.style.display = 'none';
+        `;
+      }).join('')}
+    </div>
+  `;
+  empty.style.display = 'none';
 }
 async function updateBoardTabs() {
   const tabs = document.getElementById('ref-board-tabs');
@@ -5999,13 +6024,58 @@ function toggleRefSelect(id) {
 }
 function toggleSelectAll() {
   getRefs().then(items => {
-    if (selectedRefIds.size === items.length) {
-      // deselect all
-      selectedRefIds.clear();
-    } else {
-      // select all
-      items.forEach(i => selectedRefIds.add(i.id));
+    // ✅ กรองเฉพาะรายการที่แสดงในหน้าจอปัจจุบัน (ตาม board filter)
+    const boardFilter = document.getElementById('ref-board-filter').value;
+    const searchFilter = document.getElementById('ref-search').value.toLowerCase();
+    const catFilter = document.getElementById('ref-cat-filter').value;
+    
+    let visibleItems = items;
+    
+    // กรองตาม board
+    if (boardFilter) {
+      visibleItems = visibleItems.filter(i => (i.board || 'uncategorized').toLowerCase().includes(boardFilter.toLowerCase()));
     }
+    
+    // กรองตาม search
+    if (searchFilter) {
+      const allCats = getAllRefCategories();
+      visibleItems = visibleItems.filter(i => {
+        const catObj = allCats.find(c => c.key === i.category);
+        const catLabel = catObj ? catObj.label : i.category;
+        return catLabel.toLowerCase().includes(searchFilter) ||
+               (i.board || '').toLowerCase().includes(searchFilter) ||
+               i.tags.some(t => t.toLowerCase().includes(searchFilter)) ||
+               i.note.toLowerCase().includes(searchFilter);
+      });
+    }
+    
+    // กรองตามหมวดหมู่
+    if (catFilter) {
+      const allCats = getAllRefCategories();
+      const matchedKeys = allCats
+        .filter(c => c.label.toLowerCase().includes(catFilter.toLowerCase()))
+        .map(c => c.key);
+      visibleItems = visibleItems.filter(i => matchedKeys.includes(i.category));
+    }
+    
+    // ถ้าไม่มีรายการที่กรอง ให้ select ทั้งหมด
+    if (visibleItems.length === 0) {
+      showToast('⚠️ ไม่มีรูปในบอร์ดนี้', 'warning');
+      return;
+    }
+    
+    // ตรวจสอบว่าเลือกรูปในบอร์ดนี้ทั้งหมดแล้วหรือยัง
+    const visibleIds = new Set(visibleItems.map(i => i.id));
+    const selectedVisible = [...selectedRefIds].filter(id => visibleIds.has(id));
+    
+    if (selectedVisible.length === visibleItems.length) {
+      // ถ้าเลือกหมดแล้ว → ยกเลิกเลือกเฉพาะในบอร์ดนี้
+      visibleItems.forEach(i => selectedRefIds.delete(i.id));
+    } else {
+      // เลือกทั้งหมดในบอร์ดนี้
+      visibleItems.forEach(i => selectedRefIds.add(i.id));
+    }
+    
     renderRef();
     updateBatchInfo();
   });
@@ -6025,10 +6095,42 @@ function updateBatchInfo() {
   const selectAllBtn = document.getElementById('ref-select-all-btn');
   if (selectAllBtn && refSelectionMode) {
     getRefs().then(items => {
-      if (selectedRefIds.size === items.length && items.length > 0) {
-        selectAllBtn.textContent = 'cancel selection';
+      // ✅ กรองเฉพาะรายการที่แสดงในหน้าจอปัจจุบัน
+      const boardFilter = document.getElementById('ref-board-filter').value;
+      const searchFilter = document.getElementById('ref-search').value.toLowerCase();
+      const catFilter = document.getElementById('ref-cat-filter').value;
+      
+      let visibleItems = items;
+      
+      if (boardFilter) {
+        visibleItems = visibleItems.filter(i => (i.board || 'uncategorized').toLowerCase().includes(boardFilter.toLowerCase()));
+      }
+      if (searchFilter) {
+        const allCats = getAllRefCategories();
+        visibleItems = visibleItems.filter(i => {
+          const catObj = allCats.find(c => c.key === i.category);
+          const catLabel = catObj ? catObj.label : i.category;
+          return catLabel.toLowerCase().includes(searchFilter) ||
+                 (i.board || '').toLowerCase().includes(searchFilter) ||
+                 i.tags.some(t => t.toLowerCase().includes(searchFilter)) ||
+                 i.note.toLowerCase().includes(searchFilter);
+        });
+      }
+      if (catFilter) {
+        const allCats = getAllRefCategories();
+        const matchedKeys = allCats
+          .filter(c => c.label.toLowerCase().includes(catFilter.toLowerCase()))
+          .map(c => c.key);
+        visibleItems = visibleItems.filter(i => matchedKeys.includes(i.category));
+      }
+      
+      const visibleIds = new Set(visibleItems.map(i => i.id));
+      const selectedVisible = [...selectedRefIds].filter(id => visibleIds.has(id));
+      
+      if (visibleItems.length > 0 && selectedVisible.length === visibleItems.length) {
+        selectAllBtn.textContent = 'ยกเลิกเลือก';
       } else {
-        selectAllBtn.textContent = 'select all';
+        selectAllBtn.textContent = 'Selectall';
       }
     });
   }
@@ -6046,9 +6148,14 @@ async function applyBatchEdit() {
   const hasTags = newTagsStr.trim() !== '';
   const newTags = hasTags ? newTagsStr.split(',').map(t => t.trim()).filter(Boolean) : null;
   
-  // ✅ เก็บ tag suggestions
-  if (hasTags) {
-    newTags.forEach(t => addTagSuggestion(t));
+  // ✅ เก็บ tag suggestions (both ref and global)
+  if (hasTags && newTags) {
+    newTags.forEach(t => {
+      if (t) {
+        addTagSuggestion(t);
+        addGlobalTagSuggestion(t);
+      }
+    });
   }
   
   const items = await getRefs();
@@ -6062,20 +6169,32 @@ async function applyBatchEdit() {
         item.category = catObj ? catObj.key : newCat;
       }
       if (newBoard) {
-        // ✅ เพิ่ม board ใหม่เข้า suggestion ถ้ายังไม่มี
         const boards = getAllRefBoards();
         if (!boards.includes(newBoard)) {
           addRefCustomBoard(newBoard);
         }
         item.board = newBoard;
       }
-      if (hasTags) item.tags = newTags;
+      if (hasTags && newTags) {
+        item.tags = newTags;
+      }
       count++;
     }
   });
   
   await saveRefs(items);
   collectTagSuggestionsFromInput('batch-tags');
+  
+  // ✅ Update all suggestions
+  updateBoardSuggestions();
+  updateBoardFilterSuggestions();
+  updateTagSuggestions();
+  updateSearchSuggestions();
+  updateRefCategorySuggestions();
+  
+  // ✅ Sync categories to Firestore
+  syncRefCategoriesToFirestore();
+  
   // รีเซ็ต state + UI
   refSelectionMode = false;
   selectedRefIds.clear();
@@ -6085,12 +6204,7 @@ async function applyBatchEdit() {
   document.getElementById('batch-category').value = '';
   document.getElementById('batch-board').value = '';
   document.getElementById('batch-tags').value = '';
-  
-  // ✅ อัพเดต suggestions
-  updateBoardSuggestions();
-  updateBoardFilterSuggestions();
-  updateTagSuggestions();
-  updateSearchSuggestions();
+  document.getElementById('ref-back-btn').style.display = 'none';
   
   renderRef();
   renderDashboard();
@@ -10003,9 +10117,17 @@ async function confirmConvertInbox(event) {
   if (!item) return;
 
   const text = item.text;
+  
+  // ✅ Delete the item AFTER conversion, not before
+  // But we need to save the text first
+  
+  // Close modal first
   closeModal('inbox-convert-modal');
+  
+  // Delete the inbox item
   await saveInbox(items.filter(i => i.id !== id));
 
+  // Open target modal with the text
   if (target === 'vision') {
     document.getElementById('vision-input-title').value = text;
     document.getElementById('vision-input-desc').value = '';
@@ -10031,24 +10153,20 @@ async function confirmConvertInbox(event) {
     document.getElementById('daily-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('daily-modal');
   } else if (target === 'idea') {
-    // ✅ Idea: ใช้ content แทน title
     document.getElementById('idea-input-content').value = text;
     document.getElementById('idea-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('idea-modal');
   } else if (target === 'knowledge') {
-    // ✅ Knowledge: ใช้ title แทน แต่ให้ content ว่าง
     document.getElementById('knowledge-input-title').value = text;
     document.getElementById('knowledge-input-content').value = '';
     document.getElementById('knowledge-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('knowledge-modal');
   } else if (target === 'art') {
-    // ✅ Art: ใช้ title
     document.getElementById('art-input-title').value = text;
     document.getElementById('art-input-content').value = '';
     document.getElementById('art-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('art-modal');
   } else if (target === 'fit') {
-    // ✅ Fit: ใช้ content
     document.getElementById('fit-input-content').value = text;
     document.getElementById('fit-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('fit-modal');
@@ -11489,10 +11607,19 @@ function handleTagInput(input) {
 }
 
 // เรียกเมื่อบันทึก/แก้ไข เพื่อเก็บ tag ใหม่
-function collectTagSuggestionsFromInput() {
-  const input = document.getElementById('ref-input-tags');
+function collectTagSuggestionsFromInput(inputId) {
+  const input = document.getElementById(inputId || 'ref-input-tags');
+  if (!input) return;
+  
   const tags = input.value.split(',').map(t => t.trim()).filter(Boolean);
-  tags.forEach(t => addTagSuggestion(t));
+  tags.forEach(t => {
+    if (t) addTagSuggestion(t);
+  });
+  
+  // ✅ Also update global tag suggestions
+  tags.forEach(t => {
+    if (t) addGlobalTagSuggestion(t);
+  });
 }
 function handleBatchTagInput(input) {
   const value = input.value;
@@ -11985,7 +12112,11 @@ function clearRefFilters() {
   document.getElementById('ref-search').value = '';
   document.getElementById('ref-cat-filter').value = '';
   document.getElementById('ref-board-filter').value = '';
-  document.getElementById('ref-back-btn').style.display = 'none';
+  
+  // ✅ ซ่อนปุ่มกลับไป Board
+  const refBackBtn = document.getElementById('ref-back-btn');
+  if (refBackBtn) refBackBtn.style.display = 'none';
+  
   renderRef();
 }
 // หลังจาก render รายการ
@@ -12354,6 +12485,15 @@ function toggleFavFilter(module) {
     btn.style.background = isActive ? 'var(--accent)' : 'var(--surface2)';
     btn.style.color = isActive ? 'white' : 'var(--muted)';
     btn.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
+  }
+  
+  // ✅ สำหรับ Ref module: อัพเดตปุ่มกลับไป Board
+  if (module === 'ref') {
+    const refBackBtn = document.getElementById('ref-back-btn');
+    if (refBackBtn) {
+      const isFav = filterStates.ref.active === 'fav';
+      refBackBtn.style.display = isFav ? 'inline-block' : 'none';
+    }
   }
   
   // รีเฟรช module
