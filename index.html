@@ -2780,6 +2780,31 @@ textarea.input {
       </label>
     </div>
   </div>
+  
+  <!-- ✅ เพิ่มปุ่มนี้ -->
+  <div class="item-card" style="border-color: var(--accent);">
+    <div class="item-title">☁️ อัปเดตข้อมูลขึ้นคลาวด์</div>
+    <div class="item-desc" style="color: var(--accent2);">
+      🔄 ใช้เมื่อข้อมูลในเครื่อง (LiveServer) ใหม่กว่าบนคลาวด์ (GitHub Pages)
+      <br><span style="font-size:11px;color:var(--muted);">⚠️ ข้อมูลบนคลาวด์จะถูกแทนที่ด้วยข้อมูลในเครื่อง</span>
+    </div>
+    <div class="item-footer">
+      <span></span>
+      <button type="button" class="btn" onclick="forceSyncLocalToFirestore()" style="background: var(--accent);">
+        ☁️ อัปเดตคลาวด์
+      </button>
+    </div>
+  </div>
+  <div class="item-card" style="border-color: var(--green);">
+    <div class="item-title">⏪ กู้คืนจาก Backup</div>
+    <div class="item-desc">กู้คืนข้อมูลจาก backup อัตโนมัติในเครื่อง (7 วันล่าสุด)</div>
+    <div class="item-footer">
+      <span></span>
+      <button type="button" class="btn" onclick="restoreFromBackup()" style="background: var(--green);">
+        ⏪ กู้คืน
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ============ MODALS ============ -->
@@ -4201,10 +4226,36 @@ function createFirestoreModule(collectionName, docId = 'items') {
     currentData = [...items];
     try {
       await docRef.set({ items: currentData });
+      
+      // ✅ เก็บ backup พร้อม timestamp
+      const backupKey = `fb_${collectionName}_backup_${new Date().toISOString().slice(0,10)}`;
+      try {
+        localStorage.setItem(backupKey, JSON.stringify({
+          items: currentData,
+          timestamp: new Date().toISOString(),
+          count: currentData.length
+        }));
+        
+        // ✅ ลบ backup เก่าเกิน 7 วัน
+        const keys = Object.keys(localStorage);
+        const today = new Date();
+        for (const key of keys) {
+          if (key.startsWith(`fb_${collectionName}_backup_`)) {
+            const dateStr = key.replace(`fb_${collectionName}_backup_`, '');
+            const backupDate = new Date(dateStr);
+            const diffDays = (today - backupDate) / (1000 * 60 * 60 * 24);
+            if (diffDays > 7) {
+              localStorage.removeItem(key);
+            }
+          }
+        }
+      } catch (e) {}
+      
       // เก็บ localStorage backup เผื่อ (optional)
       try {
         localStorage.setItem(`fb_${collectionName}_backup`, JSON.stringify(currentData));
       } catch (e) {}
+      
     } catch (err) {
       console.warn(`⚠️ saveItems(${collectionName}) error:`, err);
       // fallback: เก็บ localStorage ไว้ก่อน
@@ -4214,6 +4265,7 @@ function createFirestoreModule(collectionName, docId = 'items') {
       throw err;
     }
   }
+
 
   function onSnapshot(callback) {
     const unsubscribe = docRef.onSnapshot(doc => {
@@ -4238,21 +4290,223 @@ function createFirestoreModule(collectionName, docId = 'items') {
     listeners = [];
   }
 
-  // Migrate จาก localStorage (ถ้ามี)
+  // แทนที่ migrateFromLocalStorage ใน createFirestoreModule
   async function migrateFromLocalStorage(localStorageKey) {
     try {
       const localData = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
       if (localData.length > 0) {
         const current = await getItems();
-        if (current.length === 0) {
+        
+        // ✅ เปรียบเทียบ createdAt ล่าสุดแทนจำนวน
+        const getLatestDate = (items) => {
+          if (!items || items.length === 0) return null;
+          return items.reduce((latest, item) => {
+            const date = item.createdAt || item.date || '';
+            return date > latest ? date : latest;
+          }, '');
+        };
+        
+        const localLatest = getLatestDate(localData);
+        const firestoreLatest = getLatestDate(current);
+        
+        // ✅ ถ้า localStorage มีข้อมูลใหม่กว่า หรือ Firestore ว่าง
+        if (current.length === 0 || (localLatest && localLatest > firestoreLatest)) {
           await saveItems(localData);
-          console.log(`✅ Migrated ${localStorageKey} (${localData.length} items) to Firestore`);
+          console.log(`✅ Synced ${localStorageKey} (${localData.length} items) to Firestore (newer data)`);
+        } else {
+          console.log(`⏭️ Skipped ${localStorageKey}: Firestore has newer data`);
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn(`⚠️ migrateFromLocalStorage error for ${localStorageKey}:`, e);
+    }
   }
-
+  
+  // ✅ ต้องมี return เพื่อให้ใช้งานฟังก์ชันต่างๆ ได้
   return { getItems, saveItems, onSnapshot, cleanup, migrateFromLocalStorage, docRef };
+}  // ← ปิด createFirestoreModule ด้วยวงเล็บปีกกานี้
+// ==========================================================
+// FORCE SYNC LOCALSTORAGE TO FIRESTORE
+// ==========================================================
+
+// ==========================================================
+// FORCE SYNC LOCALSTORAGE TO FIRESTORE
+// ==========================================================
+
+async function forceSyncLocalToFirestore() {
+  // ✅ สร้าง backup ก่อน sync
+  const backupData = {};
+  const modules = [
+    { name: 'refs', get: getRefs, save: saveRefs, key: 'ref_items' },
+    { name: 'visions', get: getVisions, save: saveVisions, key: 'life_vision_items' },
+    { name: 'goals', get: getGoals, save: saveGoals, key: 'goals_items' },
+    { name: 'finances', get: getFinances, save: saveFinances, key: 'finance_items' },
+    { name: 'wishlist', get: getWishes, save: saveWishes, key: 'wishlist_items' },
+    { name: 'studies', get: getStudies, save: saveStudies, key: 'study_items' },
+    { name: 'projects', get: getProjects, save: saveProjects, key: 'project_items' },
+    { name: 'inbox', get: getInbox, save: saveInbox, key: 'inbox_items' },
+    { name: 'daily', get: getDaily, save: saveDaily, key: 'daily_items' },
+    { name: 'ideas', get: getIdeas, save: saveIdeas, key: 'idea_items' },
+    { name: 'knowledges', get: getKnowledges, save: saveKnowledges, key: 'knowledge_items' },
+    { name: 'arts', get: getArts, save: saveArts, key: 'art_items' },
+    { name: 'fits', get: getFits, save: saveFits, key: 'fit_items' },
+    { name: 'transactions', get: getTransactions, save: saveTransactions, key: 'finance_transactions' },
+    { name: 'budgets', get: getBudgets, save: saveBudgets, key: 'finance_budgets' }
+  ];
+
+  // ✅ Backup ข้อมูลปัจจุบันจาก Firestore
+  for (const mod of modules) {
+    try {
+      backupData[mod.key] = await mod.get();
+    } catch (e) {
+      console.warn(`⚠️ Backup error for ${mod.name}:`, e);
+    }
+  }
+  
+  // ✅ เก็บ backup ไว้ใน localStorage เผื่อ
+  try {
+    localStorage.setItem('pre_sync_backup', JSON.stringify(backupData));
+    localStorage.setItem('pre_sync_backup_time', new Date().toISOString());
+  } catch (e) {
+    console.warn('⚠️ Could not save backup to localStorage:', e);
+  }
+  
+  // ✅ ให้ผู้ใช้เลือกทิศทาง
+  let report = '📊 เปรียบเทียบข้อมูล:\n\n';
+  for (const mod of modules) {
+    try {
+      const localData = JSON.parse(localStorage.getItem(mod.key) || '[]');
+      const firestoreData = await mod.get();
+      report += `${mod.name}: Local=${localData.length}, Cloud=${firestoreData.length}\n`;
+      
+      // แสดงวันที่ล่าสุด
+      const getLatest = (items) => {
+        if (!items || items.length === 0) return 'ไม่มีข้อมูล';
+        const dates = items.map(i => i.createdAt || i.date || '').filter(Boolean);
+        return dates.length > 0 ? dates.sort().reverse()[0] : 'ไม่มีวันที่';
+      };
+      report += `  Local latest: ${getLatest(localData)}\n`;
+      report += `  Cloud latest: ${getLatest(firestoreData)}\n\n`;
+    } catch (e) {
+      report += `${mod.name}: ❌ Error reading data\n\n`;
+    }
+  }
+  
+  if (!confirm(`⚠️ ${report}\n\nเลือกทิศทาง:\n- "ตกลง": Cloud ← Local (ทับข้อมูลบนคลาวด์ด้วยข้อมูลในเครื่อง)\n- "ยกเลิก": ไม่ทำอะไร`)) {
+    return;
+  }
+  
+  // ✅ ถ้าผู้ใช้ยืนยัน ให้ sync
+  try {
+    let totalSynced = 0;
+
+    for (const mod of modules) {
+      try {
+        // ดึงข้อมูลจาก localStorage โดยตรง (ไม่ผ่าน Firestore)
+        const localData = JSON.parse(localStorage.getItem(mod.key) || '[]');
+        
+        if (localData.length > 0) {
+          // ✅ เปรียบเทียบวันที่แทนจำนวน
+          const getLatestDate = (items) => {
+            if (!items || items.length === 0) return null;
+            return items.reduce((latest, item) => {
+              const date = item.createdAt || item.date || '';
+              return date > latest ? date : latest;
+            }, '');
+          };
+          
+          const currentData = await mod.get();
+          const localLatest = getLatestDate(localData);
+          const firestoreLatest = getLatestDate(currentData);
+          
+          // ✅ ถ้า localStorage มีข้อมูลใหม่กว่า หรือ Firestore ว่าง
+          if (currentData.length === 0 || (localLatest && localLatest > firestoreLatest)) {
+            await mod.save(localData);
+            totalSynced += localData.length;
+            console.log(`✅ Synced ${mod.name}: ${localData.length} items (newer data)`);
+          } else {
+            console.log(`⏭️ Skipped ${mod.name}: Firestore has newer or equal data`);
+          }
+        }
+      } catch (err) {
+        console.warn(`⚠️ Error syncing ${mod.name}:`, err);
+      }
+    }
+
+    // ✅ Syncing categories
+    try {
+      const categoriesData = {
+        vision: visionCatManager.getCategories(),
+        goals: goalCatManager.getCategories(),
+        study: studyCatManager.getCategories(),
+        finance: financeCatManager.getCategories(),
+        wish: wishCatManager.getCategories(),
+        ref: getAllRefCategories()
+      };
+      await db.collection('categories').doc('all_categories').set(categoriesData);
+      console.log('✅ Synced categories to Firestore');
+    } catch (err) {
+      console.warn('⚠️ Error syncing categories:', err);
+    }
+
+    showToast(`✅ อัปเดตข้อมูล ${totalSynced} รายการไปยังคลาวด์แล้ว`, 'success', 3000);
+    
+    // รีเฟรชหน้าทั้งหมด
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+
+  } catch (err) {
+    console.error('❌ Force sync error:', err);
+    showToast('❌ อัปเดตไม่สำเร็จ: ' + err.message, 'error', 3000);
+  }
+}
+// ==========================================================
+// RESTORE FROM BACKUP
+// ==========================================================
+
+async function restoreFromBackup() {
+  try {
+    const backupData = JSON.parse(localStorage.getItem('pre_sync_backup') || 'null');
+    if (!backupData) {
+      showToast('❌ ไม่พบ backup', 'error');
+      return;
+    }
+    
+    const backupTime = localStorage.getItem('pre_sync_backup_time') || 'ไม่ทราบเวลา';
+    
+    if (!confirm(`⚠️ กู้คืนข้อมูลจาก backup เมื่อ ${backupTime}?\n\nข้อมูลปัจจุบันจะถูกแทนที่`)) {
+      return;
+    }
+    
+    const modules = [
+      { name: 'refs', get: getRefs, save: saveRefs, key: 'ref_items' },
+      { name: 'visions', get: getVisions, save: saveVisions, key: 'life_vision_items' },
+      { name: 'goals', get: getGoals, save: saveGoals, key: 'goals_items' },
+      { name: 'finances', get: getFinances, save: saveFinances, key: 'finance_items' },
+      { name: 'wishlist', get: getWishes, save: saveWishes, key: 'wishlist_items' },
+      { name: 'studies', get: getStudies, save: saveStudies, key: 'study_items' },
+      { name: 'projects', get: getProjects, save: saveProjects, key: 'project_items' },
+      { name: 'inbox', get: getInbox, save: saveInbox, key: 'inbox_items' },
+      { name: 'daily', get: getDaily, save: saveDaily, key: 'daily_items' }
+    ];
+    
+    let count = 0;
+    for (const mod of modules) {
+      if (backupData[mod.key]) {
+        await mod.save(backupData[mod.key]);
+        count += backupData[mod.key].length;
+        console.log(`✅ Restored ${mod.name}: ${backupData[mod.key].length} items`);
+      }
+    }
+    
+    showToast(`✅ กู้คืนข้อมูล ${count} รายการสำเร็จ`, 'success', 3000);
+    setTimeout(() => location.reload(), 1500);
+    
+  } catch (err) {
+    console.error('❌ Restore error:', err);
+    showToast('❌ กู้คืนไม่สำเร็จ: ' + err.message, 'error');
+  }
 }
 let touchStartX = 0;
 let touchStartY = 0;
@@ -9777,18 +10031,24 @@ async function confirmConvertInbox(event) {
     document.getElementById('daily-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('daily-modal');
   } else if (target === 'idea') {
+    // ✅ Idea: ใช้ content แทน title
     document.getElementById('idea-input-content').value = text;
     document.getElementById('idea-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('idea-modal');
   } else if (target === 'knowledge') {
+    // ✅ Knowledge: ใช้ title แทน แต่ให้ content ว่าง
     document.getElementById('knowledge-input-title').value = text;
+    document.getElementById('knowledge-input-content').value = '';
     document.getElementById('knowledge-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('knowledge-modal');
   } else if (target === 'art') {
+    // ✅ Art: ใช้ title
     document.getElementById('art-input-title').value = text;
+    document.getElementById('art-input-content').value = '';
     document.getElementById('art-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('art-modal');
   } else if (target === 'fit') {
+    // ✅ Fit: ใช้ content
     document.getElementById('fit-input-content').value = text;
     document.getElementById('fit-input-date').value = new Date().toISOString().slice(0, 10);
     openModal('fit-modal');
@@ -10362,16 +10622,40 @@ async function exportAll() {
   const data = {
     version: 1,
     exportedAt: new Date().toISOString(),
+    
+    // ✅ โมดูลหลัก
     ref_library_items: await getRefs(),
     life_vision_items: await getVisions(),
     goals_items: await getGoals(),
     finance_items: await getFinances(),
     wishlist_items: await getWishes(),
-    study_items: await getStudies(),      // ← เพิ่ม
+    study_items: await getStudies(),
     project_items: await getProjects(),
     inbox_items: await getInbox(),
-    daily_items: await getDaily(),  // ← เพิ่ม
+    daily_items: await getDaily(),
+    
+    // ✅ เพิ่มโมดูลที่ขาดหายไป
+    idea_items: await getIdeas(),
+    knowledge_items: await getKnowledges(),
+    art_items: await getArts(),
+    fit_items: await getFits(),
+    
+    // ✅ เพิ่ม Finance Transactions & Budgets
+    finance_transactions: await getTransactions(),
+    finance_budgets: await getBudgets(),
+    budget_presets: await getPresets(),
+    
+    // ✅ เพิ่ม Categories (เพื่อให้หมวดหมู่กลับมาเหมือนเดิม)
+    categories: {
+      vision: visionCatManager.getCategories(),
+      goals: goalCatManager.getCategories(),
+      study: studyCatManager.getCategories(),
+      finance: financeCatManager.getCategories(),
+      wish: wishCatManager.getCategories(),
+      ref: getAllRefCategories()
+    }
   };
+  
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -10379,42 +10663,109 @@ async function exportAll() {
   a.download = `second-brain-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
+  
+  showToast(`✅ Export ข้อมูล ${Object.keys(data).length} ส่วนแล้ว`, 'success', 3000);
 }
 
 async function importAll(event) {
   const file = event.target.files[0];
   if (!file) return;
+  
   if (!confirm('⚠️ ข้อมูลเดิมทั้งหมดจะถูกลบและแทนที่ด้วยข้อมูลจากไฟล์\n\nดำเนินการต่อ?')) {
     event.target.value = '';
     return;
   }
+  
   const reader = new FileReader();
-  reader.onload = async (e) => {   // ← เพิ่ม async
+  reader.onload = async (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      if (data.ref_library_items) await saveRefs(data.ref_library_items);
-      if (data.life_vision_items) await saveVisions(data.life_vision_items);
-      if (data.goals_items) await saveGoals(data.goals_items);
-      if (data.finance_items) await saveFinances(data.finance_items);
-      if (data.wishlist_items) await saveWishes(data.wishlist_items);
-      if (data.study_items) await saveStudies(data.study_items);
-      if (data.project_items) await saveProjects(data.project_items);
-      if (data.inbox_items) await saveInbox(data.inbox_items);
-      if (data.daily_items) await saveDaily(data.daily_items);
+      let totalItems = 0;
       
-      // รอให้ render ทั้งหมดเสร็จ
+      // ✅ โมดูลหลัก
+      if (data.ref_library_items) { await saveRefs(data.ref_library_items); totalItems += data.ref_library_items.length; }
+      if (data.life_vision_items) { await saveVisions(data.life_vision_items); totalItems += data.life_vision_items.length; }
+      if (data.goals_items) { await saveGoals(data.goals_items); totalItems += data.goals_items.length; }
+      if (data.finance_items) { await saveFinances(data.finance_items); totalItems += data.finance_items.length; }
+      if (data.wishlist_items) { await saveWishes(data.wishlist_items); totalItems += data.wishlist_items.length; }
+      if (data.study_items) { await saveStudies(data.study_items); totalItems += data.study_items.length; }
+      if (data.project_items) { await saveProjects(data.project_items); totalItems += data.project_items.length; }
+      if (data.inbox_items) { await saveInbox(data.inbox_items); totalItems += data.inbox_items.length; }
+      if (data.daily_items) { await saveDaily(data.daily_items); totalItems += data.daily_items.length; }
+      
+      // ✅ โมดูลที่ขาดหายไป
+      if (data.idea_items) { await saveIdeas(data.idea_items); totalItems += data.idea_items.length; }
+      if (data.knowledge_items) { await saveKnowledges(data.knowledge_items); totalItems += data.knowledge_items.length; }
+      if (data.art_items) { await saveArts(data.art_items); totalItems += data.art_items.length; }
+      if (data.fit_items) { await saveFits(data.fit_items); totalItems += data.fit_items.length; }
+      
+      // ✅ Finance Transactions & Budgets
+      if (data.finance_transactions) { await saveTransactions(data.finance_transactions); totalItems += data.finance_transactions.length; }
+      if (data.finance_budgets) { await saveBudgets(data.finance_budgets); totalItems += data.finance_budgets.length; }
+      if (data.budget_presets) { await savePresets(data.budget_presets); totalItems += data.budget_presets.length; }
+      
+      // ✅ Categories
+      if (data.categories) {
+        if (data.categories.vision) {
+          const custom = data.categories.vision.filter(c => !DEFAULT_VISION_CATEGORIES.find(d => d.key === c.key));
+          localStorage.setItem('vision_custom_categories', JSON.stringify(custom));
+        }
+        if (data.categories.goals) {
+          const custom = data.categories.goals.filter(c => !DEFAULT_GOAL_CATEGORIES.find(d => d.key === c.key));
+          localStorage.setItem('goal_custom_categories', JSON.stringify(custom));
+        }
+        if (data.categories.study) {
+          const custom = data.categories.study.filter(c => !DEFAULT_STUDY_CATEGORIES.find(d => d.key === c.key));
+          localStorage.setItem('study_custom_categories', JSON.stringify(custom));
+        }
+        if (data.categories.finance) {
+          const custom = data.categories.finance.filter(c => !DEFAULT_FINANCE_CATEGORIES.find(d => d.key === c.key));
+          localStorage.setItem('finance_custom_categories', JSON.stringify(custom));
+        }
+        if (data.categories.wish) {
+          const custom = data.categories.wish.filter(c => !DEFAULT_WISH_CATEGORIES.find(d => d.key === c.key));
+          localStorage.setItem('wish_custom_categories', JSON.stringify(custom));
+        }
+        if (data.categories.ref) {
+          const custom = data.categories.ref.filter(c => !DEFAULT_REF_CATEGORIES.find(d => d.key === c.key));
+          localStorage.setItem('ref_custom_categories', JSON.stringify(custom));
+        }
+        
+        // รีเฟรช UI Categories
+        visionCatManager.render();
+        goalCatManager.render();
+        studyCatManager.render();
+        financeCatManager.render();
+        wishCatManager.render();
+        updateRefCategorySuggestions();
+        updateCategoryFilterSuggestions();
+      }
+      
+      // ✅ รอให้ render ทั้งหมดเสร็จ
       await Promise.all([
         renderRef(),
         renderVision(),
         renderGoals(),
+        renderStudy(),
+        renderProjects(),
         renderFinanceGoals(),
         renderWishlist(),
-        renderDashboard(),
-        renderFinanceSummary()
+        renderInbox(),
+        renderDaily(),
+        renderIdea(),
+        renderKnowledge(),
+        renderArt(),
+        renderFit(),
+        renderFinanceTransactions(),
+        renderBudgets(),
+        renderPresets(),
+        renderDashboard()
       ]);
       
-      alert('✅ กู้คืนข้อมูลสำเร็จ');
+      showToast(`✅ กู้คืนข้อมูลสำเร็จ ${totalItems} รายการ`, 'success', 3000);
+      
     } catch (err) {
+      console.error('❌ Import error:', err);
       alert('❌ ไฟล์ไม่ถูกต้อง: ' + err.message);
     }
     event.target.value = '';
@@ -11418,6 +11769,94 @@ async function openDailyDetail(id) {
     </div>
     ${(item.tags || []).length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;">${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}</div>` : ''}
     ${item.image ? `<img src="${item.image}" style="max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--border);cursor:pointer;" onclick="openLightbox('${item.image}')">` : ''}
+  `;
+  
+  document.getElementById('detail-modal-body').innerHTML = html;
+  document.getElementById('detail-modal').classList.add('show');
+}
+// ===== IDEA DETAIL =====
+async function openIdeaDetail(id) {
+  const items = await getIdeas();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  document.getElementById('detail-modal-title').textContent = `💡 ${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}`;
+  
+  let html = `
+    <div style="margin-bottom:8px;font-size:12px;color:var(--accent2);">
+      📅 ${new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </div>
+    <div style="white-space:pre-wrap;word-break:break-word;margin-bottom:12px;font-size:14px;line-height:1.8;">
+      ${item.content}
+    </div>
+    ${(item.tags || []).length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;">${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}</div>` : ''}
+    ${item.link ? `<div style="margin-top:8px;"><a href="${item.link}" target="_blank" style="color:var(--accent);font-size:13px;">🔗 ${item.link}</a></div>` : ''}
+  `;
+  
+  document.getElementById('detail-modal-body').innerHTML = html;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+// ===== KNOWLEDGE DETAIL =====
+async function openKnowledgeDetail(id) {
+  const items = await getKnowledges();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  document.getElementById('detail-modal-title').textContent = `📚 ${item.title || 'ความรู้'}`;
+  
+  let html = `
+    <div style="margin-bottom:8px;font-size:12px;color:var(--accent2);">
+      📅 ${new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </div>
+    ${item.content ? `<div style="white-space:pre-wrap;word-break:break-word;margin-bottom:12px;font-size:14px;line-height:1.8;">${item.content}</div>` : ''}
+    ${(item.tags || []).length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;">${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}</div>` : ''}
+    ${item.link ? `<div style="margin-top:8px;"><a href="${item.link}" target="_blank" style="color:var(--accent);font-size:13px;">🔗 ${item.link}</a></div>` : ''}
+  `;
+  
+  document.getElementById('detail-modal-body').innerHTML = html;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+// ===== ART DETAIL =====
+async function openArtDetail(id) {
+  const items = await getArts();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  document.getElementById('detail-modal-title').textContent = `🎨 ${item.title}`;
+  
+  let html = `
+    <div style="margin-bottom:8px;font-size:12px;color:var(--accent2);">
+      📅 ${new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </div>
+    ${item.content ? `<div style="white-space:pre-wrap;word-break:break-word;margin-bottom:12px;font-size:14px;line-height:1.8;">${item.content}</div>` : ''}
+    ${item.image ? `<img src="${item.image}" style="max-width:100%;max-height:400px;border-radius:8px;border:1px solid var(--border);cursor:pointer;margin-bottom:12px;" onclick="openLightbox('${item.image}')">` : ''}
+    ${(item.tags || []).length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;">${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}</div>` : ''}
+  `;
+  
+  document.getElementById('detail-modal-body').innerHTML = html;
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+// ===== FIT DETAIL =====
+async function openFitDetail(id) {
+  const items = await getFits();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  const typeLabels = { cardio: '🏃 Cardio', weight: '🏋️ Weight', yoga: '🧘 Yoga', sport: '⚽ Sport', other: '📦 อื่นๆ' };
+  
+  document.getElementById('detail-modal-title').textContent = `💪 ${new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+  
+  let html = `
+    <div style="margin-bottom:8px;font-size:12px;color:var(--accent2);">
+      ${typeLabels[item.type] || item.type}
+    </div>
+    <div style="white-space:pre-wrap;word-break:break-word;margin-bottom:12px;font-size:14px;line-height:1.8;">
+      ${item.content}
+    </div>
+    ${(item.tags || []).length ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;">${item.tags.map(t => `<span class="inbox-tag">${t}</span>`).join('')}</div>` : ''}
   `;
   
   document.getElementById('detail-modal-body').innerHTML = html;
@@ -12597,18 +13036,27 @@ async function renderIdea() {
   filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
+    card.style.cursor = 'pointer';
+    card.onclick = (e) => {
+      if (e.target.closest('.del-x') || e.target.closest('.btn')) return;
+      openIdeaDetail(item.id);
+    };
+    
     const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const previewContent = item.content.length > 120 ? item.content.substring(0, 120) + '...' : item.content;
+    
     card.innerHTML = `
       <div class="item-top">
-        <div style="flex:1;">
+        <div style="flex:1;min-width:0;">
           <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
           <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('idea', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
-          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content}</div>
+          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${previewContent}</div>
           <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
-            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            ${(item.tags || []).slice(0, 3).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            ${(item.tags || []).length > 3 ? `<span style="font-size:9px;color:var(--muted);">+${(item.tags || []).length - 3}</span>` : ''}
           </div>
-          ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ลิงก์</a>` : ''}
+          ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;" onclick="event.stopPropagation();">🔗 ลิงก์</a>` : ''}
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
           <button class="del-x" style="color:var(--accent);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();editIdea(${item.id})">✎</button>
@@ -12722,19 +13170,28 @@ async function renderKnowledge() {
   filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
+    card.style.cursor = 'pointer';
+    card.onclick = (e) => {
+      if (e.target.closest('.del-x') || e.target.closest('.btn')) return;
+      openKnowledgeDetail(item.id);
+    };
+    
     const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const previewContent = item.content ? (item.content.length > 120 ? item.content.substring(0, 120) + '...' : item.content) : '';
+    
     card.innerHTML = `
       <div class="item-top">
-        <div style="flex:1;">
+        <div style="flex:1;min-width:0;">
           <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
           <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('knowledge', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
           <div style="font-size:14px;font-weight:600;margin-top:4px;">${item.title}</div>
-          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content || ''}</div>
+          ${previewContent ? `<div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${previewContent}</div>` : ''}
           <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
-            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            ${(item.tags || []).slice(0, 3).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            ${(item.tags || []).length > 3 ? `<span style="font-size:9px;color:var(--muted);">+${(item.tags || []).length - 3}</span>` : ''}
           </div>
-          ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 ลิงก์</a>` : ''}
+          ${item.link ? `<a href="${item.link}" target="_blank" style="color:var(--accent);font-size:11px;" onclick="event.stopPropagation();">🔗 ลิงก์</a>` : ''}
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
           <button class="del-x" style="color:var(--accent);font-size:13px;padding:4px 8px;" onclick="event.stopPropagation();editKnowledge(${item.id})">✎</button>
@@ -12941,18 +13398,27 @@ async function renderArt() {
   filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
+    card.style.cursor = 'pointer';
+    card.onclick = (e) => {
+      if (e.target.closest('.del-x') || e.target.closest('.btn') || e.target.closest('img')) return;
+      openArtDetail(item.id);
+    };
+    
     const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const previewContent = item.content ? (item.content.length > 120 ? item.content.substring(0, 120) + '...' : item.content) : '';
+    
     card.innerHTML = `
       <div class="item-top">
-        <div style="flex:1;">
+        <div style="flex:1;min-width:0;">
           <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
           <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('art', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
           <div style="font-size:14px;font-weight:600;margin-top:4px;">${item.title}</div>
-          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content || ''}</div>
-          ${item.image ? `<img src="${item.image}" class="daily-image-thumb" onclick="openLightbox('${item.image}')">` : ''}
+          ${previewContent ? `<div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${previewContent}</div>` : ''}
+          ${item.image ? `<img src="${item.image}" class="daily-image-thumb" style="max-height:80px;width:auto;cursor:pointer;" onclick="event.stopPropagation();openLightbox('${item.image}')">` : ''}
           <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
-            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            ${(item.tags || []).slice(0, 3).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            ${(item.tags || []).length > 3 ? `<span style="font-size:9px;color:var(--muted);">+${(item.tags || []).length - 3}</span>` : ''}
           </div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
@@ -13061,17 +13527,26 @@ async function renderFit() {
   filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
+    card.style.cursor = 'pointer';
+    card.onclick = (e) => {
+      if (e.target.closest('.del-x') || e.target.closest('.btn')) return;
+      openFitDetail(item.id);
+    };
+    
     const dateDisplay = new Date(item.date + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    const previewContent = item.content.length > 120 ? item.content.substring(0, 120) + '...' : item.content;
+    
     card.innerHTML = `
       <div class="item-top">
-        <div style="flex:1;">
+        <div style="flex:1;min-width:0;">
           <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div>
           <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('fit', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
           <span style="font-size:12px;font-weight:600;color:var(--accent2);">${dateDisplay}</span>
-          <span class="item-cat">${typeLabels[item.type] || item.type}</span>
-          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${item.content}</div>
+          <span class="item-cat" style="font-size:9px;">${typeLabels[item.type] || item.type}</span>
+          <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${previewContent}</div>
           <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
-            ${(item.tags || []).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            ${(item.tags || []).slice(0, 3).map(t => `<span class="inbox-tag">${t}</span>`).join('')}
+            ${(item.tags || []).length > 3 ? `<span style="font-size:9px;color:var(--muted);">+${(item.tags || []).length - 3}</span>` : ''}
           </div>
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
@@ -13230,7 +13705,7 @@ function switchGoalsTab(tab) {
     renderStudy();
   }
 }
-// ===== Vision Categories (แก้ไขได้) =====
+// ===== Vision Categories =====
 const DEFAULT_VISION_CATEGORIES = [
   { key: 'career', label: '💼 อาชีพ/งาน' },
   { key: 'health', label: '💪 สุขภาพ' },
@@ -13239,6 +13714,7 @@ const DEFAULT_VISION_CATEGORIES = [
   { key: 'lifestyle', label: '🌟 ไลฟ์สไตล์' },
   { key: 'other', label: '📦 อื่นๆ' }
 ];
+
 const visionCatManager = createCategoryManager({
   storageKey: 'vision_custom_categories',
   defaultCategories: DEFAULT_VISION_CATEGORIES,
@@ -13246,7 +13722,7 @@ const visionCatManager = createCategoryManager({
   managerId: 'vision-cat-manager'
 });
 
-// ===== Goal Categories (แก้ไขได้) =====
+// ===== Goal Categories =====
 const DEFAULT_GOAL_CATEGORIES = [
   { key: 'career', label: '💼 อาชีพ/งาน' },
   { key: 'health', label: '💪 สุขภาพ' },
@@ -13262,7 +13738,7 @@ const goalCatManager = createCategoryManager({
   managerId: 'goal-cat-manager'
 });
 
-// ===== Study Categories (แก้ไขได้) =====
+// ===== Study Categories =====
 const DEFAULT_STUDY_CATEGORIES = [
   { key: 'art', label: '🎨 ศิลปะ' },
   { key: 'coding', label: '💻 โค้ดดิ้ง' },
@@ -13279,7 +13755,7 @@ const studyCatManager = createCategoryManager({
   managerId: 'study-cat-manager'
 });
 
-// ===== Finance Categories (แก้ไขได้) =====
+// ===== Finance Categories =====
 const DEFAULT_FINANCE_CATEGORIES = [
   { key: 'emergency', label: '🚨 กองทุนฉุกเฉิน' },
   { key: 'saving', label: '🏦 ออมทรัพย์' },
@@ -13298,7 +13774,7 @@ const financeCatManager = createCategoryManager({
 });
 
 
-// ===== Wish Categories (แก้ไขได้) =====
+// ===== Wish Categories =====
 const DEFAULT_WISH_CATEGORIES = [
   { key: 'tech', label: '📱 เทคโนโลยี' },
   { key: 'art', label: '🎨 อุปกรณ์ศิลปะ' },
@@ -13316,7 +13792,87 @@ const wishCatManager = createCategoryManager({
   selectId: 'wish-input-category',
   managerId: 'wish-cat-manager'
 });
+// ==========================================================
+// LOAD CATEGORIES FROM FIRESTORE ON START
+// ==========================================================
 
+async function loadAllCategoriesFromFirestore() {
+  const managers = [
+    visionCatManager,
+    goalCatManager,
+    studyCatManager,
+    financeCatManager,
+    wishCatManager
+  ];
+  
+  // โหลดจาก Firestore ถ้า localStorage ว่าง
+  for (const manager of managers) {
+    try {
+      await manager.loadFromFirestore();
+    } catch (err) {
+      // ignore
+    }
+  }
+  
+  // รีเฟรช UI
+  visionCatManager.render();
+  goalCatManager.render();
+  studyCatManager.render();
+  financeCatManager.render();
+  wishCatManager.render();
+  
+  // อัปเดต Ref categories ด้วย (มีระบบแยก)
+  // Ref categories ใช้ getAllRefCategories() ซึ่งอ่านจาก localStorage
+  // เราจะ sync ref categories ไป Firestore ด้วย
+  await syncRefCategoriesToFirestore();
+}
+
+async function syncRefCategoriesToFirestore() {
+  try {
+    const refCats = getAllRefCategories();
+    await db.collection('categories').doc('ref').set({ items: refCats });
+  } catch (err) {
+    console.warn('⚠️ Sync ref categories error:', err);
+  }
+}
+
+async function loadRefCategoriesFromFirestore() {
+  try {
+    const doc = await db.collection('categories').doc('ref').get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.items && data.items.length > 0) {
+        const local = getRefCustomCategories();
+        if (local.length === 0) {
+          const custom = data.items.filter(c => !DEFAULT_REF_CATEGORIES.find(d => d.key === c.key));
+          saveRefCustomCategories(custom);
+          updateRefCategorySuggestions();
+          updateCategoryFilterSuggestions();
+          console.log('✅ Loaded ref categories from Firestore');
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ Load ref categories error:', err);
+  }
+}
+
+// แก้ไข addNewRefCategory ให้ sync ไป Firestore
+const originalAddNewRefCategory = addNewRefCategory;
+addNewRefCategory = function() {
+  const label = prompt('ชื่อหมวดหมู่ใหม่:');
+  if (!label || !label.trim()) return;
+  const key = addRefCustomCategory(label.trim());
+  document.getElementById('ref-input-category').value = label.trim();
+  updateRefCategorySuggestions();
+  updateCategoryFilterSuggestions();
+  
+  // Sync to Firestore
+  syncRefCategoriesToFirestore();
+  
+  showToast('✅ เพิ่มหมวดหมู่ "' + label.trim() + '" แล้ว', 'success');
+  return key;
+};
 // ===== Close Upload Widget =====
 function closeUploadWidget() {
   const overlay = document.getElementById('widget-overlay');
@@ -13396,8 +13952,14 @@ function createCategoryManager(config) {
     defaultCategories,
     selectId,
     managerId,
-    onUpdate
+    onUpdate,
+    firestoreCollection = 'categories',  // ใช้ collection เดียวกันทั้งหมด
+    firestoreDocId = null               // จะกำหนดตาม storageKey
   } = config;
+
+  // กำหนด docId อัตโนมัติจาก storageKey
+  const docId = firestoreDocId || storageKey.replace('_custom_categories', '');
+  const docRef = db.collection(firestoreCollection).doc(docId);
 
   function getCategories() {
     try {
@@ -13409,7 +13971,39 @@ function createCategoryManager(config) {
   function saveCategories(categories) {
     const custom = categories.filter(c => !defaultCategories.find(d => d.key === c.key));
     localStorage.setItem(storageKey, JSON.stringify(custom));
+    
+    // ✅ Auto-sync to Firestore
+    syncToFirestore(categories);
   }
+    async function syncToFirestore(categories) {
+    try {
+      await docRef.set({ items: categories });
+      console.log(`✅ Synced ${storageKey} to Firestore`);
+    } catch (err) {
+      console.warn(`⚠️ Failed to sync ${storageKey}:`, err);
+    }
+  }
+
+  async function loadFromFirestore() {
+    try {
+      const doc = await docRef.get();
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.items && data.items.length > 0) {
+          // Only load if localStorage is empty (first time)
+          const local = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          if (local.length === 0) {
+            const custom = data.items.filter(c => !defaultCategories.find(d => d.key === c.key));
+            localStorage.setItem(storageKey, JSON.stringify(custom));
+            console.log(`✅ Loaded ${storageKey} from Firestore`);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`⚠️ Failed to load ${storageKey} from Firestore:`, err);
+    }
+  }
+
 
   function addCategory(label) {
     const categories = getCategories();
@@ -13479,7 +14073,9 @@ function createCategoryManager(config) {
     deleteCategory, 
     render, 
     add, 
-    del 
+    del,
+    loadFromFirestore,
+    syncToFirestore
   };
   
   // เก็บไว้ใน global เพื่อให้ onclick ทำงาน
@@ -13513,26 +14109,82 @@ function getCategoryLabel(categoryKey, defaultLabels, customManager) {
 
 // แก้ไข confirmSaveMultiRef() และ confirmEditRef() ให้เรียก collectTagSuggestionsFromInput()
 // ก่อนบันทึก
+
+// ==========================================================
+// AUTO-DETECT MISSING DATA ON STARTUP
+// ==========================================================
+
+async function checkForMissingData() {
+  try {
+    const modules = [
+      { name: 'refs', get: getRefs, save: saveRefs, key: 'ref_items' },
+      { name: 'visions', get: getVisions, save: saveVisions, key: 'life_vision_items' },
+      { name: 'goals', get: getGoals, save: saveGoals, key: 'goals_items' },
+      { name: 'finances', get: getFinances, save: saveFinances, key: 'finance_items' },
+      { name: 'wishlist', get: getWishes, save: saveWishes, key: 'wishlist_items' },
+      { name: 'studies', get: getStudies, save: saveStudies, key: 'study_items' },
+      { name: 'projects', get: getProjects, save: saveProjects, key: 'project_items' },
+      { name: 'inbox', get: getInbox, save: saveInbox, key: 'inbox_items' },
+      { name: 'daily', get: getDaily, save: saveDaily, key: 'daily_items' }
+    ];
+
+    let hasMissingData = false;
+    let missingDetails = [];
+
+    for (const mod of modules) {
+      try {
+        const localData = JSON.parse(localStorage.getItem(mod.key) || '[]');
+        const firestoreData = await mod.get();
+        
+        if (localData.length > firestoreData.length && localData.length > 0) {
+          hasMissingData = true;
+          missingDetails.push(`${mod.name}: ${localData.length - firestoreData.length} รายการหายไป`);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    if (hasMissingData) {
+      // แสดง toast แจ้งเตือน
+      setTimeout(() => {
+        showToast(
+          `⚠️ พบข้อมูล ${missingDetails.length} รายการที่หายไปจากคลาวด์ คลิกที่ Settings > "อัปเดตคลาวด์" เพื่อกู้คืน`,
+          'warning',
+          5000
+        );
+      }, 2000);
+    }
+
+    return hasMissingData;
+  } catch (err) {
+    console.warn('⚠️ checkForMissingData error:', err);
+    return false;
+  }
+}
+
+// เรียกใน initApp() หลังจาก loadAllCategoriesFromFirestore()
 // ---------- Init ----------
 async function initApp() {
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', function(e) {
       if (e.target === this) {
         const id = this.id;
-      // ถ้าเป็น project-detail-modal ให้ close เฉพาะ
         closeModal(id);
       }
     });
   });
+  
   renderNav();
   initTagSystems();
-  // ใน initApp() เพิ่ม:
+  
   updateRefCategorySuggestions();
   updateCategoryFilterSuggestions();
   updateBoardSuggestions();
   updateBoardFilterSuggestions();
   updateTagSuggestions();
   updateSearchSuggestions();
+  
   ['project', 'finance', 'wish', 'inbox', 'daily', 'idea', 'knowledge', 'art', 'fit', 'default'].forEach(mod => updateGlobalTagSuggestions(mod));
   updateProjectTagSuggestions();
   updateRefSelectionSuggestions();
@@ -13553,7 +14205,8 @@ async function initApp() {
     dailyModule.migrateFromLocalStorage('daily_items')
   ]);
 
-    onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); });
+  // ✅ ตั้งค่า Snapshot listeners
+  onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); });
   onDailySnapshot(() => { renderDaily(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onRefsSnapshot(() => { getRefs().then(refs => { refsCache = refs; }); renderRef(); renderDashboard(); renderNav(); updateRefCategorySuggestions(); syncBottomTabActive(); syncTopNavActive(); });
   onFinancesSnapshot(() => { renderFinanceGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
@@ -13580,7 +14233,7 @@ async function initApp() {
   renderEnhancedStats();
   renderArtTrend();
   renderFitnessTrend();
-  await waitForFirestore()
+  await waitForFirestore();
   renderFinanceTrend();
   renderFocusThisWeek();
   renderOverdueGoals();
@@ -13591,6 +14244,21 @@ async function initApp() {
   studyCatManager.render();
   financeCatManager.render();
   wishCatManager.render();
+  
+  // ✅ โหลด categories จาก Firestore
+  try {
+    await loadAllCategoriesFromFirestore();
+    await loadRefCategoriesFromFirestore();
+  } catch (err) {
+    console.warn('⚠️ Load categories error:', err);
+  }
+  
+  // ✅ ตรวจสอบข้อมูลที่หายไป
+  try {
+    await checkForMissingData();
+  } catch (err) {
+    console.warn('⚠️ checkForMissingData error:', err);
+  }
   
   setTimeout(() => {
     syncBottomTabActive();
@@ -13618,7 +14286,7 @@ async function initApp() {
     if (icon) icon.classList.add('rotated');
     if (arrow) arrow.textContent = '▶';
   }
-}
+}  // ← ต้องมีปิดวงเล็บปีกกานี้
 
 
 initApp();
