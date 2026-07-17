@@ -3772,10 +3772,6 @@ function closeModal(id) {
     resetGoalModal();
     clearEditMode('goal');
   }
-  if (id === 'study-modal') {
-    resetStudyModal();
-    clearEditMode('study');
-}
   if (id === 'finance-modal') {
     resetFinanceModal();
     clearEditMode('finance');
@@ -6378,7 +6374,7 @@ else if (state.active === 'priority' && archiveFilter) {
       openVisionDetail(item.id);
     };
     
-    const categoryLabel = VISION_CAT_LABELS[item.category] || item.category;
+    const categoryLabel = getCategoryLabel(item.category, VISION_CAT_LABELS, visionCatManager);
     const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
 ;
     
@@ -6770,7 +6766,7 @@ const allRefs = await getRefs();
       openGoalDetail(item.id);
     };
     
-    const categoryLabel = GOAL_CAT_LABELS[item.category] || item.category;
+    const categoryLabel = getCategoryLabel(item.category, GOAL_CAT_LABELS, goalCatManager);
     const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
 ;
     const isFinanceGoal = item.category === 'finance';
@@ -8119,7 +8115,7 @@ if (filteredItems.length === 0) {
       alert(`💰 ${item.name}\n\n📂 ${FINANCE_CAT_LABELS[item.category] || item.category}\n🎯 ${item.target.toLocaleString()} บาท\n💵 เก็บแล้ว ${item.saved.toLocaleString()} บาท (${pct.toFixed(0)}%)\n⭐ ${PRIORITY_LABELS[item.priority]}`);
     };
     
-    const categoryLabel = FINANCE_CAT_LABELS[item.category] || item.category;
+    const categoryLabel = getCategoryLabel(item.category, FINANCE_CAT_LABELS, financeCatManager);
     const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
 ;
     
@@ -8203,7 +8199,7 @@ async function renderWishlist() {
     card.className = 'item-card';
     card.style.opacity = item.bought ? '0.5' : '1';
     
-    const categoryLabel = WISH_CAT_LABELS[item.category] || item.category;
+    const categoryLabel = getCategoryLabel(item.category, WISH_CAT_LABELS, wishCatManager);
     const priorityLabel = PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
 ;
     
@@ -8683,7 +8679,7 @@ if (item.refIds && item.refIds.length > 0) {
       <div class="item-top">
         <div style="flex:1;min-width:0;">
           <div class="drag-handle" style="cursor:grab;font-size:16px;padding:4px;">⠿</div> <button class="fav-btn ${item.favourite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavourite('study', ${item.id})">${item.favourite ? '⭐' : '☆'}</button>
-          <span class="item-cat">${STUDY_CAT_LABELS[item.category] || item.category}</span>
+          <span class="item-cat">${getCategoryLabel(item.category, STUDY_CAT_LABELS, studyCatManager)}</span>
           <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);font-size:8px;">${priorityLabel}</span>
           <div class="item-title" style="margin-top:6px;">${item.title}</div>
           ${item.goal ? `<div class="item-desc project-desc-truncate">🎯 ${item.goal}</div>` : ''}
@@ -10023,7 +10019,7 @@ async function confirmEditDaily() {
   renderDashboard();
 }
 // ==========================================================
-// RESET FUNCTIONS - เพิ่มเติม
+// RESET FUNCTIONS - ใช้ createFormResetter
 // ==========================================================
 
 // Vision Modal Reset
@@ -10064,6 +10060,20 @@ const resetGoalModal = createFormResetter('goal-modal', {
     renderGoalRefPreview();
   }
 });
+// Study Modal Reset
+const resetStudyModal = createFormResetter('study-modal', {
+  title: 'เพิ่มแผนเรียน',
+  saveButtonText: 'บันทึก',
+  saveHandler: confirmSaveStudy,
+  fields: {
+    'study-input-title': '',
+    'study-input-category': 'other',
+    'study-input-goal': '',
+    'study-input-note': '',
+    'study-input-priority': 'important',
+    'study-input-link': ''
+  }
+});
 // Project Modal Reset
 const resetProjectModal = createFormResetter('project-modal', {
   title: '📋 เพิ่มโปรเจกต์ใหม่',
@@ -10083,10 +10093,7 @@ const resetProjectModal = createFormResetter('project-modal', {
     document.getElementById('project-progress-label').textContent = '0%';
     tempProjectRefIds = [];
     editingProjectRefIds = [];
-    // ✅ ใช้ then() เพื่อรอให้โหลดเสร็จ
-    renderProjectRefPreview().then(() => {
-      console.log('✅ Project ref preview updated');
-    }).catch(err => {
+    renderProjectRefPreview().catch(err => {
       console.warn('⚠️ renderProjectRefPreview error:', err);
     });
   }
@@ -10116,7 +10123,7 @@ const resetDailyModal = createFormResetter('daily-modal', {
   }
 });
 
-// แทนที่ resetIdeaModal
+// Idea Modal Reset
 const resetIdeaModal = createFormResetter('idea-modal', {
   title: '💡 บันทึกไอเดีย',
   saveButtonText: '💾 บันทึก',
@@ -10129,7 +10136,7 @@ const resetIdeaModal = createFormResetter('idea-modal', {
   }
 });
 
-// แทนที่ resetKnowledgeModal
+// Knowledge Modal Reset
 const resetKnowledgeModal = createFormResetter('knowledge-modal', {
   title: '📚 บันทึกความรู้',
   saveButtonText: '💾 บันทึก',
@@ -10143,7 +10150,7 @@ const resetKnowledgeModal = createFormResetter('knowledge-modal', {
   }
 });
 
-// แทนที่ resetArtModal
+// Art Modal Reset
 const resetArtModal = createFormResetter('art-modal', {
   title: '🎨 บันทึกงานศิลปะ',
   saveButtonText: '💾 บันทึก',
@@ -10157,8 +10164,7 @@ const resetArtModal = createFormResetter('art-modal', {
   }
 });
 
-
-// แทนที่ resetFitModal
+// Fit Modal Reset
 const resetFitModal = createFormResetter('fit-modal', {
   title: '💪 บันทึกออกกำลังกาย',
   saveButtonText: '💾 บันทึก',
@@ -10170,20 +10176,8 @@ const resetFitModal = createFormResetter('fit-modal', {
     'fit-input-tags': '#fitness'
   }
 });
-const resetWishModal = createFormResetter('wish-modal', {
-  title: 'เพิ่มของที่อยากได้',
-  saveButtonText: 'บันทึก',
-  saveHandler: confirmSaveWish,
-  fields: {
-    'wish-input-name': '',
-    'wish-input-category': 'other',
-    'wish-input-price': '',
-    'wish-input-saved': '',
-    'wish-input-priority': 'important',
-    'wish-input-link': '',
-    'wish-input-tags': ''
-  }
-});
+
+// Finance Modal Reset
 const resetFinanceModal = createFormResetter('finance-modal', {
   title: 'เพิ่มเป้าหมายการเงิน',
   saveButtonText: 'บันทึก',
@@ -10198,6 +10192,77 @@ const resetFinanceModal = createFormResetter('finance-modal', {
   }
 });
 
+// Wish Modal Reset
+const resetWishModal = createFormResetter('wish-modal', {
+  title: 'เพิ่มของที่อยากได้',
+  saveButtonText: 'บันทึก',
+  saveHandler: confirmSaveWish,
+  fields: {
+    'wish-input-name': '',
+    'wish-input-category': 'other',
+    'wish-input-price': '',
+    'wish-input-saved': '',
+    'wish-input-priority': 'important',
+    'wish-input-link': '',
+    'wish-input-tags': ''
+  }
+});
+// Ref Modal Reset
+function resetRefModal() {
+  document.getElementById('ref-modal').querySelector('h3').textContent = 'เพิ่มรายละเอียดรูป';
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').textContent = '💾 บันทึก';
+  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveMultiRef;
+  
+  const previewContainer = document.getElementById('upload-preview-grid');
+  if (previewContainer) previewContainer.innerHTML = '';
+  
+  const statusEl = document.getElementById('upload-status');
+  if (statusEl) statusEl.textContent = '';
+  
+  document.getElementById('ref-input-category').value = 'other';
+  document.getElementById('ref-input-board').value = '';
+  document.getElementById('ref-input-tags').value = '';
+  document.getElementById('ref-input-note').value = '';
+  
+  pendingUploadUrls = [];
+  pendingUploadTotal = 0;
+  pendingUploadCount = 0;
+}
+// ==========================================================
+// TOGGLE RELATION (สำหรับ modal)
+// ==========================================================
+function toggleRelation(header) {
+  if (!header) return;
+  
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.arrow');
+  
+  if (!body) return;
+  
+  // Toggle body visibility
+  body.classList.toggle('collapsed');
+  
+  // Toggle arrow rotation
+  if (arrow) {
+    arrow.classList.toggle('collapsed');
+  }
+  
+  // ✅ ถ้าเปิดให้ render ข้อมูล
+  if (!body.classList.contains('collapsed')) {
+    const modal = header.closest('.modal');
+    if (!modal) return;
+    
+    const modalId = modal.id;
+    
+    if (modalId === 'vision-modal') {
+      renderVisionRelationCheckboxes({});
+    } else if (modalId === 'goal-modal') {
+      renderGoalRelationCheckboxes({});
+    } else if (modalId === 'project-modal') {
+      renderRelationCheckboxes({});
+    }
+  }
+}
 
 
 // ===== FIXED: renderDaily() =====
@@ -10702,26 +10767,7 @@ async function confirmEditRef() {
   updateSearchSuggestions();
 }
 
-function resetRefModal() {
-  document.getElementById('ref-modal').querySelector('h3').textContent = 'เพิ่มรายละเอียดรูป';
-  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').textContent = ' บันทึก';
-  document.getElementById('ref-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmSaveMultiRef;
-  
-  const previewContainer = document.getElementById('upload-preview-grid');
-  if (previewContainer) previewContainer.innerHTML = '';
-  
-  const statusEl = document.getElementById('upload-status');
-  if (statusEl) statusEl.textContent = '';
-  
-  document.getElementById('ref-input-category').value = 'other';
-  document.getElementById('ref-input-board').value = '';
-  document.getElementById('ref-input-tags').value = '';
-  document.getElementById('ref-input-note').value = '';
-  
-  pendingUploadUrls = [];
-  pendingUploadTotal = 0;
-  pendingUploadCount = 0;
-}
+
 // ==========================================================
 // TOAST CONFIGURATION
 // ==========================================================
@@ -11186,7 +11232,7 @@ async function openVisionDetail(id) {
   
   let html = `
     <div style="margin-bottom:12px;">
-      <span class="item-cat">${VISION_CAT_LABELS[item.category] || item.category}</span>
+      <span class="item-cat">${getCategoryLabel(item.category, VISION_CAT_LABELS, visionCatManager)}</span>
       <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
 }</span>
     </div>
@@ -11263,7 +11309,7 @@ async function openGoalDetail(id) {
   
   let html = `
     <div style="margin-bottom:12px;">
-      <span class="item-cat">${GOAL_CAT_LABELS[item.category] || item.category}</span>
+      <span class="item-cat">${getCategoryLabel(item.category, GOAL_CAT_LABELS, goalCatManager)}</span>
       <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
 }</span>
       <span class="status-badge status-${item.status}">${STATUS_LABELS[item.status]}</span>
@@ -11331,7 +11377,7 @@ async function openStudyDetail(id) {
   
   let html = `
     <div style="margin-bottom:12px;">
-      <span class="item-cat">${STUDY_CAT_LABELS[item.category] || item.category}</span>
+      <span class="item-cat">${getCategoryLabel(item.category, STUDY_CAT_LABELS, studyCatManager)}</span>
       <span class="item-cat" style="background:rgba(124,110,245,.10);color:var(--accent);">${PRIORITY_LABELS[item.priority] || PRIORITY_LABELS.important
 }</span>
       <span class="status-badge ${item.status === 'completed' ? 'status-done' : item.status === 'studying' ? 'status-in_progress' : 'status-not_started'}">${STUDY_STATUS_LABELS[item.status]}</span>
@@ -13441,6 +13487,28 @@ function createCategoryManager(config) {
   window.categoryManagers[storageKey] = manager;
   
   return manager;
+}
+// ==========================================================
+// HELPER: GET CATEGORY LABEL FROM CUSTOM CATEGORIES
+// ==========================================================
+
+function getCategoryLabel(categoryKey, defaultLabels, customManager) {
+  if (!categoryKey) return 'ไม่ระบุ';
+  
+  // Check custom categories first
+  if (customManager && customManager.getCategories) {
+    const allCats = customManager.getCategories();
+    const found = allCats.find(c => c.key === categoryKey);
+    if (found) return found.label;
+  }
+  
+  // Fallback to default labels
+  if (defaultLabels && defaultLabels[categoryKey]) {
+    return defaultLabels[categoryKey];
+  }
+  
+  // If nothing found, return the key itself (for debugging)
+  return categoryKey;
 }
 
 // แก้ไข confirmSaveMultiRef() และ confirmEditRef() ให้เรียก collectTagSuggestionsFromInput()
