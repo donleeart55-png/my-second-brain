@@ -4488,6 +4488,10 @@ switchPage = function(pageId) {
 const APP_VERSION = '2.0.0';
 const LAST_VERSION_KEY = 'app_version';
 
+const isProduction = window.location.hostname !== 'localhost' && 
+                     window.location.hostname !== '127.0.0.1';
+                     !window.location.hostname.includes('github.io');
+
 function checkVersionMigration() {
   const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
   if (lastVersion !== APP_VERSION) {
@@ -4546,18 +4550,26 @@ let _dashboardRenderTimer = null;
 const DASHBOARD_RENDER_DEBOUNCE = 800; // 800ms
 
 // ✅ ฟังก์ชันกลางสำหรับเรียก render dashboard
-function scheduleDashboardRender() {
+function scheduleDashboardRender(force = false) {
+  if (_isDashboardRendering) {
+    return;
+  }
+  
   if (_dashboardRenderTimer) {
     clearTimeout(_dashboardRenderTimer);
     _dashboardRenderTimer = null;
   }
   
+  const delay = force ? 100 : DASHBOARD_RENDER_DEBOUNCE;
+  
   _dashboardRenderTimer = setTimeout(() => {
     _dashboardRenderTimer = null;
     _dashboardRenderScheduled = false;
-    // ✅ เรียก renderDashboard โดยไม่ต้อง force
-    renderDashboard();
-  }, DASHBOARD_RENDER_DEBOUNCE);
+    _isDashboardRendering = true;
+    renderDashboard(force).finally(() => {
+      _isDashboardRendering = false;
+    });
+  }, delay);
 }
 
 // ✅ ฟังก์ชันอัปเดต cache (เรียกจาก snapshot listeners)
@@ -6285,9 +6297,7 @@ let _lastFocusHash = '';
 let _focusRenderTimer = null;
 let _focusRenderCount = 0;
 let _lastFocusLogTime = 0;
-const isProduction = window.location.hostname !== 'localhost' && 
-                     window.location.hostname !== '127.0.0.1';
-                     !window.location.hostname.includes('github.io');
+
 
 async function renderDashboardFocus() {
   // ✅ ดึงข้อมูลจาก Cache แทนการ fetch ใหม่
@@ -7713,7 +7723,7 @@ async function confirmSaveMultiRef(event) {
   closeModal('ref-modal');
   pendingUploadUrls = [];
   renderRef();
-  renderDashboard();
+  scheduleDashboardRender()
   updateSearchSuggestions();
   showToast(`✅ เพิ่มรูปอ้างอิง ${count} รูปสำเร็จ`, 'success');
 }
@@ -7779,7 +7789,7 @@ async function deleteRef(id) {
 
   await saveRefs(refs.filter(i => i.id !== id));
   renderRef();
-  renderDashboard();
+  scheduleDashboardRender();
   updateSearchSuggestions();
   showToast('🗑️ ลบรูปอ้างอิงแล้ว', 'error');
 }
@@ -8562,7 +8572,7 @@ async function confirmSaveVision(event) {
   
   closeModal('vision-modal');
   renderVision();
-  renderDashboard();
+  scheduleDashboardRender(true);
   showToast('✅ เพิ่มวิสัยทัศน์สำเร็จ', 'success');
 }
 
@@ -8676,7 +8686,7 @@ async function deleteVision(id) {
   // ลบจริง
   await saveVisions(items.filter(i => i.id !== id));
   renderVision();
-  renderDashboard();
+  scheduleDashboardRender();
   showToast('🗑️ ลบวิสัยทัศน์แล้ว', 'error');
 }
 
@@ -9064,7 +9074,7 @@ async function confirmSaveGoal(event) {
   await saveGoals(items);
   closeModal('goal-modal');
   renderGoals();
-  renderDashboard();
+  scheduleDashboardRender(true);
   showToast('✅ เพิ่มเป้าหมายสำเร็จ', 'success');
 }
 
@@ -9104,7 +9114,7 @@ async function deleteGoal(id) {
 
   await saveGoals(goals.filter(i => i.id !== id));
   renderGoals();
-  renderDashboard();
+  scheduleDashboardRender();
   showToast('🗑️ ลบเป้าหมายแล้ว', 'error');
 }
 
@@ -9498,7 +9508,7 @@ async function confirmSaveFinance(event) {
   await saveFinances(items);
   closeModal('finance-modal');
   await renderFinanceGoals();
-  renderDashboard();  // ← เพิ่ม
+  scheduleDashboardRender(true);  // ← เพิ่ม
   showToast('✅ เพิ่มเป้าหมายการเงินสำเร็จ', 'success');
 }
 
@@ -9553,7 +9563,7 @@ async function deleteFinance(id) {
 
   await saveFinances(finances.filter(i => i.id !== id));
   await renderFinanceGoals();
-  renderDashboard();
+  scheduleDashboardRender();
   showToast('🗑️ ลบเป้าหมายการเงินแล้ว', 'error');
 }
 
@@ -10883,7 +10893,7 @@ const item = {
   await saveWishes(items);
   closeModal('wish-modal');
   await renderWishlist();
-  renderDashboard();  // ← เพิ่ม
+  scheduleDashboardRender(true);  // ← เพิ่ม
   showToast('✅ เพิ่มรายการ wishlist สำเร็จ', 'success');
 }
 
@@ -10924,7 +10934,7 @@ async function deleteWish(id) {
 
   await saveWishes(wishes.filter(i => i.id !== id));
   await renderWishlist();
-  renderDashboard();
+  scheduleDashboardRender();
   showToast('🗑️ ลบรายการ Wishlist แล้ว', 'error');
 }
 async function renderFinanceAndWish() {
@@ -11125,6 +11135,7 @@ async function confirmSaveStudy(event) {
   await saveStudies(items);
   closeModal('study-modal');
   renderStudy();
+  scheduleDashboardRender(true)
   showToast('✅ เพิ่มแผนเรียนสำเร็จ', 'success');
 }
 
@@ -11164,7 +11175,7 @@ async function deleteStudy(id) {
 
   await saveStudies(studies.filter(i => i.id !== id));
   renderStudy();
-  renderDashboard();
+  scheduleDashboardRender();
   showToast('🗑️ ลบแผนเรียนแล้ว', 'error');
 }
 
@@ -11531,7 +11542,7 @@ async function confirmSaveProject(event) {
   await saveProjects(items);
   closeModal('project-modal');
   renderProjects();
-  renderDashboard();
+  scheduleDashboardRender();
   showToast('✅ เพิ่มโปรเจกต์สำเร็จ', 'success');
 }
 
@@ -11566,7 +11577,7 @@ async function deleteProject(id) {
   
   await saveProjects(items.filter(i => i.id !== id));
   renderProjects();
-  renderDashboard();
+  scheduleDashboardRender();
   showToast('🗑️ ลบโปรเจกต์แล้ว', 'error');
 }
 
@@ -12297,7 +12308,7 @@ async function confirmSaveInbox(event) {
   await saveInbox(items);
   closeModal('inbox-modal');
   renderInbox();
-  renderDashboard();
+  scheduleDashboardRender(true);
   renderNav();
   showToast('✅ บันทึก Inbox เรียบร้อย', 'success');
 }
@@ -12321,7 +12332,7 @@ async function deleteInbox(id) {
   
   await saveInbox(items.filter(i => i.id !== id));
   renderInbox();
-  renderDashboard();
+  scheduleDashboardRender();
   renderNav();
   showToast('🗑️ ลบ Inbox แล้ว', 'error');
 }
@@ -12594,6 +12605,7 @@ async function confirmSaveDaily(event) {
   await saveDaily(items);
   closeModal('daily-modal');
   renderDaily();
+  scheduleDashboardRender(true);
   showToast('✅ บันทึกประจำวันเรียบร้อย', 'success');
 }
 
@@ -12616,6 +12628,7 @@ async function deleteDaily(id) {
   
   await saveDaily(items.filter(i => i.id !== id));
   renderDaily();
+  scheduleDashboardRender()
   showToast('🗑️ ลบบันทึกแล้ว', 'error');
 }
 
