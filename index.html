@@ -4520,6 +4520,79 @@ function createDebouncedSnapshot(module, renderFn, delay = 500) {
   };
 }
 // ==========================================================
+// DASHBOARD CENTRAL CONTROLLER - ป้องกัน infinite render
+// ==========================================================
+
+// ✅ Cache ข้อมูลล่าสุดจากทุก collection
+const _dashboardCache = {
+  visions: [],
+  projects: [],
+  goals: [],
+  finances: [],
+  ideas: [],
+  knowledges: [],
+  refs: [],
+  wishes: [],
+  studies: [],
+  inbox: [],
+  daily: [],
+  transactions: [],
+  budgets: []
+};
+
+// ✅ ตัวแปรสำหรับ scheduleDashboardRender
+let _dashboardRenderScheduled = false;
+let _dashboardRenderTimer = null;
+const DASHBOARD_RENDER_DEBOUNCE = 800; // 800ms
+
+// ✅ ฟังก์ชันกลางสำหรับเรียก render dashboard
+function scheduleDashboardRender() {
+  if (_dashboardRenderTimer) {
+    clearTimeout(_dashboardRenderTimer);
+    _dashboardRenderTimer = null;
+  }
+  
+  _dashboardRenderTimer = setTimeout(() => {
+    _dashboardRenderTimer = null;
+    _dashboardRenderScheduled = false;
+    // ✅ เรียก renderDashboard โดยไม่ต้อง force
+    renderDashboard();
+  }, DASHBOARD_RENDER_DEBOUNCE);
+}
+
+// ✅ ฟังก์ชันอัปเดต cache (เรียกจาก snapshot listeners)
+function updateDashboardCache(module, data) {
+  const moduleMap = {
+    'refs': 'refs',
+    'visions': 'visions',
+    'goals': 'goals',
+    'finances': 'finances',
+    'wishlist': 'wishes',
+    'studies': 'studies',
+    'projects': 'projects',
+    'inbox': 'inbox',
+    'daily': 'daily',
+    'ideas': 'ideas',
+    'knowledges': 'knowledges'
+  };
+  const key = moduleMap[module] || module;
+  if (_dashboardCache.hasOwnProperty(key)) {
+    _dashboardCache[key] = data || [];
+  }
+}
+
+// ✅ ฟังก์ชันดึงข้อมูลจาก cache (ใช้ใน renderDashboardFocus)
+function getCachedData(module) {
+  return _dashboardCache[module] || [];
+}
+
+// ✅ ฟังก์ชันเคลียร์ cache (ใช้ตอน init)
+function clearDashboardCache() {
+  Object.keys(_dashboardCache).forEach(key => {
+    _dashboardCache[key] = [];
+  });
+}
+// ==========================================================
 // FIRESTORE HELPERS — ใช้ร่วมกันทุกโมดูล
 // ==========================================================
 let firestoreReady = false;
@@ -4569,23 +4642,35 @@ function createFirestoreModule(collectionName, docId = 'items') {
     }
   }
 
-  async function saveItems(items) {
-    await waitForFirestore();
+  // ✅ ใน createFirestoreModule - saveItems
+async function saveItems(items) {
+  await waitForFirestore();
 
-    // ✅ สร้าง backup ก่อนบันทึกทุกครั้ง
-    const preSaveBackup = {
-      items: currentData,
-      timestamp: new Date().toISOString(),
-      count: currentData.length
-    };
+  // ✅ สร้าง backup ก่อนบันทึกทุกครั้ง (หมุนเวียน 5 ชุด)
+  const backupKey = `fb_${collectionName}_pre_save_${Date.now()}`;
+  const preSaveBackup = {
+    items: currentData,
+    timestamp: new Date().toISOString(),
+    count: currentData.length
+  };
+  
+  try {
+    localStorage.setItem(backupKey, JSON.stringify(preSaveBackup));
     
-    try {
-      localStorage.setItem(`fb_${collectionName}_pre_save_backup`, JSON.stringify(preSaveBackup));
-    } catch (e) {
-      console.warn(`⚠️ Could not save pre-save backup for ${collectionName}:`, e);
+    // ✅ เก็บเฉพาะ 5 ชุดล่าสุด
+    const allBackups = Object.keys(localStorage)
+      .filter(k => k.startsWith(`fb_${collectionName}_pre_save_`))
+      .sort();
+    
+    if (allBackups.length > 5) {
+      const toRemove = allBackups.slice(0, allBackups.length - 5);
+      toRemove.forEach(key => localStorage.removeItem(key));
     }
+  } catch (e) {
+    console.warn(`⚠️ Could not save pre-save backup for ${collectionName}:`, e);
+  }
 
-    currentData = [...items];
+  currentData = [...items];
     
     try {
       await docRef.set({ items: currentData });
@@ -4660,57 +4745,63 @@ function createFirestoreModule(collectionName, docId = 'items') {
     }
   }
 
-// ✅ FIXED: onSnapshot ป้องกันข้อมูลหายจาก snapshot ว่าง
-  function onSnapshot(callback) {
-    let isFirstSnapshot = true;
-    let hasReceivedData = false;
-    let snapshotCount = 0;
+// ✅ ใน createFirestoreModule - เพิ่ม flag ป้องกัน race condition
+function onSnapshot(callback) {
+  let isFirstSnapshot = true;
+  let hasReceivedData = false;
+  let snapshotCount = 0;
+  let _isRestoring = false; // ✅ ป้องกัน recursion
+  
+  const unsubscribe = docRef.onSnapshot(doc => {
+    // ✅ ถ้ากำลัง restore อยู่ ให้ข้าม
+    if (_isRestoring) return;
     
-    const unsubscribe = docRef.onSnapshot(doc => {
-      snapshotCount++;
+    snapshotCount++;
+    
+    if (doc.exists) {
+      const data = doc.data();
+      const items = data.items || [];
       
-      if (doc.exists) {
-        const data = doc.data();
-        const items = data.items || [];
-        
-        // ✅ ถ้าเป็น snapshot แรก และไม่มีข้อมูล -> ใช้ cache
-        if (isFirstSnapshot && items.length === 0 && currentData.length > 0) {
-          console.warn(`⚠️ First snapshot for ${collectionName} is empty, keeping existing data`);
-          callback([...currentData]);
-          isFirstSnapshot = false;
-          return;
-        }
-        
-        // ✅ ถ้า snapshot ต่อเนื่องว่าง -> อาจเป็นปัญหา ใช้ cache
-        if (!isFirstSnapshot && items.length === 0 && currentData.length > 0 && snapshotCount > 1) {
-          console.warn(`⚠️ ${collectionName} snapshot empty (${snapshotCount}), using cached data`);
-          callback([...currentData]);
-          return;
-        }
-        
-        currentData = items;
-        hasReceivedData = true;
+      if (isFirstSnapshot && items.length === 0 && currentData.length > 0) {
+        console.warn(`⚠️ First snapshot for ${collectionName} is empty, keeping existing data`);
         callback([...currentData]);
-      } else {
-        // ✅ ถ้า doc ไม่มี และมี data -> restore
-        if (currentData.length > 0) {
-          console.warn(`⚠️ Document ${collectionName} not found, restoring from cache`);
-          callback([...currentData]);
-          docRef.set({ items: currentData }).catch(() => {});
-        } else {
-          callback([]);
-        }
+        isFirstSnapshot = false;
+        return;
       }
-      isFirstSnapshot = false;
-    }, err => {
-      console.warn(`⚠️ onSnapshot(${collectionName}) error:`, err);
+      
+      if (!isFirstSnapshot && items.length === 0 && currentData.length > 0 && snapshotCount > 1) {
+        console.warn(`⚠️ ${collectionName} snapshot empty (${snapshotCount}), using cached data`);
+        callback([...currentData]);
+        return;
+      }
+      
+      currentData = items;
+      hasReceivedData = true;
+      callback([...currentData]);
+    } else {
       if (currentData.length > 0) {
+        console.warn(`⚠️ Document ${collectionName} not found, restoring from cache`);
+        _isRestoring = true; // ✅ ตั้ง flag ก่อน restore
+        
+        // ✅ ใช้ flag ป้องกัน recursion
         callback([...currentData]);
+        docRef.set({ items: currentData }).catch(() => {}).finally(() => {
+          _isRestoring = false; // ✅ ปลด flag หลังจาก restore เสร็จ
+        });
+      } else {
+        callback([]);
       }
-    });
-    listeners.push(unsubscribe);
-    return unsubscribe;
-  }
+    }
+    isFirstSnapshot = false;
+  }, err => {
+    console.warn(`⚠️ onSnapshot(${collectionName}) error:`, err);
+    if (currentData.length > 0) {
+      callback([...currentData]);
+    }
+  });
+  listeners.push(unsubscribe);
+  return unsubscribe;
+}
 
   // ฟังก์ชัน cleanup
   function cleanup() {
@@ -5123,9 +5214,14 @@ transactionModule.migrateFromLocalStorage('finance_transactions');
 
 // 1. สถิติหลัก
 async function renderDashboardStats() {
-  const [refs, visions, goals, finances, studies, projects, daily] = await Promise.all([
-    getRefs(), getVisions(), getGoals(), getFinances(), getStudies(), getProjects(), getDaily()
-  ]);
+  // ✅ ใช้ Cache แทนการ fetch ใหม่
+  const refs = getCachedData('refs') || [];
+  const visions = getCachedData('visions') || [];
+  const goals = getCachedData('goals') || [];
+  const finances = getCachedData('finances') || [];
+  const studies = getCachedData('studies') || [];
+  const projects = getCachedData('projects') || [];
+  const daily = getCachedData('daily') || [];
   
   // ✅ ตรวจสอบว่า element มีอยู่ก่อนอัปเดต
   const elements = {
@@ -5146,9 +5242,12 @@ async function renderDashboardStats() {
 
 // 2. Priority Statistics
 async function renderDashboardPriority() {
-  const [visions, goals, finances, wishes, studies, projects] = await Promise.all([
-    getVisions(), getGoals(), getFinances(), getWishes(), getStudies(), getProjects()
-  ]);
+  const visions = getCachedData('visions') || [];
+  const goals = getCachedData('goals') || [];
+  const finances = getCachedData('finances') || [];
+  const wishes = getCachedData('wishes') || [];
+  const studies = getCachedData('studies') || [];
+  const projects = getCachedData('projects') || [];
   
   function countPriority(items) {
     const counts = { critical: 0, important: 0, urgent: 0, low: 0 };
@@ -5199,7 +5298,7 @@ async function renderDashboardPriority() {
 
 // 3. Goal Status
 async function renderDashboardGoalStatus() {
-  const goals = await getGoals();
+   const goals = getCachedData('goals') || [];
   const statusDiv = document.getElementById('dash-goal-status');
   
   if (goals.length === 0) {
@@ -5233,11 +5332,17 @@ async function renderDashboardGoalStatus() {
 
 // 4. Recent Activity (Main Dashboard)
 async function renderDashboardRecent() {
-  const [refs, visions, goals, finances, wishes, studies, projects, inbox, daily, transactions, budgets] = await Promise.all([
-    getRefs(), getVisions(), getGoals(), getFinances(), getWishes(),
-    getStudies(), getProjects(), getInbox(), getDaily(),
-    getTransactions(), getBudgets()
-  ]);
+  const refs = getCachedData('refs') || [];
+  const visions = getCachedData('visions') || [];
+  const goals = getCachedData('goals') || [];
+  const finances = getCachedData('finances') || [];
+  const wishes = getCachedData('wishes') || [];
+  const studies = getCachedData('studies') || [];
+  const projects = getCachedData('projects') || [];
+  const inbox = getCachedData('inbox') || [];
+  const daily = getCachedData('daily') || [];
+  const transactions = getCachedData('transactions') || [];
+  const budgets = getCachedData('budgets') || [];
 
   const recent = [];
 
@@ -5360,12 +5465,10 @@ async function renderFinanceSnapshot() {
   const container = document.getElementById('finance-snapshot');
   if (!container) return;
   
-  const [transactions, budgets, finances, wishes] = await Promise.all([
-    getTransactions(),
-    getBudgets(),
-    getFinances(),
-    getWishes()
-  ]);
+  const transactions = getCachedData('transactions') || [];
+  const budgets = getCachedData('budgets') || [];
+  const finances = getCachedData('finances') || [];
+  const wishes = getCachedData('wishes') || [];
   
   const currentMonth = new Date().toISOString().slice(0, 7);
   const monthTx = transactions.filter(t => t.date.startsWith(currentMonth));
@@ -5428,16 +5531,27 @@ async function renderFinanceSnapshot() {
   container.innerHTML = html;
 }
 
-// 6. Main Dashboard - เรียกฟังก์ชันย่อย
-
+// ==========================================================
+// RENDER DASHBOARD - ใช้ Cache
+// ==========================================================
 let _dashboardRendering = false;
 let _dashboardLastRender = 0;
-const DASHBOARD_RENDER_COOLDOWN = 2000; // 2 วินาที
+let _dashboardRenderCount = 0;
+let _lastDashboardLogTime = 0;
+const DASHBOARD_RENDER_COOLDOWN = 3000;
 
 async function renderDashboard(force = false) {
   const now = Date.now();
   
   if (!force && (now - _dashboardLastRender) < DASHBOARD_RENDER_COOLDOWN) {
+    if (!isProduction) {
+      _dashboardRenderCount++;
+      if (_dashboardRenderCount >= 5 || (now - _lastDashboardLogTime) > 5000) {
+        console.log('⏭️ Dashboard cooldown, skipping');
+        _dashboardRenderCount = 0;
+        _lastDashboardLogTime = now;
+      }
+    }
     return;
   }
   
@@ -5447,11 +5561,15 @@ async function renderDashboard(force = false) {
   
   _dashboardRendering = true;
   _dashboardLastRender = now;
+  _dashboardRenderCount = 0;
   
   try {
+    // ✅ renderDashboardFocus ใช้ Cache แล้ว
     await renderDashboardFocus();
+    
+    // ✅ ส่วนอื่นๆ ใช้ cache หรือ getter ที่ไม่ fetch ซ้ำ
     await Promise.all([
-      renderDashboardStats(),
+      renderDashboardStats(),    // ใช้ getRefs() etc. แต่ถูก cache แล้ว
       renderDashboardPriority(),
       renderDashboardGoalStatus(),
       renderDashboardRecent(),
@@ -5465,6 +5583,7 @@ async function renderDashboard(force = false) {
     }, 500);
   }
 }
+
 // ===== Enhanced Stats with Month-over-Month =====
 async function renderEnhancedStats() {
   const now = new Date();
@@ -6160,21 +6279,24 @@ function updateFocusLockState(isPrimary) {
 }
 
 // ==========================================================
-// DASHBOARD FOCUS - เลือก 3 หลัก + 5 รอง
+// DASHBOARD FOCUS - ใช้ Cache แทนการ fetch ใหม่
 // ==========================================================
-let _lastFocusHash = ''; // เก็บ hash เพื่อป้องกันการ render ซ้ำ
+let _lastFocusHash = '';
 let _focusRenderTimer = null;
+let _focusRenderCount = 0;
+let _lastFocusLogTime = 0;
+const isProduction = window.location.hostname !== 'localhost' && 
+                     window.location.hostname !== '127.0.0.1';
+                     !window.location.hostname.includes('github.io');
 
 async function renderDashboardFocus() {
-  // ดึงข้อมูลจากทุกโมดูล
-  const [visions, projects, goals, finances, ideas, knowledges] = await Promise.all([
-    getVisions(),
-    getProjects(),
-    getGoals(),
-    getFinances(),
-    getIdeas(),
-    getKnowledges()
-  ]);
+  // ✅ ดึงข้อมูลจาก Cache แทนการ fetch ใหม่
+  const visions = getCachedData('visions') || [];
+  const projects = getCachedData('projects') || [];
+  const goals = getCachedData('goals') || [];
+  const finances = getCachedData('finances') || [];
+  const ideas = getCachedData('ideas') || [];
+  const knowledges = getCachedData('knowledges') || [];
   
   // 2. สร้าง item list (เฉพาะที่ไม่ได้ archived)
   const allItems = [];
@@ -6277,20 +6399,22 @@ async function renderDashboardFocus() {
       .map(item => allItems.find(i => i.id === item.id))
       .filter(Boolean);
     
-    console.log('📌 Loaded from localStorage:', {
-      primary: primaryItems.length,
-      secondary: secondaryItems.length
-    });
+    if (!isProduction) {
+      console.log('📌 Loaded from localStorage:', {
+        primary: primaryItems.length,
+        secondary: secondaryItems.length
+      });
+    }
   }
 
   // 4. ถ้าไม่มี Focus ที่บันทึกไว้ ใช้ระบบอัตโนมัติ
   if (saved === null) {
-    console.log('🔄 No saved focus, using auto selection');
+    if (!isProduction) console.log('🔄 No saved focus, using auto selection');
     allItems.sort((a, b) => b.sortScore - a.sortScore);
     primaryItems = allItems.slice(0, 3);
     secondaryItems = allItems.slice(3, 8);
   } else {
-    console.log('✅ Using saved focus data (may be empty)');
+    if (!isProduction) console.log('✅ Using saved focus data (may be empty)');
   }
   
   // ✅ 5. สร้าง hash เพื่อป้องกันการ render ซ้ำ
@@ -6301,18 +6425,27 @@ async function renderDashboardFocus() {
   });
   
   if (_lastFocusHash === focusHash) {
-    console.log('⏭️ Focus unchanged, skipping render');
+    // ✅ ลดการ log ใน production
+    if (!isProduction) {
+      _focusRenderCount++;
+      const now = Date.now();
+      if (_focusRenderCount >= 10 || (now - _lastFocusLogTime) > 5000) {
+        console.log('⏭️ Focus unchanged, skipping render');
+        _focusRenderCount = 0;
+        _lastFocusLogTime = now;
+      }
+    }
     return;
   }
   _lastFocusHash = focusHash;
+  _focusRenderCount = 0;
   
-  // ✅ ถ้ามี timer ค้างอยู่ ให้ยกเลิก
+  // ✅ Debounce
   if (_focusRenderTimer) {
     clearTimeout(_focusRenderTimer);
     _focusRenderTimer = null;
   }
   
-  // ✅ Debounce: รอ 100ms ก่อน render จริง
   _focusRenderTimer = setTimeout(() => {
     _focusRenderTimer = null;
     renderFocusContent(primaryItems, secondaryItems);
@@ -17161,39 +17294,153 @@ async function initApp() {
     dailyModule.migrateFromLocalStorage('daily_items')
   ]);
 
-    // ✅ สร้าง debounced dashboard renderer
-  const debouncedDashboard = createDebouncedSnapshot('dashboard', renderDashboard, 800);
+  // ✅ สร้าง debounced dashboard renderer (ใช้ scheduleDashboardRender แทน)
+  const debouncedDashboard = createDebouncedSnapshot('dashboard', scheduleDashboardRender, 500);
   const debouncedNav = createDebouncedSnapshot('nav', renderNav, 300);
-  const debouncedRef = createDebouncedSnapshot('ref', () => {
-    getRefs().then(refs => { refsCache = refs; });
+
+  // ✅ ตั้งค่า Snapshot listeners
+  onInboxSnapshot((data) => {
+    updateDashboardCache('inbox', data || []);
+    renderNav();
+    renderInbox();
+    scheduleDashboardRender();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onDailySnapshot((data) => {
+    updateDashboardCache('daily', data || []);
+    renderDaily();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onRefsSnapshot((data) => {
+    updateDashboardCache('refs', data || []);
+    refsCache = data;
     renderRef();
-    debouncedDashboard();
+    scheduleDashboardRender();
     renderNav();
     updateRefCategorySuggestions();
     syncBottomTabActive();
     syncTopNavActive();
-  }, 500);
+  });
 
-  // ✅ ตั้งค่า Snapshot listeners
-  onInboxSnapshot(createDebouncedSnapshot('inbox', () => { renderNav(); renderInbox(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); }, 300));
-  onDailySnapshot(createDebouncedSnapshot('daily', () => { renderDaily(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 300));
-  onRefsSnapshot(debouncedRef);
-  onFinancesSnapshot(createDebouncedSnapshot('finances', () => { renderFinanceGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onWishesSnapshot(createDebouncedSnapshot('wishes', () => { renderWishlist(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onBudgetsSnapshot(createDebouncedSnapshot('budgets', () => { renderBudgets(); renderFinanceOverview(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onTransactionsSnapshot(createDebouncedSnapshot('transactions', () => { renderFinanceTransactions(); renderFinanceOverview(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onPresetsSnapshot(createDebouncedSnapshot('presets', () => { renderPresets(); syncBottomTabActive(); syncTopNavActive(); }, 300));
-  onVisionsSnapshot(createDebouncedSnapshot('visions', () => { renderVision(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onGoalsSnapshot(createDebouncedSnapshot('goals', () => { renderGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onStudiesSnapshot(createDebouncedSnapshot('studies', () => { renderStudy(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  let _isFirstRender = true; onProjectsSnapshot(createDebouncedSnapshot('projects', () => { renderProjects(); if (_isFirstRender) {renderDashboard();_isFirstRender = false; }
-  renderNav(); 
-  syncBottomTabActive(); 
-  syncTopNavActive(); }, 500));
-  onIdeasSnapshot(createDebouncedSnapshot('ideas', () => { renderIdea(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onKnowledgesSnapshot(createDebouncedSnapshot('knowledges', () => { renderKnowledge(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onArtsSnapshot(createDebouncedSnapshot('arts', () => { renderArt(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
-  onFitsSnapshot(createDebouncedSnapshot('fits', () => { renderFit(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onFinancesSnapshot((data) => {
+    updateDashboardCache('finances', data || []);
+    renderFinanceGoals();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onWishesSnapshot((data) => {
+    updateDashboardCache('wishes', data || []);
+    renderWishlist();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onBudgetsSnapshot((data) => {
+    updateDashboardCache('budgets', data || []);
+    renderBudgets();
+    renderFinanceOverview();
+    scheduleDashboardRender();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onTransactionsSnapshot((data) => {
+    updateDashboardCache('transactions', data || []);
+    renderFinanceTransactions();
+    renderFinanceOverview();
+    scheduleDashboardRender();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onPresetsSnapshot((data) => {
+    renderPresets();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onVisionsSnapshot((data) => {
+    updateDashboardCache('visions', data || []);
+    renderVision();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onGoalsSnapshot((data) => {
+    updateDashboardCache('goals', data || []);
+    renderGoals();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onStudiesSnapshot((data) => {
+    updateDashboardCache('studies', data || []);
+    renderStudy();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onProjectsSnapshot((data) => {
+    updateDashboardCache('projects', data || []);
+    renderProjects();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onIdeasSnapshot((data) => {
+    updateDashboardCache('ideas', data || []);
+    renderIdea();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onKnowledgesSnapshot((data) => {
+    updateDashboardCache('knowledges', data || []);
+    renderKnowledge();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onArtsSnapshot((data) => {
+    updateDashboardCache('arts', data || []);
+    renderArt();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
+
+  onFitsSnapshot((data) => {
+    updateDashboardCache('fits', data || []);
+    renderFit();
+    scheduleDashboardRender();
+    renderNav();
+    syncBottomTabActive();
+    syncTopNavActive();
+  });
 
   // ✅ เรียก switchPage
   let lastPage = localStorage.getItem('last_active_page') || 'dashboard';
@@ -17201,11 +17448,10 @@ async function initApp() {
   if (!validPages.includes(lastPage)) lastPage = 'journal';
   switchPage(lastPage);
 
-  // ✅ เพิ่ม await สำหรับ async functions
-  await renderEnhancedStats();
+  // ✅ แก้ไข: ใช้ getCachedData() แทนการ fetch โดยตรง
+  await renderDashboardStats();  // ✅ เปลี่ยนจาก renderEnhancedStats() เป็น renderDashboardStats() ที่ใช้ Cache
   await renderArtTrend();
   await renderFitnessTrend();
-  await waitForFirestore();
   await renderFinanceTrend();
   await renderFocusThisWeek();
   await renderOverdueGoals();
@@ -17232,6 +17478,7 @@ async function initApp() {
   } catch (err) {
     console.warn('⚠️ checkForMissingData error:', err);
   }
+  
   try {
     await initPath();
   } catch (err) {
