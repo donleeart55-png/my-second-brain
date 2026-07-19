@@ -4484,13 +4484,46 @@ switchPage = function(pageId) {
   originalSwitchPage(pageId);
   updateBottomTabActive(pageId);
 };
-// เพิ่มที่ด้านบนของไฟล์
+// ==========================================================
+// GLOBAL VARIABLES - ประกาศไว้ด้านบนสุด
+// ==========================================================
+
 const APP_VERSION = '2.0.0';
 const LAST_VERSION_KEY = 'app_version';
+
+// ✅ ตัวแปรสำหรับ Dashboard
+let _dashboardCache = {
+  visions: [],
+  projects: [],
+  goals: [],
+  finances: [],
+  ideas: [],
+  knowledges: [],
+  refs: [],
+  wishes: [],
+  studies: [],
+  inbox: [],
+  daily: [],
+  transactions: [],
+  budgets: []
+};
+let _dashboardRenderScheduled = false;
+let _dashboardRenderTimer = null;
+let _isDashboardRendering = false;  // ← เพิ่มตัวแปรนี้
+let _dashboardLastRender = 0;
+let _dashboardRenderCount = 0;
+let _lastDashboardLogTime = 0;
+const DASHBOARD_RENDER_DEBOUNCE = 1000;
+const DASHBOARD_RENDER_COOLDOWN = 3000;
 
 const isProduction = window.location.hostname !== 'localhost' && 
                      window.location.hostname !== '127.0.0.1';
                      !window.location.hostname.includes('github.io');
+
+let _focusRenderTimer = null;
+let _lastFocusHash = '';
+let _focusRenderCount = 0;
+let _lastFocusLogTime = 0;
 
 function checkVersionMigration() {
   const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
@@ -4523,31 +4556,7 @@ function createDebouncedSnapshot(module, renderFn, delay = 500) {
     }, delay);
   };
 }
-// ==========================================================
-// DASHBOARD CENTRAL CONTROLLER - ป้องกัน infinite render
-// ==========================================================
 
-// ✅ Cache ข้อมูลล่าสุดจากทุก collection
-const _dashboardCache = {
-  visions: [],
-  projects: [],
-  goals: [],
-  finances: [],
-  ideas: [],
-  knowledges: [],
-  refs: [],
-  wishes: [],
-  studies: [],
-  inbox: [],
-  daily: [],
-  transactions: [],
-  budgets: []
-};
-
-// ✅ ตัวแปรสำหรับ scheduleDashboardRender
-let _dashboardRenderScheduled = false;
-let _dashboardRenderTimer = null;
-const DASHBOARD_RENDER_DEBOUNCE = 800; // 800ms
 
 // ✅ ฟังก์ชันกลางสำหรับเรียก render dashboard
 function scheduleDashboardRender(force = false) {
@@ -5547,10 +5556,6 @@ async function renderFinanceSnapshot() {
 // RENDER DASHBOARD - ใช้ Cache
 // ==========================================================
 let _dashboardRendering = false;
-let _dashboardLastRender = 0;
-let _dashboardRenderCount = 0;
-let _lastDashboardLogTime = 0;
-const DASHBOARD_RENDER_COOLDOWN = 3000;
 
 async function renderDashboard(force = false) {
   const now = Date.now();
@@ -6289,15 +6294,6 @@ function updateFocusLockState(isPrimary) {
     });
   }
 }
-
-// ==========================================================
-// DASHBOARD FOCUS - ใช้ Cache แทนการ fetch ใหม่
-// ==========================================================
-let _lastFocusHash = '';
-let _focusRenderTimer = null;
-let _focusRenderCount = 0;
-let _lastFocusLogTime = 0;
-
 
 async function renderDashboardFocus() {
   // ✅ ดึงข้อมูลจาก Cache แทนการ fetch ใหม่
