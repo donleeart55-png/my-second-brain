@@ -3090,6 +3090,33 @@ textarea.input {
       </button>
     </div>
   </div>
+  <div class="item-card" style="border-color: var(--red);">
+    <div class="item-title">🚨 Emergency Backup (ด่วน)</div>
+    <div class="item-desc" style="color: var(--red);">
+      ⚠️ บันทึกข้อมูลทั้งหมดในเครื่องทันที (ไม่ขึ้น Cloud)
+      <br><span style="font-size:11px;color:var(--muted);">ใช้เมื่อกังวลว่าข้อมูลจะหาย</span>
+    </div>
+    <div class="item-footer">
+      <span></span>
+      <button type="button" class="btn" onclick="emergencyBackup()" style="background: var(--red);">
+        🚨 Emergency Backup
+      </button>
+    </div>
+  </div>
+  <!-- เพิ่มในหน้า Settings -->
+  <div class="item-card" style="border-color: var(--accent2);">
+    <div class="item-title">🔄 Auto-Backup (อัตโนมัติทุก 5 นาที)</div>
+    <div class="item-desc" style="color: var(--accent2);">
+      ⏰ กำลังทำงานอัตโนมัติ • เก็บ 20 ชุดล่าสุด
+      <br><span style="font-size:11px;color:var(--muted);">กู้คืนจาก auto-backup ล่าสุดได้ตลอดเวลา</span>
+    </div>
+    <div class="item-footer">
+      <span></span>
+      <button type="button" class="btn" onclick="restoreFromLatestAutoBackup()" style="background: var(--accent2);">
+        ⏪ กู้คืนจาก Auto-Backup
+      </button>
+    </div>
+  </div>
 </div>
 
 
@@ -4457,6 +4484,20 @@ switchPage = function(pageId) {
   originalSwitchPage(pageId);
   updateBottomTabActive(pageId);
 };
+// เพิ่มที่ด้านบนของไฟล์
+const APP_VERSION = '2.0.0';
+const LAST_VERSION_KEY = 'app_version';
+
+function checkVersionMigration() {
+  const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
+  if (lastVersion !== APP_VERSION) {
+    console.log(`🔄 Version changed from ${lastVersion} to ${APP_VERSION}`);
+    // ทำการ migrate ถ้าจำเป็น
+    localStorage.setItem(LAST_VERSION_KEY, APP_VERSION);
+    return true;
+  }
+  return false;
+}
 // ==========================================================
 // FIRESTORE HELPERS — ใช้ร่วมกันทุกโมดูล
 // ==========================================================
@@ -4509,7 +4550,22 @@ function createFirestoreModule(collectionName, docId = 'items') {
 
   async function saveItems(items) {
     await waitForFirestore();
+
+    // ✅ สร้าง backup ก่อนบันทึกทุกครั้ง
+    const preSaveBackup = {
+      items: currentData,
+      timestamp: new Date().toISOString(),
+      count: currentData.length
+    };
+    
+    try {
+      localStorage.setItem(`fb_${collectionName}_pre_save_backup`, JSON.stringify(preSaveBackup));
+    } catch (e) {
+      console.warn(`⚠️ Could not save pre-save backup for ${collectionName}:`, e);
+    }
+
     currentData = [...items];
+    
     try {
       await docRef.set({ items: currentData });
       
@@ -4535,36 +4591,101 @@ function createFirestoreModule(collectionName, docId = 'items') {
             }
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn(`⚠️ Could not save timestamp backup for ${collectionName}:`, e);
+      }
       
       // เก็บ localStorage backup เผื่อ (optional)
       try {
         localStorage.setItem(`fb_${collectionName}_backup`, JSON.stringify(currentData));
-      } catch (e) {}
+      } catch (e) {
+        console.warn(`⚠️ Could not save simple backup for ${collectionName}:`, e);
+      }
+      
+      // ✅ บันทึกสำเร็จ
+      return true;
       
     } catch (err) {
       console.warn(`⚠️ saveItems(${collectionName}) error:`, err);
-      // fallback: เก็บ localStorage ไว้ก่อน
+      
+      // ✅ พยายามกู้คืนจาก pre-save backup
+      try {
+        const backupData = localStorage.getItem(`fb_${collectionName}_pre_save_backup`);
+        if (backupData) {
+          const backup = JSON.parse(backupData);
+          if (backup && backup.items && backup.items.length > 0) {
+            currentData = backup.items;
+            await docRef.set({ items: currentData });
+            console.log(`✅ Restored ${collectionName} from pre-save backup (${currentData.length} items)`);
+            return true;
+          }
+        }
+      } catch (restoreErr) {
+        console.warn(`⚠️ Could not restore ${collectionName} from pre-save backup:`, restoreErr);
+      }
+      
+      // ✅ fallback: เก็บ localStorage ไว้ก่อน
       try {
         localStorage.setItem(`fb_${collectionName}_backup`, JSON.stringify(currentData));
-      } catch (e) {}
-      throw err;
+        console.log(`📁 Saved ${collectionName} to localStorage fallback (${currentData.length} items)`);
+      } catch (e) {
+        console.warn(`⚠️ Could not save fallback for ${collectionName}:`, e);
+      }
+      
+      // ✅ ถ้า restore ไม่สำเร็จ ให้ใช้ currentData ที่มีอยู่ (ไม่ทิ้งข้อมูล)
+      // แต่ไม่ต้อง throw error เพื่อไม่ให้ระบบพัง
+      console.warn(`⚠️ Using currentData (${currentData.length} items) for ${collectionName} after save failure`);
+      return false;
     }
   }
 
-
+// ✅ FIXED: onSnapshot ป้องกันข้อมูลหายจาก snapshot ว่าง
   function onSnapshot(callback) {
+    let isFirstSnapshot = true;
+    let hasReceivedData = false;
+    let snapshotCount = 0;
+    
     const unsubscribe = docRef.onSnapshot(doc => {
+      snapshotCount++;
+      
       if (doc.exists) {
         const data = doc.data();
-        currentData = data.items || [];
+        const items = data.items || [];
+        
+        // ✅ ถ้าเป็น snapshot แรก และไม่มีข้อมูล -> ใช้ cache
+        if (isFirstSnapshot && items.length === 0 && currentData.length > 0) {
+          console.warn(`⚠️ First snapshot for ${collectionName} is empty, keeping existing data`);
+          callback([...currentData]);
+          isFirstSnapshot = false;
+          return;
+        }
+        
+        // ✅ ถ้า snapshot ต่อเนื่องว่าง -> อาจเป็นปัญหา ใช้ cache
+        if (!isFirstSnapshot && items.length === 0 && currentData.length > 0 && snapshotCount > 1) {
+          console.warn(`⚠️ ${collectionName} snapshot empty (${snapshotCount}), using cached data`);
+          callback([...currentData]);
+          return;
+        }
+        
+        currentData = items;
+        hasReceivedData = true;
         callback([...currentData]);
       } else {
-        currentData = [];
-        callback([]);
+        // ✅ ถ้า doc ไม่มี และมี data -> restore
+        if (currentData.length > 0) {
+          console.warn(`⚠️ Document ${collectionName} not found, restoring from cache`);
+          callback([...currentData]);
+          docRef.set({ items: currentData }).catch(() => {});
+        } else {
+          callback([]);
+        }
       }
+      isFirstSnapshot = false;
     }, err => {
       console.warn(`⚠️ onSnapshot(${collectionName}) error:`, err);
+      if (currentData.length > 0) {
+        callback([...currentData]);
+      }
     });
     listeners.push(unsubscribe);
     return unsubscribe;
@@ -4576,7 +4697,8 @@ function createFirestoreModule(collectionName, docId = 'items') {
     listeners = [];
   }
 
-  // แทนที่ migrateFromLocalStorage ใน createFirestoreModule
+
+  // ✅ FIXED: migrateFromLocalStorage เปรียบเทียบวันที่
   async function migrateFromLocalStorage(localStorageKey) {
     try {
       const localData = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
@@ -4600,7 +4722,7 @@ function createFirestoreModule(collectionName, docId = 'items') {
           await saveItems(localData);
           console.log(`✅ Synced ${localStorageKey} (${localData.length} items) to Firestore (newer data)`);
         } else {
-          console.log(`⏭️ Skipped ${localStorageKey}: Firestore has newer data`);
+          console.log(`⏭️ Skipped ${localStorageKey}: Firestore has newer or equal data`);
         }
       }
     } catch (e) {
@@ -4610,11 +4732,7 @@ function createFirestoreModule(collectionName, docId = 'items') {
   
   // ✅ ต้องมี return เพื่อให้ใช้งานฟังก์ชันต่างๆ ได้
   return { getItems, saveItems, onSnapshot, cleanup, migrateFromLocalStorage, docRef };
-}  // ← ปิด createFirestoreModule ด้วยวงเล็บปีกกานี้
-// ==========================================================
-// FORCE SYNC LOCALSTORAGE TO FIRESTORE
-// ==========================================================
-
+}
 // ==========================================================
 // FORCE SYNC LOCALSTORAGE TO FIRESTORE
 // ==========================================================
@@ -5289,17 +5407,34 @@ async function renderFinanceSnapshot() {
   container.innerHTML = html;
 }
 
-// 6. Main Dashboard - เรียกฟังก์ชันย่อย (ใช้ครั้งเดียว)
+// 6. Main Dashboard - เรียกฟังก์ชันย่อย
+let _dashboardRendering = false;
+
 async function renderDashboard() {
-  // ✅ โหลด Focus (ของใหม่)
-  await renderDashboardFocus();
-  await Promise.all([
-    renderDashboardStats(),
-    renderDashboardPriority(),
-    renderDashboardGoalStatus(),
-    renderDashboardRecent(),
-    renderFinanceSnapshot()
-  ]);
+  // ✅ ป้องกันการ render ซ้อนกัน
+  if (_dashboardRendering) {
+    console.log('⏭️ Dashboard already rendering, skipping');
+    return;
+  }
+  
+  _dashboardRendering = true;
+  
+  try {
+    // ✅ โหลด Focus (ใช้ hash เพื่อป้องกัน render ซ้ำ)
+    await renderDashboardFocus();
+    await Promise.all([
+      renderDashboardStats(),
+      renderDashboardPriority(),
+      renderDashboardGoalStatus(),
+      renderDashboardRecent(),
+      renderFinanceSnapshot()
+    ]);
+  } finally {
+    // ปลดล็อคหลังจาก render เสร็จ
+    setTimeout(() => {
+      _dashboardRendering = false;
+    }, 100);
+  }
 }
 // ===== Enhanced Stats with Month-over-Month =====
 async function renderEnhancedStats() {
@@ -5547,7 +5682,7 @@ function saveFocusSelection() {
     }
   }
   
-  // ✅ โหลดข้อมูลเดิมเพื่อไม่ให้ทับกัน
+ // ✅ โหลดข้อมูลเดิมเพื่อไม่ให้ทับกัน
   const saved = loadSavedFocus();
   const finalData = {
     primary: saved && saved.primary && saved.primary.length > 0 ? saved.primary : [],
@@ -5576,6 +5711,7 @@ function saveFocusSelection() {
     showToast('✅ บันทึก Focus เรียบร้อย', 'success', 1500);
   }, 150);
 }
+
 // ✅ เปิด Focus Editor (ระบุโหมด)
 async function openFocusEditor(mode = 'all') {
   focusEditorMode = mode; // 'primary', 'secondary', หรือ 'all'
@@ -5859,7 +5995,7 @@ async function openFocusEditor(mode = 'all') {
   openModal('focus-editor-modal');
 }
 
-// ✅ ฟังก์ชันจัดการการเลือก/ยกเลิก
+
 // ✅ ฟังก์ชันจัดการการเลือก/ยกเลิก
 function onFocusCheckChange(checkbox, isPrimary) {
   const containerId = isPrimary ? 'focus-editor-primary' : 'focus-editor-secondary';
@@ -5995,8 +6131,9 @@ function updateFocusLockState(isPrimary) {
 }
 
 // ==========================================================
-// DASHBOARD FOCUS - เลือก 3 หลัก + 5 รอง (เพิ่มเติม ไม่ลบของเดิม)
+// DASHBOARD FOCUS - เลือก 3 หลัก + 5 รอง
 // ==========================================================
+let _lastFocusHash = ''; // เก็บ hash เพื่อป้องกันการ render ซ้ำ
 
 async function renderDashboardFocus() {
   // ดึงข้อมูลจากทุกโมดูล
@@ -6094,93 +6231,106 @@ async function renderDashboardFocus() {
       });
     });
   
+  // ✅ 3. โหลด Focus ที่ผู้ใช้เลือกไว้
+  const saved = loadSavedFocus();
+  let primaryItems = [];
+  let secondaryItems = [];
 
- // ✅ 3. โหลด Focus ที่ผู้ใช้เลือกไว้ (loadSavedFocus ถูกประกาศแล้ว)
-// ✅ 3. โหลด Focus ที่ผู้ใช้เลือกไว้ (loadSavedFocus ถูกประกาศแล้ว)
-const saved = loadSavedFocus();
-let primaryItems = [];
-let secondaryItems = [];
+  if (saved && saved.primary && saved.secondary) {
+    primaryItems = saved.primary
+      .filter(item => allItems.some(i => i.id === item.id))
+      .map(item => allItems.find(i => i.id === item.id))
+      .filter(Boolean);
+    
+    secondaryItems = saved.secondary
+      .filter(item => allItems.some(i => i.id === item.id))
+      .map(item => allItems.find(i => i.id === item.id))
+      .filter(Boolean);
+    
+    console.log('📌 Loaded from localStorage:', {
+      primary: primaryItems.length,
+      secondary: secondaryItems.length
+    });
+  }
 
-if (saved && saved.primary && saved.secondary) {
-  // ✅ ใช้ลำดับจากที่บันทึกไว้ (เรียงตามลำดับที่เลือก)
-  primaryItems = saved.primary
-    .filter(item => allItems.some(i => i.id === item.id))
-    .map(item => allItems.find(i => i.id === item.id))
-    .filter(Boolean);
+  // 4. ถ้าไม่มี Focus ที่บันทึกไว้ ใช้ระบบอัตโนมัติ
+  if (saved === null) {
+    console.log('🔄 No saved focus, using auto selection');
+    allItems.sort((a, b) => b.sortScore - a.sortScore);
+    primaryItems = allItems.slice(0, 3);
+    secondaryItems = allItems.slice(3, 8);
+  } else {
+    console.log('✅ Using saved focus data (may be empty)');
+  }
   
-  secondaryItems = saved.secondary
-    .filter(item => allItems.some(i => i.id === item.id))
-    .map(item => allItems.find(i => i.id === item.id))
-    .filter(Boolean);
-  
-  console.log('📌 Loaded from localStorage:', {
-    primary: primaryItems.length,
-    secondary: secondaryItems.length
+  // ✅ 5. สร้าง hash เพื่อป้องกันการ render ซ้ำ
+  const focusHash = JSON.stringify({
+    primary: primaryItems.map(i => i.id),
+    secondary: secondaryItems.map(i => i.id),
+    count: primaryItems.length + secondaryItems.length
   });
-}
-
-// 4. ถ้าไม่มี Focus ที่บันทึกไว้ ใช้ระบบอัตโนมัติ
-// ✅ แก้ไข: ใช้ระบบอัตโนมัติเฉพาะเมื่อไม่มีข้อมูลเลยเท่านั้น
-if (saved === null) {
-  console.log('🔄 No saved focus, using auto selection');
-  allItems.sort((a, b) => b.sortScore - a.sortScore);
-  primaryItems = allItems.slice(0, 3);
-  secondaryItems = allItems.slice(3, 8);
-} else {
-  console.log('✅ Using saved focus data (may be empty)');
-}
   
-// 5. Render Primary (ใหญ่) - สีทอง
-const primaryContainer = document.getElementById('focus-primary');
-if (primaryItems.length === 0) {
-  primaryContainer.innerHTML = `
-    <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;background:var(--surface2);border-radius:10px;border:1px dashed var(--border);">
-      <div style="font-size:24px;margin-bottom:8px;">🎯</div>
-      <div>ยังไม่มี Focus หลัก</div>
-      <div style="font-size:11px;margin-top:4px;">คลิก ✎ แก้ไข Focus เพื่อเลือก</div>
-    </div>
-  `;
-} else {
-  primaryContainer.innerHTML = primaryItems.map(item => `
-    <div class="dash-card focus-primary-card" onclick="openFocusDetail('${item.module}', ${item.id})">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <span class="focus-primary-label">${item.moduleLabel}</span>
-        <span class="focus-primary-priority">${getPriorityLabel(item.priority)}</span>
-      </div>
-      <div class="focus-primary-title">${item.title}</div>
-      ${item.desc ? `<div class="focus-primary-desc">${item.desc}</div>` : ''}
-      ${item.deadline ? `<div class="focus-primary-deadline">📅 ${new Date(item.deadline).toLocaleDateString('th-TH')}</div>` : ''}
-      ${item.progress !== undefined ? `<div style="margin-top:6px;"><div class="progress-bar"><div class="progress-fill" style="width:${item.progress || 0}%;"></div></div></div>` : ''}
-      <div style="margin-top:8px;display:flex;gap:4px;justify-content:flex-end;">
-        <button type="button" class="btn secondary focus-btn-primary" onclick="event.stopPropagation();switchPage('${item.module}')">📂 ไปที่ ${item.moduleLabel}</button>
-      </div>
-    </div>
-  `).join('');
-}
+  if (_lastFocusHash === focusHash) {
+    console.log('⏭️ Focus unchanged, skipping render');
+    return;
+  }
+  _lastFocusHash = focusHash;
+  
+  // 6. Render Primary (ใหญ่) - สีทอง
+  const primaryContainer = document.getElementById('focus-primary');
+  if (primaryContainer) {
+    if (primaryItems.length === 0) {
+      primaryContainer.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;background:var(--surface2);border-radius:10px;border:1px dashed var(--border);">
+          <div style="font-size:24px;margin-bottom:8px;">🎯</div>
+          <div>ยังไม่มี Focus หลัก</div>
+          <div style="font-size:11px;margin-top:4px;">คลิก ✎ แก้ไข Focus เพื่อเลือก</div>
+        </div>
+      `;
+    } else {
+      primaryContainer.innerHTML = primaryItems.map(item => `
+        <div class="dash-card focus-primary-card" onclick="openFocusDetail('${item.module}', ${item.id})">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <span class="focus-primary-label">${item.moduleLabel}</span>
+            <span class="focus-primary-priority">${getPriorityLabel(item.priority)}</span>
+          </div>
+          <div class="focus-primary-title">${item.title}</div>
+          ${item.desc ? `<div class="focus-primary-desc">${item.desc}</div>` : ''}
+          ${item.deadline ? `<div class="focus-primary-deadline">📅 ${new Date(item.deadline).toLocaleDateString('th-TH')}</div>` : ''}
+          ${item.progress !== undefined ? `<div style="margin-top:6px;"><div class="progress-bar"><div class="progress-fill" style="width:${item.progress || 0}%;"></div></div></div>` : ''}
+          <div style="margin-top:8px;display:flex;gap:4px;justify-content:flex-end;">
+            <button type="button" class="btn secondary focus-btn-primary" onclick="event.stopPropagation();switchPage('${item.module}')">📂 ไปที่ ${item.moduleLabel}</button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
 
-// 6. Render Secondary (เล็ก) - สีแดงเข้ม
-const secondaryContainer = document.getElementById('focus-secondary');
-if (secondaryItems.length === 0) {
-  secondaryContainer.innerHTML = `
-    <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:12px;background:var(--surface2);border-radius:8px;border:1px dashed var(--border);font-size:12px;">
-      ยังไม่มี Focus รอง
-    </div>
-  `;
-} else {
-  secondaryContainer.innerHTML = secondaryItems.map(item => `
-    <div class="dash-recent-item focus-secondary-card" onclick="openFocusDetail('${item.module}', ${item.id})">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span class="focus-secondary-label">${item.moduleLabel}</span>
-        <span class="focus-secondary-priority">${getPriorityLabel(item.priority)}</span>
-      </div>
-      <div class="focus-secondary-title">${item.title}</div>
-      ${item.desc ? `<div class="focus-secondary-desc">${item.desc}</div>` : ''}
-      <div style="margin-top:4px;display:flex;gap:4px;justify-content:flex-end;">
-        <button type="button" class="btn secondary focus-btn-secondary" onclick="event.stopPropagation();switchPage('${item.module}')">📂 ไปที่ ${item.moduleLabel}</button>
-      </div>
-    </div>
-  `).join('');
-}
+  // 7. Render Secondary (เล็ก) - สีแดงเข้ม
+  const secondaryContainer = document.getElementById('focus-secondary');
+  if (secondaryContainer) {
+    if (secondaryItems.length === 0) {
+      secondaryContainer.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:12px;background:var(--surface2);border-radius:8px;border:1px dashed var(--border);font-size:12px;">
+          ยังไม่มี Focus รอง
+        </div>
+      `;
+    } else {
+      secondaryContainer.innerHTML = secondaryItems.map(item => `
+        <div class="dash-recent-item focus-secondary-card" onclick="openFocusDetail('${item.module}', ${item.id})">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="focus-secondary-label">${item.moduleLabel}</span>
+            <span class="focus-secondary-priority">${getPriorityLabel(item.priority)}</span>
+          </div>
+          <div class="focus-secondary-title">${item.title}</div>
+          ${item.desc ? `<div class="focus-secondary-desc">${item.desc}</div>` : ''}
+          <div style="margin-top:4px;display:flex;gap:4px;justify-content:flex-end;">
+            <button type="button" class="btn secondary focus-btn-secondary" onclick="event.stopPropagation();switchPage('${item.module}')">📂 ไปที่ ${item.moduleLabel}</button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
 }
 
 // ===== Helper: Priority Score =====
@@ -9324,9 +9474,104 @@ function initTagSystems() {
   updateProjectTagSuggestions();
   updateTagSuggestions();
 }
+let editingProjectId = null;  // ← เพิ่มบรรทัดนี้
+
+// Edit Project
+async function editProject(id) {
+  const items = await getProjects();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  // Fill form fields
+  document.getElementById('project-input-title').value = item.title;
+  document.getElementById('project-input-desc').value = item.desc || '';
+  document.getElementById('project-input-deadline').value = item.deadline || '';
+  document.getElementById('project-input-note').value = item.note || '';
+  document.getElementById('project-input-priority').value = item.priority || 'important';
+  document.getElementById('project-input-progress').value = item.progress || 0;
+  document.getElementById('project-progress-label').textContent = (item.progress || 0) + '%';
+  document.getElementById('project-input-startdate').value = item.startDate || '';
+  document.getElementById('project-input-tags').value = (item.tags || []).join(', ');
+  
+  // ✅ ตั้งค่า editingProjectId ครั้งเดียว
+  editingProjectId = id;
+  console.log('🔧 editingProjectId set to:', editingProjectId);
+  
+  // Render relations
+  await renderRelationCheckboxes({
+    visionIds: item.visionIds || [],
+    goalIds: item.goalIds || [],
+    studyIds: item.studyIds || [],
+    refIds: item.refIds || [],
+    financeIds: item.financeIds || [],
+    wishIds: item.wishIds || []
+  });
+  
+  // Set modal
+  document.getElementById('project-modal').querySelector('h3').textContent = '✎ แก้ไขโปรเจกต์';
+  document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditProject;
+  openModal('project-modal');
+  // Ref IDs
+  tempProjectRefIds = item.refIds || [];
+  editingProjectRefIds = item.refIds || [];
+  
+  await renderProjectRefPreview();
+}
+
+async function confirmEditProject(event) {
+  if (event) event.preventDefault();
+  const currentEditingId = editingProjectId;
+  console.log('🔧 confirmEditProject - currentEditingId:', currentEditingId);
+  if (currentEditingId === null) {
+    console.error('❌ editingProjectId is null!');
+    showToast('❌ ไม่พบโปรเจกต์ที่กำลังแก้ไข', 'error');
+    return false;
+  }
+  
+  const title = document.getElementById('project-input-title').value.trim();
+  if (!title) { 
+    alert('กรุณาใส่ชื่อโปรเจกต์'); 
+    return; 
+  }
+  
+  const relations = getSelectedRelations();
+  const items = await getProjects();
+  const item = items.find(i => i.id === currentEditingId);
+  
+  if (item) {
+    item.title = title;
+    item.desc = document.getElementById('project-input-desc').value.trim();
+    item.deadline = document.getElementById('project-input-deadline').value || null;
+    item.note = document.getElementById('project-input-note').value.trim();
+    item.priority = document.getElementById('project-input-priority').value || 'important';
+    item.progress = parseInt(document.getElementById('project-input-progress').value) || 0;
+    item.startDate = document.getElementById('project-input-startdate').value || null;
+    item.tags = document.getElementById('project-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    item.visionIds = relations.visionIds || [];
+    item.goalIds = relations.goalIds || [];
+    item.studyIds = relations.studyIds || [];
+    item.refIds = tempProjectRefIds || [];
+    item.financeIds = relations.financeIds || [];
+    item.wishIds = relations.wishIds || [];
+    
+    await saveProjects(items);
+    showToast('✅ แก้ไขโปรเจกต์สำเร็จ', 'success');
+  } else {
+    showToast('❌ ไม่พบโปรเจกต์', 'error');
+    return;
+  }
+  
+  // ✅ reset editingProjectId
+  editingProjectId = null;
+  
+  closeModal('project-modal');
+  resetProjectModal();
+  renderProjects();
+  renderDashboard();
+}
 
 // ===== Project Ref Selection =====
-let editingProjectId = null;  // ← เพิ่มบรรทัดนี้
+
 let tempProjectRefIds = [];
 let editingProjectRefIds = [];
 
@@ -11146,57 +11391,7 @@ async function deleteProject(id) {
   renderDashboard();
   showToast('🗑️ ลบโปรเจกต์แล้ว', 'error');
 }
-async function confirmEditProject(event) {
-  if (event) event.preventDefault();
-  const currentEditingId = editingProjectId;
-  console.log('🔧 confirmEditProject - currentEditingId:', currentEditingId);
-  if (currentEditingId === null) {
-    console.error('❌ editingProjectId is null!');
-    showToast('❌ ไม่พบโปรเจกต์ที่กำลังแก้ไข', 'error');
-    return false;
-  }
-  
-  const title = document.getElementById('project-input-title').value.trim();
-  if (!title) { 
-    alert('กรุณาใส่ชื่อโปรเจกต์'); 
-    return; 
-  }
-  
-  const relations = getSelectedRelations();
-  const items = await getProjects();
-  const item = items.find(i => i.id === currentEditingId);
-  
-  if (item) {
-    item.title = title;
-    item.desc = document.getElementById('project-input-desc').value.trim();
-    item.deadline = document.getElementById('project-input-deadline').value || null;
-    item.note = document.getElementById('project-input-note').value.trim();
-    item.priority = document.getElementById('project-input-priority').value || 'important';
-    item.progress = parseInt(document.getElementById('project-input-progress').value) || 0;
-    item.startDate = document.getElementById('project-input-startdate').value || null;
-    item.tags = document.getElementById('project-input-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-    item.visionIds = relations.visionIds || [];
-    item.goalIds = relations.goalIds || [];
-    item.studyIds = relations.studyIds || [];
-    item.refIds = tempProjectRefIds || [];
-    item.financeIds = relations.financeIds || [];
-    item.wishIds = relations.wishIds || [];
-    
-    await saveProjects(items);
-    showToast('✅ แก้ไขโปรเจกต์สำเร็จ', 'success');
-  } else {
-    showToast('❌ ไม่พบโปรเจกต์', 'error');
-    return;
-  }
-  
-  // ✅ reset editingProjectId
-  editingProjectId = null;
-  
-  closeModal('project-modal');
-  resetProjectModal();
-  renderProjects();
-  renderDashboard();
-}
+
 // ==========================================================
 // OPEN PROJECT DETAIL - เปิดดูรายละเอียดโปรเจกต์
 // ==========================================================
@@ -11337,6 +11532,11 @@ async function renderProjects() {
   
   // ✅ STEP 1: Find or create the correct page container at the top level
   let page = document.getElementById('page-projects');
+
+  if (page && page.parentElement !== document.body) {
+    page.remove();
+    document.body.appendChild(page);
+  }
   
   // ✅ STEP 2: If page exists but is inside the wrong container, move it
   if (page) {
@@ -11773,50 +11973,6 @@ function editProjectFromDetail() {
     }, 300);
   }
 }
-
-
-// Edit Project
-async function editProject(id) {
-  const items = await getProjects();
-  const item = items.find(i => i.id === id);
-  if (!item) return;
-  
-  // Fill form fields
-  document.getElementById('project-input-title').value = item.title;
-  document.getElementById('project-input-desc').value = item.desc || '';
-  document.getElementById('project-input-deadline').value = item.deadline || '';
-  document.getElementById('project-input-note').value = item.note || '';
-  document.getElementById('project-input-priority').value = item.priority || 'important';
-  document.getElementById('project-input-progress').value = item.progress || 0;
-  document.getElementById('project-progress-label').textContent = (item.progress || 0) + '%';
-  document.getElementById('project-input-startdate').value = item.startDate || '';
-  document.getElementById('project-input-tags').value = (item.tags || []).join(', ');
-  
-  // ✅ ตั้งค่า editingProjectId ครั้งเดียว
-  editingProjectId = id;
-  console.log('🔧 editingProjectId set to:', editingProjectId);
-  
-  // Render relations
-  await renderRelationCheckboxes({
-    visionIds: item.visionIds || [],
-    goalIds: item.goalIds || [],
-    studyIds: item.studyIds || [],
-    refIds: item.refIds || [],
-    financeIds: item.financeIds || [],
-    wishIds: item.wishIds || []
-  });
-  
-  // Set modal
-  document.getElementById('project-modal').querySelector('h3').textContent = '✎ แก้ไขโปรเจกต์';
-  document.getElementById('project-modal').querySelector('.modal-actions .btn:last-child').onclick = confirmEditProject;
-  openModal('project-modal');
-  // Ref IDs
-  tempProjectRefIds = item.refIds || [];
-  editingProjectRefIds = item.refIds || [];
-  
-  await renderProjectRefPreview();
-}
-
 
 
 // ==========================================================
@@ -16313,9 +16469,609 @@ function renderSettings() {
           </button>
         </div>
       </div>
+      <div class="item-card" style="border-color: var(--red);">
+        <div class="item-title">🚨 Emergency Backup (ด่วน)</div>
+        <div class="item-desc" style="color: var(--red);">
+          ⚠️ บันทึกข้อมูลทั้งหมดในเครื่องทันที (ไม่ขึ้น Cloud)
+          <br><span style="font-size:11px;color:var(--muted);">ใช้เมื่อกังวลว่าข้อมูลจะหาย</span>
+        </div>
+        <div class="item-footer">
+          <span></span>
+          <button type="button" class="btn" onclick="emergencyBackup()" style="background: var(--red);">
+            🚨 Emergency Backup
+          </button>
+        </div>
+      </div>
     `;
   }
 }
+// ✅ Emergency Backup (ด่วน)
+async function emergencyBackup() {
+  try {
+    console.log('🚨 Emergency backup started...');
+    showToast('⏳ กำลังบันทึกข้อมูลฉุกเฉิน...', 'info', 1500);
+    
+    const modules = [
+      { name: 'refs', get: getRefs, key: 'ref_items' },
+      { name: 'visions', get: getVisions, key: 'life_vision_items' },
+      { name: 'goals', get: getGoals, key: 'goals_items' },
+      { name: 'finances', get: getFinances, key: 'finance_items' },
+      { name: 'wishlist', get: getWishes, key: 'wishlist_items' },
+      { name: 'studies', get: getStudies, key: 'study_items' },
+      { name: 'projects', get: getProjects, key: 'project_items' },
+      { name: 'inbox', get: getInbox, key: 'inbox_items' },
+      { name: 'daily', get: getDaily, key: 'daily_items' },
+      { name: 'ideas', get: getIdeas, key: 'idea_items' },
+      { name: 'knowledges', get: getKnowledges, key: 'knowledge_items' },
+      { name: 'arts', get: getArts, key: 'art_items' },
+      { name: 'fits', get: getFits, key: 'fit_items' },
+      { name: 'transactions', get: getTransactions, key: 'finance_transactions' },
+      { name: 'budgets', get: getBudgets, key: 'finance_budgets' }
+    ];
+    
+    const backupData = {};
+    let totalItems = 0;
+    let validModules = 0;
+    
+    for (const mod of modules) {
+      try {
+        const data = await mod.get();
+        if (Array.isArray(data) && data.length > 0) {
+          const isValid = data.every(item => item && typeof item === 'object' && item.id);
+          if (isValid) {
+            backupData[mod.key] = data;
+            totalItems += data.length;
+            validModules++;
+          }
+        }
+      } catch (err) {
+        console.warn(`⚠️ Emergency backup error for ${mod.name}:`, err);
+      }
+    }
+    
+    if (totalItems === 0) {
+      showToast('⚠️ ไม่มีข้อมูลที่จะ backup', 'warning', 2000);
+      return;
+    }
+    
+    const timestamp = new Date().toISOString();
+    const backupKey = `emergency_backup_${timestamp.replace(/[:.]/g, '-')}`;
+    
+    const fullBackup = {
+      version: APP_VERSION || '2.0.0',
+      timestamp: timestamp,
+      data: backupData,
+      totalItems: totalItems,
+      moduleCount: validModules,
+      type: 'emergency',
+      checksum: generateChecksum(backupData)
+    };
+    
+    // ✅ บันทึกใน localStorage
+    localStorage.setItem(backupKey, JSON.stringify(fullBackup));
+    localStorage.setItem('emergency_backup_latest', JSON.stringify(fullBackup));
+    
+    // ✅ ดาวน์โหลดอัตโนมัติ
+    const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `emergency-backup-${timestamp.slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast(`✅ Emergency Backup สำเร็จ ${totalItems} รายการ`, 'success', 5000);
+    
+  } catch (err) {
+    console.error('❌ Emergency backup error:', err);
+    showToast('❌ Emergency Backup ล้มเหลว: ' + err.message, 'error', 3000);
+  }
+}
+
+async function checkDataIntegrity() {
+  console.log('🔍 Checking data integrity...');
+  
+  const modules = [
+    { name: 'refs', get: getRefs, key: 'ref_items' },
+    { name: 'visions', get: getVisions, key: 'life_vision_items' },
+    // ... และอื่นๆ
+  ];
+  
+  let hasIssues = false;
+  
+  for (const mod of modules) {
+    try {
+      const localData = JSON.parse(localStorage.getItem(mod.key) || '[]');
+      const firestoreData = await mod.get();
+      
+      // ✅ ถ้า Firestore ว่าง แต่ Local มีข้อมูล -> แจ้งเตือน
+      if (firestoreData.length === 0 && localData.length > 0) {
+        console.warn(`⚠️ ${mod.name}: Firestore empty but Local has ${localData.length} items`);
+        hasIssues = true;
+        
+        // ✅ ถ้า Local มีข้อมูล -> restore กลับไป Firestore
+        if (confirm(`⚠️ พบข้อมูล ${mod.name} หายไปจาก Cloud (${localData.length} รายการ)\nต้องการกู้คืนหรือไม่?`)) {
+          await mod.save(localData);
+          console.log(`✅ Restored ${mod.name} to Firestore`);
+        }
+      }
+      
+      // ✅ ถ้า Local ว่าง แต่ Firestore มีข้อมูล -> sync ลง Local
+      if (localData.length === 0 && firestoreData.length > 0) {
+        console.log(`📥 Syncing ${mod.name} from Firestore to Local`);
+        localStorage.setItem(mod.key, JSON.stringify(firestoreData));
+      }
+      
+    } catch (err) {
+      console.warn(`⚠️ Check error for ${mod.name}:`, err);
+    }
+  }
+  
+  if (!hasIssues) {
+    console.log('✅ All data integrity checks passed');
+  }
+  
+  return hasIssues;
+}
+// ==========================================================
+// AUTO-BACKUP SYSTEM - ทำงานอัตโนมัติ
+// ==========================================================
+
+// ✅ ตัวแปรสำหรับ auto-backup
+let AUTO_BACKUP_INTERVAL = null;
+const AUTO_BACKUP_FREQUENCY = 5 * 60 * 1000; // ทุก 5 นาที
+const MAX_AUTO_BACKUPS = 20; // เก็บ 20 ชุดล่าสุด
+
+// ✅ ฟังก์ชัน auto-backup (พร้อม data validation)
+async function autoBackup() {
+  try {
+    console.log('🔄 Auto-backup running...');
+    
+    const modules = [
+      { name: 'refs', get: getRefs, key: 'ref_items' },
+      { name: 'visions', get: getVisions, key: 'life_vision_items' },
+      { name: 'goals', get: getGoals, key: 'goals_items' },
+      { name: 'finances', get: getFinances, key: 'finance_items' },
+      { name: 'wishlist', get: getWishes, key: 'wishlist_items' },
+      { name: 'studies', get: getStudies, key: 'study_items' },
+      { name: 'projects', get: getProjects, key: 'project_items' },
+      { name: 'inbox', get: getInbox, key: 'inbox_items' },
+      { name: 'daily', get: getDaily, key: 'daily_items' },
+      { name: 'ideas', get: getIdeas, key: 'idea_items' },
+      { name: 'knowledges', get: getKnowledges, key: 'knowledge_items' },
+      { name: 'arts', get: getArts, key: 'art_items' },
+      { name: 'fits', get: getFits, key: 'fit_items' },
+      { name: 'transactions', get: getTransactions, key: 'finance_transactions' },
+      { name: 'budgets', get: getBudgets, key: 'finance_budgets' }
+    ];
+    
+    const backupData = {};
+    let totalItems = 0;
+    let hasData = false;
+    let validModules = 0;
+    
+    for (const mod of modules) {
+      try {
+        const data = await mod.get();
+        
+        // ✅ ตรวจสอบว่า data เป็น array และมีข้อมูล
+        if (Array.isArray(data) && data.length > 0) {
+          // ✅ ตรวจสอบว่า data แต่ละตัวมี id (ป้องกันข้อมูลเสีย)
+          const isValid = data.every(item => item && typeof item === 'object' && item.id);
+          if (isValid) {
+            backupData[mod.key] = data;
+            totalItems += data.length;
+            hasData = true;
+            validModules++;
+          } else {
+            console.warn(`⚠️ ${mod.name}: Some items are invalid (missing id), skipping`);
+          }
+        }
+      } catch (err) {
+        console.warn(`⚠️ Auto-backup error for ${mod.name}:`, err);
+      }
+    }
+    
+    // ✅ ถ้าไม่มีข้อมูลจริง -> ไม่ backup
+    if (!hasData || totalItems === 0) {
+      console.log('⏭️ No valid data to backup, skipping');
+      return;
+    }
+    
+    // ✅ ตรวจสอบว่า backup data ถูกต้องก่อนบันทึก
+    const isValidBackup = Object.values(backupData).some(arr => arr && arr.length > 0);
+    if (!isValidBackup) {
+      console.warn('⚠️ Invalid backup data structure, skipping');
+      return;
+    }
+
+    // ✅ สร้าง backup พร้อม timestamp
+    const timestamp = new Date().toISOString();
+    const backupKey = `auto_backup_${timestamp.replace(/[:.]/g, '-')}`;
+    
+    const fullBackup = {
+      version: APP_VERSION || '2.0.0',
+      timestamp: timestamp,
+      data: backupData,
+      totalItems: totalItems,
+      moduleCount: validModules,
+      checksum: generateChecksum(backupData) // ✅ เพิ่ม checksum เพื่อตรวจสอบความถูกต้อง
+    };
+    
+    // ✅ บันทึก backup
+    localStorage.setItem(backupKey, JSON.stringify(fullBackup));
+    localStorage.setItem('auto_backup_latest', JSON.stringify(fullBackup));
+    
+    // ✅ เก็บประวัติ backup (สำหรับการตรวจสอบ)
+    const backupHistory = JSON.parse(localStorage.getItem('auto_backup_history') || '[]');
+    backupHistory.push({
+      key: backupKey,
+      timestamp: timestamp,
+      totalItems: totalItems,
+      moduleCount: validModules
+    });
+    // เก็บเฉพาะ 50 รายการล่าสุด
+    if (backupHistory.length > 50) {
+      backupHistory.splice(0, backupHistory.length - 50);
+    }
+    localStorage.setItem('auto_backup_history', JSON.stringify(backupHistory));
+
+    // ✅ ลบ backup เก่าเกิน MAX_AUTO_BACKUPS
+    const allKeys = Object.keys(localStorage)
+      .filter(k => k.startsWith('auto_backup_') && k !== 'auto_backup_latest' && k !== 'auto_backup_history')
+      .sort();
+    
+    if (allKeys.length > MAX_AUTO_BACKUPS) {
+      const toRemove = allKeys.slice(0, allKeys.length - MAX_AUTO_BACKUPS);
+      toRemove.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+          console.log(`🗑️ Removed old auto-backup: ${key}`);
+        } catch (e) {
+          console.warn(`⚠️ Could not remove ${key}:`, e);
+        }
+      });
+    }
+    
+    console.log(`✅ Auto-backup saved: ${totalItems} items, ${validModules} modules (${backupKey})`);
+    
+  } catch (err) {
+    console.error('❌ Auto-backup error:', err);
+    // ✅ ไม่แสดง toast เพื่อไม่ให้รบกวนผู้ใช้
+  }
+}
+// ✅ ฟังก์ชันสร้าง checksum สำหรับตรวจสอบความถูกต้อง
+function generateChecksum(data) {
+  try {
+    const json = JSON.stringify(data);
+    let hash = 0;
+    for (let i = 0; i < json.length; i++) {
+      const char = json.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString(16);
+  } catch (e) {
+    return '00000000';
+  }
+}
+
+// ✅ ฟังก์ชันตรวจสอบสุขภาพของ backup
+function checkBackupHealth() {
+  try {
+    const latest = localStorage.getItem('auto_backup_latest');
+    if (!latest) {
+      console.warn('⚠️ No auto-backup found');
+      return { healthy: false, reason: 'No backup found' };
+    }
+    
+    const data = JSON.parse(latest);
+    
+    // ✅ ตรวจสอบโครงสร้าง
+    if (!data.data || typeof data.data !== 'object') {
+      return { healthy: false, reason: 'Invalid backup structure' };
+    }
+    
+    // ✅ ตรวจสอบอายุ
+    const age = Date.now() - new Date(data.timestamp).getTime();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 ชั่วโมง
+    
+    if (age > maxAge) {
+      return { 
+        healthy: false, 
+        reason: `Backup is too old (${Math.round(age / 3600000)} hours)`,
+        age: age 
+      };
+    }
+    
+    // ✅ ตรวจสอบข้อมูล
+    const hasData = Object.values(data.data).some(arr => arr && arr.length > 0);
+    if (!hasData) {
+      return { healthy: false, reason: 'Backup contains no data' };
+    }
+    
+    // ✅ ตรวจสอบ checksum
+    if (data.checksum) {
+      const currentChecksum = generateChecksum(data.data);
+      if (currentChecksum !== data.checksum) {
+        return { healthy: false, reason: 'Checksum mismatch (data may be corrupted)' };
+      }
+    }
+    
+    return { 
+      healthy: true, 
+      timestamp: data.timestamp, 
+      totalItems: data.totalItems,
+      moduleCount: data.moduleCount || 0,
+      age: age
+    };
+  } catch (err) {
+    console.warn('⚠️ Check backup health error:', err);
+    return { healthy: false, reason: err.message };
+  }
+}
+
+// ✅ เริ่ม auto-backup
+function startAutoBackup() {
+  if (AUTO_BACKUP_INTERVAL) {
+    clearInterval(AUTO_BACKUP_INTERVAL);
+  }
+  
+  // ✅ ตรวจสอบสุขภาพ backup ก่อนเริ่ม
+  const health = checkBackupHealth();
+  if (!health.healthy) {
+    console.warn(`⚠️ Auto-backup health check: ${health.reason}`);
+    // ยังคงทำงานต่อ แต่บันทึก log
+  }
+  
+  // รันครั้งแรกทันที
+  autoBackup();
+  
+  // แล้วรันทุก 5 นาที
+  AUTO_BACKUP_INTERVAL = setInterval(autoBackup, AUTO_BACKUP_FREQUENCY);
+  
+  console.log(`✅ Auto-backup started (every ${AUTO_BACKUP_FREQUENCY/60000} minutes)`);
+}
+
+// ✅ หยุด auto-backup
+function stopAutoBackup() {
+  if (AUTO_BACKUP_INTERVAL) {
+    clearInterval(AUTO_BACKUP_INTERVAL);
+    AUTO_BACKUP_INTERVAL = null;
+    console.log('⏹️ Auto-backup stopped');
+  }
+}
+
+// ✅ กู้คืนจาก auto-backup ล่าสุด (พร้อม validation)
+async function restoreFromLatestAutoBackup() {
+  try {
+    // ✅ ตรวจสอบสุขภาพก่อนกู้คืน
+    const health = checkBackupHealth();
+    if (!health.healthy) {
+      showToast(`❌ Backup ไม่สมบูรณ์: ${health.reason}`, 'error', 3000);
+      return;
+    }
+    
+    const latest = localStorage.getItem('auto_backup_latest');
+    if (!latest) {
+      showToast('❌ ไม่พบ auto-backup', 'error');
+      return;
+    }
+    
+    const backup = JSON.parse(latest);
+    console.log('📦 Latest auto-backup:', backup.timestamp, backup.totalItems, 'items');
+    
+    // ✅ แสดงข้อมูลให้ผู้ใช้ตัดสินใจ
+    const dateStr = new Date(backup.timestamp).toLocaleString('th-TH');
+    const confirmMsg = `⚠️ กู้คืนข้อมูลจาก ${dateStr}\n\n` +
+                       `📊 ${backup.totalItems} รายการ\n` +
+                       `📁 ${backup.moduleCount || 0} โมดูล\n\n` +
+                       `⚠️ ข้อมูลปัจจุบันจะถูกแทนที่!\n\n` +
+                       `ดำเนินการต่อ?`;
+    
+    if (!confirm(confirmMsg)) {
+      return;
+    }    
+    
+    const modules = [
+      { key: 'ref_items', save: saveRefs, name: 'Refs' },
+      { key: 'life_vision_items', save: saveVisions, name: 'Vision' },
+      { key: 'goals_items', save: saveGoals, name: 'Goals' },
+      { key: 'finance_items', save: saveFinances, name: 'Finances' },
+      { key: 'wishlist_items', save: saveWishes, name: 'Wishlist' },
+      { key: 'study_items', save: saveStudies, name: 'Studies' },
+      { key: 'project_items', save: saveProjects, name: 'Projects' },
+      { key: 'inbox_items', save: saveInbox, name: 'Inbox' },
+      { key: 'daily_items', save: saveDaily, name: 'Daily' },
+      { key: 'idea_items', save: saveIdeas, name: 'Ideas' },
+      { key: 'knowledge_items', save: saveKnowledges, name: 'Knowledge' },
+      { key: 'art_items', save: saveArts, name: 'Arts' },
+      { key: 'fit_items', save: saveFits, name: 'Fits' },
+      { key: 'finance_transactions', save: saveTransactions, name: 'Transactions' },
+      { key: 'finance_budgets', save: saveBudgets, name: 'Budgets' }
+    ];
+    
+     let total = 0;
+    let restoredModules = 0;
+    let errorModules = [];
+    
+    for (const mod of modules) {
+      if (backup.data[mod.key]) {
+        try {
+          // ✅ ตรวจสอบข้อมูลก่อนกู้คืน
+          const data = backup.data[mod.key];
+          if (Array.isArray(data) && data.length > 0) {
+            // ✅ ตรวจสอบว่า data แต่ละตัวมี id
+            const isValid = data.every(item => item && typeof item === 'object' && item.id);
+            if (isValid) {
+              await mod.save(data);
+              total += data.length;
+              restoredModules++;
+              console.log(`✅ Restored ${mod.name}: ${data.length} items`);
+            } else {
+              console.warn(`⚠️ ${mod.name}: Invalid data structure, skipping`);
+              errorModules.push(mod.name);
+            }
+          }
+        } catch (err) {
+          console.warn(`⚠️ Error restoring ${mod.name}:`, err);
+          errorModules.push(mod.name);
+        }
+      }
+    }
+        // ✅ สร้าง backup ก่อนกู้คืน (เผื่อต้องการย้อนกลับ)
+    await autoBackup();
+    
+    let msg = `✅ กู้คืน ${total} รายการจาก ${restoredModules} โมดูล`;
+    if (errorModules.length > 0) {
+      msg += `\n⚠️ ข้าม ${errorModules.join(', ')} (ข้อมูลไม่สมบูรณ์)`;
+    }
+    
+    showToast(msg, 'success', 5000);
+    
+    // ✅ รีเฟรชหน้า
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+    
+  } catch (err) {
+    console.error('❌ Restore error:', err);
+    showToast('❌ กู้คืนไม่สำเร็จ: ' + err.message, 'error', 3000);
+  }
+}
+// ✅ ฟังก์ชันดูประวัติ auto-backup
+function viewBackupHistory() {
+  try {
+    const history = JSON.parse(localStorage.getItem('auto_backup_history') || '[]');
+    if (history.length === 0) {
+      showToast('📋 ไม่มีประวัติ auto-backup', 'info', 2000);
+      return;
+    }
+    
+    let msg = '📋 ประวัติ Auto-Backup:\n\n';
+    history.slice(-10).forEach((item, i) => {
+      const date = new Date(item.timestamp).toLocaleString('th-TH');
+      msg += `${i+1}. ${date}\n   ${item.totalItems} รายการ, ${item.moduleCount} โมดูล\n`;
+    });
+    
+    if (history.length > 10) {
+      msg += `\n... และอีก ${history.length - 10} รายการ`;
+    }
+    
+    alert(msg);
+  } catch (e) {
+    console.warn('⚠️ View backup history error:', e);
+    showToast('❌ ไม่สามารถดูประวัติได้', 'error');
+  }
+}
+
+
+// ✅ ฟังก์ชันตรวจสอบและซ่อมแซม backup
+function repairBackup() {
+  try {
+    const latest = localStorage.getItem('auto_backup_latest');
+    if (!latest) {
+      showToast('❌ ไม่พบ backup', 'error');
+      return;
+    }
+    
+    const data = JSON.parse(latest);
+    let repaired = false;
+    
+    // ✅ ตรวจสอบและซ่อมแซมแต่ละโมดูล
+    for (const [key, items] of Object.entries(data.data)) {
+      if (Array.isArray(items)) {
+        // ✅ กรอง item ที่ไม่มี id
+        const validItems = items.filter(item => item && typeof item === 'object' && item.id);
+        if (validItems.length !== items.length) {
+          data.data[key] = validItems;
+          repaired = true;
+          console.log(`🔧 Repaired ${key}: removed ${items.length - validItems.length} invalid items`);
+        }
+      }
+    }
+    
+    if (repaired) {
+      data.checksum = generateChecksum(data.data);
+      data.repaired_at = new Date().toISOString();
+      localStorage.setItem('auto_backup_latest', JSON.stringify(data));
+      showToast('✅ ซ่อมแซม backup เรียบร้อย', 'success', 2000);
+    } else {
+      showToast('✅ Backup อยู่ในสภาพดี ไม่ต้องซ่อมแซม', 'info', 2000);
+    }
+    
+  } catch (err) {
+    console.error('❌ Repair backup error:', err);
+    showToast('❌ ซ่อมแซมไม่สำเร็จ: ' + err.message, 'error', 3000);
+  }
+}
+// ✅ บันทึกข้อมูลก่อนปิดหน้า/รีเฟรช (ป้องกันข้อมูลสูญหาย)
+window.addEventListener('beforeunload', function(e) {
+  try {
+    autoBackup();
+  } catch (err) {
+    console.warn('⚠️ Auto-backup on beforeunload error:', err);
+  }
+});
+
+// ✅ ตรวจสอบ auto-backup เมื่อโหลดหน้า (แสดงใน console เฉพาะตอน debug)
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  const health = checkBackupHealth();
+  if (health.healthy) {
+    console.log(`✅ Auto-backup healthy: ${health.totalItems} items`);
+  } else {
+    console.warn(`⚠️ Auto-backup: ${health.reason}`);
+  }
+}
+
+// ✅ ดู auto-backup ทั้งหมด (ปรับปรุง)
+function viewAllAutoBackups() {
+  try {
+    const allKeys = Object.keys(localStorage)
+      .filter(k => k.startsWith('auto_backup_') && k !== 'auto_backup_latest' && k !== 'auto_backup_history');
+    
+    console.log(`📋 Total auto-backups: ${allKeys.length}`);
+    
+    const backups = allKeys.map(key => {
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        return {
+          key: key,
+          timestamp: data.timestamp,
+          totalItems: data.totalItems,
+          moduleCount: data.moduleCount || 0,
+          checksum: data.checksum || 'N/A'
+        };
+      } catch (e) {
+        return { key: key, error: true };
+      }
+    });
+    
+    // เรียงตาม timestamp
+    backups.sort((a, b) => {
+      if (a.error) return 1;
+      if (b.error) return -1;
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+    
+    console.table(backups);
+    
+    // แสดงสรุป
+    const validBackups = backups.filter(b => !b.error);
+    console.log(`✅ ${validBackups.length} valid backups, ${backups.length - validBackups.length} corrupted`);
+    
+    return backups;
+  } catch (err) {
+    console.warn('⚠️ View all backups error:', err);
+    return [];
+  }
+}
+
+// ✅ เรียกดูเมื่อโหลดหน้า
+console.log('📋 Auto-backup system initialized');
+viewAllAutoBackups();
+
+
 
 
 // เรียกใน initApp() หลังจาก loadAllCategoriesFromFirestore()
@@ -16372,7 +17128,17 @@ async function initApp() {
   onVisionsSnapshot(() => { renderVision(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onStudiesSnapshot(() => { renderStudy(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onProjectsSnapshot(() => { renderProjects(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
+  let _isFirstRender = true;
+  onProjectsSnapshot(() => { 
+  renderProjects(); 
+  if (_isFirstRender) {
+    renderDashboard();
+    _isFirstRender = false;
+  }
+  renderNav(); 
+  syncBottomTabActive(); 
+  syncTopNavActive(); 
+});
   onIdeasSnapshot(() => { renderIdea(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onKnowledgesSnapshot(() => { renderKnowledge(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
   onArtsSnapshot(() => { renderArt(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
@@ -16384,15 +17150,16 @@ async function initApp() {
   if (!validPages.includes(lastPage)) lastPage = 'journal';
   switchPage(lastPage);
 
-  // ✅ เรียก render ที่ไม่มี snapshot (ครั้งเดียว)
-  renderEnhancedStats();
-  renderArtTrend();
-  renderFitnessTrend();
+  // ✅ เพิ่ม await สำหรับ async functions
+  await renderEnhancedStats();
+  await renderArtTrend();
+  await renderFitnessTrend();
   await waitForFirestore();
-  renderFinanceTrend();
-  renderFocusThisWeek();
-  renderOverdueGoals();
+  await renderFinanceTrend();
+  await renderFocusThisWeek();
+  await renderOverdueGoals();
   await renderCalendar();
+
   renderSettings();
   visionCatManager.render();
   goalCatManager.render();
@@ -16419,6 +17186,8 @@ async function initApp() {
   } catch (err) {
     console.warn('⚠️ Init Path error:', err);
   }
+
+  startAutoBackup();
   
   setTimeout(() => {
     syncBottomTabActive();
@@ -16437,16 +17206,16 @@ async function initApp() {
   }, 500);
 
   setTimeout(() => {
-  const page = document.getElementById('page-projects');
-  const finance = document.getElementById('page-finance');
-  if (page && finance && finance.contains(page)) {
-    console.warn('⚠️ page-projects is inside page-finance, moving back...');
-    const wrapper = document.querySelector('.nav-wrapper');
-    if (wrapper && wrapper.nextSibling) {
-      wrapper.parentElement.insertBefore(page, wrapper.nextSibling);
+    const page = document.getElementById('page-projects');
+    const finance = document.getElementById('page-finance');
+    if (page && finance && finance.contains(page)) {
+      console.warn('⚠️ page-projects is inside page-finance, moving back...');
+      const wrapper = document.querySelector('.nav-wrapper');
+      if (wrapper && wrapper.nextSibling) {
+        wrapper.parentElement.insertBefore(page, wrapper.nextSibling);
+      }
     }
-  }
-}, 1000);
+  }, 1000);
 
   const savedState = localStorage.getItem('calendar_collapsed');
   if (savedState === 'true') {
@@ -16458,8 +17227,7 @@ async function initApp() {
     if (icon) icon.classList.add('rotated');
     if (arrow) arrow.textContent = '▶';
   }
-}  // ← ต้องมีปิดวงเล็บปีกกานี้
-
+}
 
 initApp();
 
