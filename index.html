@@ -4499,6 +4499,27 @@ function checkVersionMigration() {
   return false;
 }
 // ==========================================================
+// DEBOUNCE HELPER - ใส่หลัง APP_VERSION
+// ==========================================================
+let _snapshotTimers = {};
+
+function createDebouncedSnapshot(module, renderFn, delay = 500) {
+  return function(...args) {
+    const key = `snapshot_${module}`;
+    if (_snapshotTimers[key]) {
+      clearTimeout(_snapshotTimers[key]);
+    }
+    _snapshotTimers[key] = setTimeout(() => {
+      _snapshotTimers[key] = null;
+      try {
+        renderFn(...args);
+      } catch (err) {
+        console.warn(`⚠️ Debounced render error (${module}):`, err);
+      }
+    }, delay);
+  };
+}
+// ==========================================================
 // FIRESTORE HELPERS — ใช้ร่วมกันทุกโมดูล
 // ==========================================================
 let firestoreReady = false;
@@ -5408,19 +5429,26 @@ async function renderFinanceSnapshot() {
 }
 
 // 6. Main Dashboard - เรียกฟังก์ชันย่อย
-let _dashboardRendering = false;
 
-async function renderDashboard() {
-  // ✅ ป้องกันการ render ซ้อนกัน
+let _dashboardRendering = false;
+let _dashboardLastRender = 0;
+const DASHBOARD_RENDER_COOLDOWN = 2000; // 2 วินาที
+
+async function renderDashboard(force = false) {
+  const now = Date.now();
+  
+  if (!force && (now - _dashboardLastRender) < DASHBOARD_RENDER_COOLDOWN) {
+    return;
+  }
+  
   if (_dashboardRendering) {
-    console.log('⏭️ Dashboard already rendering, skipping');
     return;
   }
   
   _dashboardRendering = true;
+  _dashboardLastRender = now;
   
   try {
-    // ✅ โหลด Focus (ใช้ hash เพื่อป้องกัน render ซ้ำ)
     await renderDashboardFocus();
     await Promise.all([
       renderDashboardStats(),
@@ -5429,11 +5457,12 @@ async function renderDashboard() {
       renderDashboardRecent(),
       renderFinanceSnapshot()
     ]);
+  } catch (err) {
+    console.warn('⚠️ Dashboard render error:', err);
   } finally {
-    // ปลดล็อคหลังจาก render เสร็จ
     setTimeout(() => {
       _dashboardRendering = false;
-    }, 100);
+    }, 500);
   }
 }
 // ===== Enhanced Stats with Month-over-Month =====
@@ -6134,6 +6163,7 @@ function updateFocusLockState(isPrimary) {
 // DASHBOARD FOCUS - เลือก 3 หลัก + 5 รอง
 // ==========================================================
 let _lastFocusHash = ''; // เก็บ hash เพื่อป้องกันการ render ซ้ำ
+let _focusRenderTimer = null;
 
 async function renderDashboardFocus() {
   // ดึงข้อมูลจากทุกโมดูล
@@ -6276,6 +6306,21 @@ async function renderDashboardFocus() {
   }
   _lastFocusHash = focusHash;
   
+  // ✅ ถ้ามี timer ค้างอยู่ ให้ยกเลิก
+  if (_focusRenderTimer) {
+    clearTimeout(_focusRenderTimer);
+    _focusRenderTimer = null;
+  }
+  
+  // ✅ Debounce: รอ 100ms ก่อน render จริง
+  _focusRenderTimer = setTimeout(() => {
+    _focusRenderTimer = null;
+    renderFocusContent(primaryItems, secondaryItems);
+  }, 100);
+}
+
+// ✅ แยกฟังก์ชัน render จริงออกมา
+function renderFocusContent(primaryItems, secondaryItems) {
   // 6. Render Primary (ใหญ่) - สีทอง
   const primaryContainer = document.getElementById('focus-primary');
   if (primaryContainer) {
@@ -17116,33 +17161,39 @@ async function initApp() {
     dailyModule.migrateFromLocalStorage('daily_items')
   ]);
 
+    // ✅ สร้าง debounced dashboard renderer
+  const debouncedDashboard = createDebouncedSnapshot('dashboard', renderDashboard, 800);
+  const debouncedNav = createDebouncedSnapshot('nav', renderNav, 300);
+  const debouncedRef = createDebouncedSnapshot('ref', () => {
+    getRefs().then(refs => { refsCache = refs; });
+    renderRef();
+    debouncedDashboard();
+    renderNav();
+    updateRefCategorySuggestions();
+    syncBottomTabActive();
+    syncTopNavActive();
+  }, 500);
+
   // ✅ ตั้งค่า Snapshot listeners
-  onInboxSnapshot(() => { renderNav(); renderInbox(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); });
-  onDailySnapshot(() => { renderDaily(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onRefsSnapshot(() => { getRefs().then(refs => { refsCache = refs; }); renderRef(); renderDashboard(); renderNav(); updateRefCategorySuggestions(); syncBottomTabActive(); syncTopNavActive(); });
-  onFinancesSnapshot(() => { renderFinanceGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onWishesSnapshot(() => { renderWishlist(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onBudgetsSnapshot(() => { renderBudgets(); renderFinanceOverview(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); });
-  onTransactionsSnapshot(() => { renderFinanceTransactions(); renderFinanceOverview(); syncBottomTabActive(); syncTopNavActive(); });  
-  onPresetsSnapshot(() => { renderPresets(); syncBottomTabActive(); syncTopNavActive(); });
-  onVisionsSnapshot(() => { renderVision(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onGoalsSnapshot(() => { renderGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onStudiesSnapshot(() => { renderStudy(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  let _isFirstRender = true;
-  onProjectsSnapshot(() => { 
-  renderProjects(); 
-  if (_isFirstRender) {
-    renderDashboard();
-    _isFirstRender = false;
-  }
+  onInboxSnapshot(createDebouncedSnapshot('inbox', () => { renderNav(); renderInbox(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); }, 300));
+  onDailySnapshot(createDebouncedSnapshot('daily', () => { renderDaily(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 300));
+  onRefsSnapshot(debouncedRef);
+  onFinancesSnapshot(createDebouncedSnapshot('finances', () => { renderFinanceGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onWishesSnapshot(createDebouncedSnapshot('wishes', () => { renderWishlist(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onBudgetsSnapshot(createDebouncedSnapshot('budgets', () => { renderBudgets(); renderFinanceOverview(); renderDashboard(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onTransactionsSnapshot(createDebouncedSnapshot('transactions', () => { renderFinanceTransactions(); renderFinanceOverview(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onPresetsSnapshot(createDebouncedSnapshot('presets', () => { renderPresets(); syncBottomTabActive(); syncTopNavActive(); }, 300));
+  onVisionsSnapshot(createDebouncedSnapshot('visions', () => { renderVision(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onGoalsSnapshot(createDebouncedSnapshot('goals', () => { renderGoals(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onStudiesSnapshot(createDebouncedSnapshot('studies', () => { renderStudy(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  let _isFirstRender = true; onProjectsSnapshot(createDebouncedSnapshot('projects', () => { renderProjects(); if (_isFirstRender) {renderDashboard();_isFirstRender = false; }
   renderNav(); 
   syncBottomTabActive(); 
-  syncTopNavActive(); 
-});
-  onIdeasSnapshot(() => { renderIdea(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onKnowledgesSnapshot(() => { renderKnowledge(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onArtsSnapshot(() => { renderArt(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
-  onFitsSnapshot(() => { renderFit(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); });
+  syncTopNavActive(); }, 500));
+  onIdeasSnapshot(createDebouncedSnapshot('ideas', () => { renderIdea(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onKnowledgesSnapshot(createDebouncedSnapshot('knowledges', () => { renderKnowledge(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onArtsSnapshot(createDebouncedSnapshot('arts', () => { renderArt(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
+  onFitsSnapshot(createDebouncedSnapshot('fits', () => { renderFit(); renderDashboard(); renderNav(); syncBottomTabActive(); syncTopNavActive(); }, 500));
 
   // ✅ เรียก switchPage
   let lastPage = localStorage.getItem('last_active_page') || 'dashboard';
