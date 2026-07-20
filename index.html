@@ -11715,108 +11715,16 @@ async function openProjectDetail(id) {
 async function renderProjects() {
   console.log('🔍 renderProjects called');
   
-  // ✅ STEP 1: Find or create the correct page container at the top level
-  let page = document.getElementById('page-projects');
-
-  if (page && page.parentElement !== document.body) {
-    page.remove();
-    document.body.appendChild(page);
-  }
+  // ✅ FIX: Simple getElementById, no DOM removal/re-append
+  const list = document.getElementById('projects-list');
+  const empty = document.getElementById('projects-empty');
   
-  // ✅ STEP 2: If page exists but is inside the wrong container, move it
-  if (page) {
-    const correctParent = document.body;
-    if (page.parentElement !== correctParent) {
-      console.warn(`⚠️ page-projects is inside ${page.parentElement?.id || 'unknown'}, moving to body...`);
-      // Remove from current parent and append to body
-      page.remove();
-      correctParent.appendChild(page);
-    }
-  }
-  
-  // ✅ STEP 3: If page doesn't exist, create it at the correct location
-  if (!page) {
-    console.log('🔧 Creating page-projects at body level');
-    page = document.createElement('div');
-    page.className = 'page';
-    page.id = 'page-projects';
-    // Find the correct insertion point (before settings or after finance)
-    const settingsPage = document.getElementById('page-settings');
-    if (settingsPage) {
-      document.body.insertBefore(page, settingsPage);
-    } else {
-      document.body.appendChild(page);
-    }
-  }
-  
-  // ✅ STEP 4: Ensure list and empty elements exist
-  let list = document.getElementById('projects-list');
-  let empty = document.getElementById('projects-empty');
-  
-  // ✅ STEP 5: If list or empty doesn't exist, create them inside page
+  // If elements don't exist, just return (don't recreate page structure)
   if (!list || !empty) {
-    console.log('🔧 Creating projects-list and projects-empty');
-    
-    // Create toolbar if it doesn't exist
-    let toolbar = page.querySelector('.toolbar');
-    if (!toolbar) {
-      toolbar = document.createElement('div');
-      toolbar.className = 'toolbar';
-      toolbar.innerHTML = `
-        <button type="button" class="btn" onclick="openProjectModal()">+ เพิ่มโปรเจกต์</button>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-          <button type="button" class="filter-chip active" onclick="setProjectFilter('all')" id="project-filter-all">ทั้งหมด</button>
-          <button type="button" class="filter-chip" onclick="setProjectFilter('fav')" id="project-filter-fav">⭐</button>
-          <button type="button" class="filter-chip" onclick="setProjectFilter('archived')" id="project-filter-archived">📦</button>
-          <button type="button" class="filter-chip" onclick="setProjectFilter('status')" id="project-filter-status">📊</button>
-        </div>
-        <select class="input" id="project-status-filter" onchange="renderProjects()" style="display:none;">
-          <option value="">ทุกสถานะ</option>
-          <option value="planning">📝 วางแผน</option>
-          <option value="active">🚀 กำลังทำ</option>
-          <option value="review">🔍 ทบทวน</option>
-          <option value="done">✅ เสร็จแล้ว</option>
-        </select>
-        <select class="input" id="project-priority-filter" onchange="renderProjects()" style="display:none;">
-          <option value="">⭐ ทุกระดับ</option>
-          <option value="critical">⭐⭐⭐ สำคัญ+เร่งด่วน</option>
-          <option value="important">⭐⭐ สำคัญ (ไม่เร่ง)</option>
-          <option value="urgent">⭐ เร่งด่วน (ไม่สำคัญ)</option>
-          <option value="low">☆ ทิ้ง/เลื่อน</option>
-        </select>
-        <select class="input" id="project-archive-filter" onchange="renderProjects()" style="display:none;">
-          <option value="active">แสดงทั้งหมด</option>
-          <option value="archived">แสดงเฉพาะที่ซ่อน</option>
-          <option value="all">แสดงทั้งหมด</option>
-        </select>
-        <button type="button" class="btn" onclick="openCalendarPopup()" style="font-size:12px;padding:4px 12px;">📅 ปฏิทิน</button>
-      `;
-      page.appendChild(toolbar);
-    }
-    
-    // Create list if missing
-    if (!document.getElementById('projects-list')) {
-      list = document.createElement('div');
-      list.id = 'projects-list';
-      page.appendChild(list);
-    } else {
-      list = document.getElementById('projects-list');
-    }
-    
-    // Create empty if missing
-    if (!document.getElementById('projects-empty')) {
-      empty = document.createElement('div');
-      empty.className = 'empty';
-      empty.id = 'projects-empty';
-      empty.style.display = 'none';
-      empty.textContent = 'ยังไม่มีโปรเจกต์';
-      page.appendChild(empty);
-    } else {
-      empty = document.getElementById('projects-empty');
-    }
+    console.warn('⚠️ projects-list or projects-empty not found, skipping render');
+    return;
   }
   
-  // ✅ STEP 6: Continue with normal rendering
   const statusFilter = document.getElementById('project-status-filter')?.value || '';
   const priorityFilter = document.getElementById('project-priority-filter')?.value || '';
   const archiveFilter = document.getElementById('project-archive-filter')?.value || 'active';
@@ -11916,29 +11824,24 @@ async function renderProjects() {
       <div class="item-desc project-desc-truncate" style="font-size:12px;cursor:pointer;" onclick="openProjectDetail(${item.id})">
         ${item.desc.replace(/\n/g, '<br>')}
       </div>
-      <div style="font-size:10px;color:var(--muted);cursor:pointer;margin-top:2px;" onclick="openProjectDetail(${item.id})">
-        ... คลิกเพื่อดูทั้งหมด
-      </div>
     ` : ''}
-        <div style="margin-top:6px;">
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
-            <span>ความคืบหน้า</span>
-            <span>${item.progress || 0}%</span>
+        ${item.progress !== undefined ? `
+          <div style="margin-top:8px;">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
+              <span>ความคืบหน้า</span>
+              <span>${item.progress || 0}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${item.progress || 0}%;"></div>
+            </div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${item.progress || 0}%;transition:width 0.5s;"></div></div>
-        </div>
-        <div class="item-footer">
-          <span class="item-date">${item.deadline ? '📅 ' + new Date(item.deadline).toLocaleDateString('th-TH') : 'ไม่มีกำหนด'}</span>
-          <span class="status-badge ${statusClass}" style="cursor:pointer;" onclick="cycleProjectStatus(${item.id})">${statusLabel} ↻</span>
-        </div>
+        ` : ''}
       `;
       list.appendChild(card);
     });
-    console.log('✅ renderProjects completed successfully');
   } catch (err) {
     console.error('❌ renderProjects error:', err);
-    empty.style.display = 'block';
-    empty.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+    list.innerHTML = '<div style="color:var(--red);padding:12px;">เกิดข้อผิดพลาดในการแสดงผล</div>';
   }
 }
 // ===== Edit Inline — Project Detail (Rich Text) =====
@@ -17310,7 +17213,7 @@ async function initApp() {
   // ✅ ตั้งค่า Snapshot listeners
   onInboxSnapshot((data) => {
     updateDashboardCache('inbox', data || []);
-    renderNav();
+    debouncedNav();
     renderInbox();
     scheduleDashboardRender();
     syncBottomTabActive();
@@ -17321,7 +17224,7 @@ async function initApp() {
     updateDashboardCache('daily', data || []);
     renderDaily();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17331,7 +17234,7 @@ async function initApp() {
     refsCache = data;
     renderRef();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     updateRefCategorySuggestions();
     syncBottomTabActive();
     syncTopNavActive();
@@ -17341,7 +17244,7 @@ async function initApp() {
     updateDashboardCache('finances', data || []);
     renderFinanceGoals();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17350,7 +17253,7 @@ async function initApp() {
     updateDashboardCache('wishes', data || []);
     renderWishlist();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17383,7 +17286,7 @@ async function initApp() {
     updateDashboardCache('visions', data || []);
     renderVision();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17392,7 +17295,7 @@ async function initApp() {
     updateDashboardCache('goals', data || []);
     renderGoals();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17401,7 +17304,7 @@ async function initApp() {
     updateDashboardCache('studies', data || []);
     renderStudy();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17410,7 +17313,7 @@ async function initApp() {
     updateDashboardCache('projects', data || []);
     renderProjects();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17419,7 +17322,7 @@ async function initApp() {
     updateDashboardCache('ideas', data || []);
     renderIdea();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17428,7 +17331,7 @@ async function initApp() {
     updateDashboardCache('knowledges', data || []);
     renderKnowledge();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17437,7 +17340,7 @@ async function initApp() {
     updateDashboardCache('arts', data || []);
     renderArt();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
@@ -17446,7 +17349,7 @@ async function initApp() {
     updateDashboardCache('fits', data || []);
     renderFit();
     scheduleDashboardRender();
-    renderNav();
+    debouncedNav();
     syncBottomTabActive();
     syncTopNavActive();
   });
