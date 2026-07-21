@@ -16583,6 +16583,7 @@ function renderSettings() {
           </button>
         </div>
       </div>
+      
       <div class="item-card" style="border-color: var(--green);">
         <div class="item-title">⏪ กู้คืนจาก Backup</div>
         <div class="item-desc">กู้คืนข้อมูลจาก backup อัตโนมัติในเครื่อง (7 วันล่าสุด)</div>
@@ -16593,6 +16594,7 @@ function renderSettings() {
           </button>
         </div>
       </div>
+      
       <div class="item-card" style="border-color: var(--red);">
         <div class="item-title">🚨 Emergency Backup (ด่วน)</div>
         <div class="item-desc" style="color: var(--red);">
@@ -16606,9 +16608,25 @@ function renderSettings() {
           </button>
         </div>
       </div>
+      
+      <!-- ✅ NEW: Clear Site Data Card -->
+      <div class="item-card" style="border-color: var(--accent2);">
+        <div class="item-title">🔧 แก้ปัญหาการเชื่อมต่อ</div>
+        <div class="item-desc" style="color: var(--text);">
+          🔄 ถ้าเว็บกระพริบ ช้าผิดปกติ หรือข้อมูลไม่อัปเดต 
+          <br><span style="font-size:11px;color:var(--muted);">✅ ล้าง storage ในเครื่อง (ข้อมูลบน Cloud ไม่หาย)</span>
+        </div>
+        <div class="item-footer">
+          <span></span>
+          <button type="button" class="btn" onclick="clearSiteDataAndReload()" style="background: var(--accent2);">
+            🔄 ล้างและรีเฟรช
+          </button>
+        </div>
+      </div>
     `;
   }
 }
+
 // ✅ Emergency Backup (ด่วน)
 async function emergencyBackup() {
   try {
@@ -17196,6 +17214,7 @@ console.log('📋 Auto-backup system initialized');
 viewAllAutoBackups();
 
 // ===== CLEAR SITE DATA AND RELOAD =====
+// ===== CLEAR SITE DATA AND RELOAD (Improved Version) =====
 function clearSiteDataAndReload() {
   if (!confirm(
     '⚠️ ระบบจะล้างข้อมูลในเครื่องทั้งหมด (IndexedDB, localStorage, cache)\n\n' +
@@ -17204,39 +17223,46 @@ function clearSiteDataAndReload() {
     'ดำเนินการต่อ?'
   )) return;
 
-  try {
-    // ✅ ลบ IndexedDB ทั้งหมด
-    if ('indexedDB' in window) {
-      indexedDB.databases().then((dbs) => {
-        dbs.forEach(db => {
-          if (db.name) indexedDB.deleteDatabase(db.name);
-        });
-      }).catch(() => {
-        // fallback: ลบทีละตัว
-        indexedDB.deleteDatabase('firestore');
-        indexedDB.deleteDatabase('__persistence');
-      });
-    }
-    
-    // ✅ ลบ localStorage ที่เกี่ยวข้องกับ persistence
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith('firestore_') || 
-          key.startsWith('__persistence_') ||
-          key.startsWith('firebase_')) {
-        localStorage.removeItem(key);
+  showToast('🔄 กำลังล้างข้อมูลและรีเฟรช...', 'info', 2000);
+
+  (async () => {
+    try {
+      // ✅ ลบ IndexedDB ทั้งหมด
+      if ('indexedDB' in window) {
+        try {
+          const dbs = await indexedDB.databases();
+          await Promise.all(
+            dbs.filter(db => db.name).map(db => new Promise((resolve) => {
+              const req = indexedDB.deleteDatabase(db.name);
+              req.onsuccess = () => resolve();
+              req.onerror = () => resolve();   // ไม่ block แม้ลบไม่สำเร็จ
+              req.onblocked = () => resolve();  // ไม่ค้างถ้ามี tab อื่นล็อกอยู่
+            }))
+          );
+        } catch {
+          // fallback สำหรับ browser ที่ไม่รองรับ indexedDB.databases()
+          indexedDB.deleteDatabase('firestore');
+          indexedDB.deleteDatabase('__persistence');
+        }
       }
-    });
-    
-    showToast('🔄 กำลังล้างข้อมูลและรีเฟรช...', 'info', 1500);
-    setTimeout(() => {
+
+      // ✅ ลบ localStorage ที่เกี่ยวข้อง
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('firestore_') || 
+            key.startsWith('__persistence_') || 
+            key.startsWith('firebase_')) {
+          localStorage.removeItem(key);
+        }
+      });
+
+    } catch (err) {
+      console.warn('⚠️ Clear site data error:', err);
+    } finally {
+      // ✅ reload หลัง cleanup เสร็จจริงเท่านั้น ไม่ใช่ตาม timer เดา
       location.reload();
-    }, 500);
-    
-  } catch (err) {
-    console.warn('⚠️ Clear site data error:', err);
-    showToast('❌ ล้างข้อมูลไม่สำเร็จ: ' + err.message, 'error', 3000);
-  }
+    }
+  })();
 }
 
 
