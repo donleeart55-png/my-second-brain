@@ -37,9 +37,43 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // เปิด offline persistence (Firestore จัดการเอง)
-db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-  console.warn('⚠️ Offline persistence:', err.code);
-});
+db.enablePersistence({ synchronizeTabs: true })
+  .catch((err) => {
+    console.warn('⚠️ Offline persistence error:', err.code, err.message);
+    
+    // ✅ แสดงเตือนในหน้าเว็บให้ผู้ใช้รู้ทันที
+    if (err.code === 'failed-precondition') {
+      showToast(
+        '⚠️ เปิดหลายแท็บพร้อมกัน หรือ Storage มีปัญหา → ลองปิดแท็บอื่นแล้วรีเฟรช หรือ Clear site data',
+        'error',
+        8000
+      );
+      
+      // ✅ แสดงแบนเนอร์ถาวร (ไม่หายไปเอง)
+      const banner = document.createElement('div');
+      banner.id = 'persistence-warning';
+      banner.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0;
+        background: #e05c5c; color: white;
+        padding: 12px 20px; text-align: center;
+        font-size: 14px; font-weight: 600;
+        z-index: 9999;
+        border-bottom: 2px solid #ff6b6b;
+        box-shadow: 0 2px 12px rgba(224, 92, 92, 0.3);
+      `;
+      banner.innerHTML = `
+        ⚠️ ตรวจพบปัญหา Storage (${err.code}) 
+        — <span style="cursor:pointer;text-decoration:underline;" onclick="clearSiteDataAndReload()">คลิกที่นี่เพื่อ Clear site data</span>
+        หรือปิดแท็บอื่นแล้วรีเฟรช
+        <button style="
+          background:rgba(255,255,255,0.2); border:none; color:white;
+          border-radius:4px; padding:2px 12px; margin-left:12px;
+          cursor:pointer; font-size:13px;
+        " onclick="this.closest('#persistence-warning').remove()">✕</button>
+      `;
+      document.body.prepend(banner);
+    }
+  });
 
 // Anonymous auth — ไม่ต้องมีหน้า login
 firebase.auth().signInAnonymously().catch(err => {
@@ -17161,7 +17195,49 @@ function viewAllAutoBackups() {
 console.log('📋 Auto-backup system initialized');
 viewAllAutoBackups();
 
+// ===== CLEAR SITE DATA AND RELOAD =====
+function clearSiteDataAndReload() {
+  if (!confirm(
+    '⚠️ ระบบจะล้างข้อมูลในเครื่องทั้งหมด (IndexedDB, localStorage, cache)\n\n' +
+    '✅ ข้อมูลบน Cloud (Firestore) จะยังคงอยู่\n' +
+    '⚠️ ข้อมูลที่ยังไม่ได้ Sync อาจหายไป\n\n' +
+    'ดำเนินการต่อ?'
+  )) return;
 
+  try {
+    // ✅ ลบ IndexedDB ทั้งหมด
+    if ('indexedDB' in window) {
+      indexedDB.databases().then((dbs) => {
+        dbs.forEach(db => {
+          if (db.name) indexedDB.deleteDatabase(db.name);
+        });
+      }).catch(() => {
+        // fallback: ลบทีละตัว
+        indexedDB.deleteDatabase('firestore');
+        indexedDB.deleteDatabase('__persistence');
+      });
+    }
+    
+    // ✅ ลบ localStorage ที่เกี่ยวข้องกับ persistence
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('firestore_') || 
+          key.startsWith('__persistence_') ||
+          key.startsWith('firebase_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    showToast('🔄 กำลังล้างข้อมูลและรีเฟรช...', 'info', 1500);
+    setTimeout(() => {
+      location.reload();
+    }, 500);
+    
+  } catch (err) {
+    console.warn('⚠️ Clear site data error:', err);
+    showToast('❌ ล้างข้อมูลไม่สำเร็จ: ' + err.message, 'error', 3000);
+  }
+}
 
 
 // เรียกใน initApp() หลังจาก loadAllCategoriesFromFirestore()
